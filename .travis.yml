@@ -31,3 +31,6 @@ after_success:
   - if [ "$TRAVIS_BRANCH" = "beta" -a "$TRAVIS_PULL_REQUEST" = "false" -a $TRAVIS_PYTHON_VERSION == "2.7" -a -n "$(grep version setup.py | cut -d \' -f 2 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$')" ]; then
       make publish;
     fi
+
+notifications:
+  email: false
