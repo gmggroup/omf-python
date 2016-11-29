@@ -72,7 +72,7 @@ To install the repository, ensure that you have
 
     pip install omf
 
-Or from `github <https://github.com/aranzgeo/omf`:
+Or from `github <https://github.com/aranzgeo/omf>`_:
 
 .. code::
 
