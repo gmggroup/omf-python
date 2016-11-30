@@ -8,7 +8,10 @@ from io import BytesIO
 import zlib
 
 import numpy as np
+from six import PY2
 
+if PY2:
+    memoryview = buffer                                                        #pylint: disable=redefined-builtin, invalid-name
 
 def array_serializer(arr, open_file, **kwargs):                                #pylint: disable=unused-argument
     """Convert array data to a serialized binary format"""
