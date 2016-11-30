@@ -5,6 +5,9 @@ PACKAGE_NAME=omf
 install:
 	python setup.py install
 
+publish:
+	python setup.py sdist upload
+
 docs:
 	cd docs && make html
 
