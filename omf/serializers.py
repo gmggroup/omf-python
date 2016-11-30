@@ -34,7 +34,7 @@ def array_serializer(arr, open_file, **kwargs):                                #
     index = dict()
     index['start'] = open_file.tell()
     index['dtype'] = dtype
-    arr_buffer = np.getbuffer(arr.astype(dtype))
+    arr_buffer = memoryview(arr.astype(dtype))
     open_file.write(zlib.compress(arr_buffer))
     index['length'] = open_file.tell() - index['start']
     return index
