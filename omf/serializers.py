@@ -8,7 +8,10 @@ from io import BytesIO
 import zlib
 
 import numpy as np
+from six import PY2
 
+if PY2:
+    memoryview = buffer                                                        #pylint: disable=redefined-builtin, invalid-name, undefined-variable
 
 def array_serializer(arr, open_file, **kwargs):                                #pylint: disable=unused-argument
     """Convert array data to a serialized binary format"""
@@ -34,7 +37,7 @@ def array_serializer(arr, open_file, **kwargs):                                #
     index = dict()
     index['start'] = open_file.tell()
     index['dtype'] = dtype
-    arr_buffer = np.getbuffer(arr.astype(dtype))
+    arr_buffer = memoryview(arr.astype(dtype))
     open_file.write(zlib.compress(arr_buffer))
     index['length'] = open_file.tell() - index['start']
     return index
