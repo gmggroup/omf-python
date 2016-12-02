@@ -110,16 +110,19 @@ class ScalarColormap(UidModel):
 
     @properties.validator('gradient')
     def _check_gradient_length(self, change):
+        """Ensure gradient is length-128"""
         if len(change['value']) != 128:
             raise ValueError('Colormap gradient must be length 128')
 
     @properties.validator('min_value')
     def _check_min_lt_max(self, change):
+        """Ensure min <= max"""
         if self.max_value is not None and change['value'] > self.max_value:
             raise ValueError('Colormap min_value must be less than max_value')
 
     @properties.validator('max_value')
     def _check_max_gt_min(self, change):
+        """Ensure max >= min"""
         if self.min_value is not None and change['value'] < self.min_value:
             raise ValueError('Colormap max_value must be greater than '
                              'min_value')
@@ -222,6 +225,18 @@ class Legend(ContentModel):
             ScalarArray
         )
     )
+    colors = properties.Instance(
+        'Colors corresponding to each entry in the legend',
+        ColorArray,
+        required=False
+    )
+
+    @properties.validator
+    def _check_lengths(self):
+        """Ensure length of values and colors are equal"""
+        if self.colors is not None and len(self.colors) != len(self.values):
+            raise ValueError('length of colors does not match length of '
+                             'values')
 
 
 class MappedData(ProjectElementData):
