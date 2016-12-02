@@ -47,17 +47,18 @@ class UidModel(properties.HasProperties):
     def serialize(self, include_class=True, registry=None, **kwargs):
         """Serialize nested UidModels to a flat dictionary with pointers"""
         if registry is None:
-            self._uid_registry = dict()                                        #pylint: disable=attribute-defined-outside-init
-            registry = self._uid_registry
-        if self.uid in registry:
-            return
-        registry.update({
-            str(self.uid): super(UidModel, self).serialize(
-                include_class, registry=registry, **kwargs
-            )
-        })
-        if getattr(self, '_uid_registry', None) is registry:
-            return self._uid_registry
+            registry = dict()
+            root = True
+        else:
+            root = False
+        if str(self.uid) not in registry:
+            registry.update({
+                str(self.uid): super(UidModel, self).serialize(
+                    include_class, registry=registry, **kwargs
+                )
+            })
+        if root:
+            return registry
         return str(self.uid)
 
     @classmethod
