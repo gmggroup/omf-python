@@ -95,11 +95,46 @@ class ColorArray(ScalarArray):
     )
 
 
+class ScalarColormap(UidModel):
+    """Length-128 color gradient with min/max values, used with ScalarData"""
+    gradient = properties.Instance(
+        'length-128 ColorArray defining the gradient',
+        ColorArray
+    )
+    min_value = properties.Float(
+        'Data value associated with the start of the gradient'
+    )
+    max_value = properties.Float(
+        'Data value associated with the end of the gradient'
+    )
+
+    @properties.validator('gradient')
+    def _check_gradient_length(self, change):
+        if len(change['value']) != 128:
+            raise ValueError('Colormap gradient must be length 128')
+
+    @properties.validator('min_value')
+    def _check_min_lt_max(self, change):
+        if self.max_value is not None and change['value'] > self.max_value:
+            raise ValueError('Colormap min_value must be less than max_value')
+
+    @properties.validator('max_value')
+    def _check_max_gt_min(self, change):
+        if self.min_value is not None and change['value'] < self.min_value:
+            raise ValueError('Colormap max_value must be greater than '
+                             'min_value')
+
+
 class ScalarData(ProjectElementData):
     """Data array with scalar values"""
     array = properties.Instance(
         'scalar values at locations on a mesh (see location parameter)',
         ScalarArray
+    )
+    colormap = properties.Instance(
+        'colormap associated with the data',
+        ScalarColormap,
+        required=False
     )
 
 
