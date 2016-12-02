@@ -125,6 +125,16 @@ class ScalarColormap(UidModel):
                              'min_value')
 
 
+class DateTimeColormap(ScalarColormap):
+    """Length-128 color gradient with min/max values, used with DateTimeData"""
+    min_value = properties.DateTime(
+        'Data value associated with the start of the gradient'
+    )
+    max_value = properties.DateTime(
+        'Data value associated with the end of the gradient'
+    )
+
+
 class ScalarData(ProjectElementData):
     """Data array with scalar values"""
     array = properties.Instance(
@@ -193,6 +203,11 @@ class DateTimeData(ProjectElementData):
     array = properties.Instance(
         'datetimes at locations on a mesh (see location parameter)',
         DateTimeArray
+    )
+    colormap = properties.Instance(
+        'colormap associated with the data',
+        DateTimeColormap,
+        required=False
     )
 
 
