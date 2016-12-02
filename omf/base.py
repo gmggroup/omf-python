@@ -44,9 +44,12 @@ class UidModel(properties.HasProperties):
             ):
                 self._backend['date_modified'] = val.date_modified
 
-    def serialize(self, include_class=True, registry=None, **kwargs):
+    def serialize(self, include_class=True, registry=None,
+                  skip_validation=False, **kwargs):
         """Serialize nested UidModels to a flat dictionary with pointers"""
         if registry is None:
+            if not skip_validation:
+                self.validate()
             registry = dict()
             root = True
         else:
