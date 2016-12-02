@@ -109,7 +109,7 @@ class ScalarColormap(UidModel):
     )
 
     @properties.validator('gradient')
-    def _check_gradient_length(self, change):
+    def _check_gradient_length(self, change):                                  #pylint: disable=no-self-use
         """Ensure gradient is length-128"""
         if len(change['value']) != 128:
             raise ValueError('Colormap gradient must be length 128')
