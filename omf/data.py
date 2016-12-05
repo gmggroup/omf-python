@@ -95,7 +95,7 @@ class ColorArray(ScalarArray):
     )
 
 
-class ScalarColormap(UidModel):
+class ScalarColormap(ContentModel):
     """Length-128 color gradient with min/max values, used with ScalarData"""
     gradient = properties.Instance(
         'length-128 ColorArray defining the gradient',
