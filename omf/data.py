@@ -225,18 +225,6 @@ class Legend(ContentModel):
             ScalarArray
         )
     )
-    colors = properties.Instance(
-        'Colors corresponding to each entry in the legend',
-        ColorArray,
-        required=False
-    )
-
-    @properties.validator
-    def _check_lengths(self):
-        """Ensure length of values and colors are equal"""
-        if self.colors is not None and len(self.colors) != len(self.values):
-            raise ValueError('length of colors does not match length of '
-                             'values')
 
 
 class MappedData(ProjectElementData):
