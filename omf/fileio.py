@@ -92,7 +92,8 @@ class OMFReader(object):
         # Read all PointSets:
         reader = omf.OMFReader('infile.omf')
         project = reader.get_project_overview()
-        uids_to_import = [element.uid for element in project.elements if isinstance(element, omf.PointSetElement)]
+        uids_to_import = [element.uid for element in project.elements
+                          if isinstance(element, omf.PointSetElement)]
         filtered_project = reader.get_project(uids_to_import)
 
     """
@@ -119,7 +120,8 @@ class OMFReader(object):
         if element_uids is not None:
             project_elements = project_json[self._uid]
             # update the root element list
-            project_elements['elements'] = [uid for uid in project_elements['elements'] if uid in element_uids]
+            project_elements['elements'] = [uid for uid in project_elements['elements']
+                                            if uid in element_uids]
         project = UidModel.deserialize(uid=self._uid,
                                        registry=project_json,
                                        open_file=self._fopen)
