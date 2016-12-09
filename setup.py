@@ -37,7 +37,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     keywords='mining data interchange',
     url='http://www.aranzgeo.com/',
-    download_url='http://github.com/3ptscience/omf',
+    download_url='http://github.com/aranzgeo/omf',
     classifiers=CLASSIFIERS,
     platforms=['Windows', 'Linux', 'Solaris', 'Mac OS-X', 'Unix'],
     license='MIT License',
