@@ -18,7 +18,7 @@ install:
 script:
   - make tests
   - if ! [ $TRAVIS_PYTHON_VERSION == "3.3" ]; then
-      make test-docs
+      make test-docs;
     fi
 
 after_success:
