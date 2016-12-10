@@ -7,10 +7,6 @@ python:
 
 sudo: false
 
-env:
-  matrix:
-    - MODE=tests
-
 addons:
   apt:
     packages:
