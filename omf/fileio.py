@@ -99,9 +99,6 @@ class OMFReader(object):
     """
 
     def __init__(self, fopen):
-        """
-        :param fopen: file name or an open file handle.
-        """
         if isinstance(fopen, string_types):
             fopen = open(fopen, 'rb')
         self._fopen = fopen
@@ -110,37 +107,39 @@ class OMFReader(object):
         self._project_json = self.read_json()
 
     def get_project(self, element_uids=None):
-        """
-        Fully loads project elements. Elements can be filtered by specifying their UUIDs.
+        """Fully loads project elements.
+        Elements can be filtered by specifying their UUIDs.
 
-        :param element_uids: a list of element UUIDs to load. All elements are loaded by default.
-        :return: a list of project elements
+        :param element_uids: a list of element UUIDs to load, default: all
+        :return: a omf.base.Project containing the specified elements
         """
         project_json = self._project_json.copy()
         if element_uids is not None:
             project_elements = project_json[self._uid]
             # update the root element list
-            project_elements['elements'] = [uid for uid in project_elements['elements']
-                                            if uid in element_uids]
+            filtered_elements = [uid for uid in project_elements['elements']
+                                 if uid in element_uids]
+            project_elements['elements'] = filtered_elements
+
         project = UidModel.deserialize(uid=self._uid,
                                        registry=project_json,
                                        open_file=self._fopen)
         return project
 
     def get_project_overview(self):
-        """
-        Loads project elements without loading all their data
+        """Loads all project elements without loading their data.
 
-        :return: a list of all project elements.
+        :return: a omf.base.Project
         """
         project_elements = self._project_json[self._uid]
         element_uids = project_elements['elements']
         filtered_json = {self._uid: project_elements}
         for uid in element_uids:
-            element = self._project_json[uid]
-            filtered_element = {prop: value for prop, value in iteritems(element)
-                                if prop not in ('data', 'geometry', 'textures')}
-            filtered_json[uid] = filtered_element
+            element = self._project_json[uid].copy()
+            for prop in ('data', 'geometry', 'textures'):
+                if prop in element:
+                    del element[prop]
+            filtered_json[uid] = element
         project = UidModel.deserialize(uid=self._uid,
                                        registry=filtered_json,
                                        open_file=self._fopen)
@@ -160,9 +159,9 @@ class OMFReader(object):
                     rv=__version__
                 )
             )
-        uid = str(uuid.UUID(bytes=struct.unpack('<16s', self._fopen.read(16))[0]))
+        uid = uuid.UUID(bytes=struct.unpack('<16s', self._fopen.read(16))[0])
         json_start = struct.unpack('<Q', self._fopen.read(8))[0]
-        return uid, json_start
+        return str(uid), json_start
 
     def read_json(self):
         """Gets json dictionary from project file"""
