@@ -27,6 +27,14 @@ Version: 0.9.0
 API library for Open Mining Format, a new standard for mining data backed by
 the `Global Mining Standards & Guidelines Group <http://www.globalminingstandards.org/>`_.
 
+.. warning::
+    **Pre-Release Notice**
+
+    This is a Beta release of the Open Mining Format (OMF) and the associated
+    Python API. The storage format and libraries might be changed in
+    backward-incompatible ways and are not subject to any SLA or deprecation
+    policy.
+
 Why?
 ----
 
