@@ -7,10 +7,6 @@ python:
 
 sudo: false
 
-env:
-  matrix:
-    - MODE=tests
-
 addons:
   apt:
     packages:
@@ -20,7 +16,10 @@ install:
   - pip install -r requirements_dev.txt
 
 script:
-  - make $MODE
+  - make tests
+  - if ! [ $TRAVIS_PYTHON_VERSION == "3.3" ]; then
+      make test-docs;
+    fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
