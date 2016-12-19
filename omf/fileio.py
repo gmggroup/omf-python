@@ -8,7 +8,7 @@ import json
 import struct
 import uuid
 
-from six import iteritems, string_types
+from six import string_types
 
 from .base import UidModel
 
