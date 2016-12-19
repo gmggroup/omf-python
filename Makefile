@@ -1,6 +1,6 @@
 PACKAGE_NAME=omf
 
-.PHONY: install docs coverage lint lint-html graphs tests
+.PHONY: install publish docs coverage lint lint-html graphs test-docs tests
 
 install:
 	python setup.py install
@@ -23,6 +23,9 @@ lint-html:
 
 graphs:
 	pyreverse -my -A -o pdf -p $(PACKAGE_NAME) $(PACKAGE_NAME)/**.py $(PACKAGE_NAME)/**/**.py
+
+test-docs:
+	nosetests --logging-level=INFO docs
 
 tests:
 	nosetests --logging-level=INFO --with-coverage --cover-package=$(PACKAGE_NAME)
