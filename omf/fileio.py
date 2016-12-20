@@ -47,12 +47,11 @@ class OMFWriter(object):
         if len(fname) < 4 or fname[-4:] != '.omf':
             fname = fname + '.omf'
         self.fname = fname
-        fopen = open(fname, 'wb')
-        self.initialize_header(fopen, project.uid)
-        self.project_json = project.serialize(open_file=fopen)
-        self.update_header(fopen)
-        fopen.write(json.dumps(self.project_json).encode('utf-8'))
-        fopen.close()
+        with open(fname, 'wb') as fopen:
+            self.initialize_header(fopen, project.uid)
+            self.project_json = project.serialize(open_file=fopen)
+            self.update_header(fopen)
+            fopen.write(json.dumps(self.project_json).encode('utf-8'))
 
     @staticmethod
     def initialize_header(fopen, uid):
