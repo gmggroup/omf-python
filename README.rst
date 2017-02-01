@@ -10,15 +10,15 @@ omf
     :alt: Documentation
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
-    :target: https://github.com/aranzgeo/omf/blob/master/LICENSE
+    :target: https://github.com/GMSGDataExchange/omf/blob/master/LICENSE
     :alt: MIT license
 
-.. image:: https://travis-ci.org/aranzgeo/omf.svg?branch=master
-    :target: https://travis-ci.org/aranzgeo/omf
+.. image:: https://travis-ci.org/GMSGDataExchange/omf.svg?branch=master
+    :target: https://travis-ci.org/GMSGDataExchange/omf
     :alt: Travis tests
 
-.. image:: https://codecov.io/gh/aranzgeo/omf/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/aranzgeo/omf
+.. image:: https://codecov.io/gh/GMSGDataExchange/omf/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/GMSGDataExchange/omf
     :alt: Code coverage
 
 
@@ -80,10 +80,10 @@ To install the repository, ensure that you have
 
     pip install omf
 
-Or from `github <https://github.com/aranzgeo/omf>`_:
+Or from `github <https://github.com/GMSGDataExchange/omf>`_:
 
 .. code::
 
-    git clone https://github.com/aranzgeo/omf.git
+    git clone https://github.com/GMSGDataExchange/omf.git
     cd omf
     pip install -e .

@@ -54,8 +54,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'omf'
-copyright = u'2016, ARANZ Geo Ltd'
-author = u'ARANZ Geo Ltd.'
+copyright = u'2017, Global Mining Standards and Guidelines Group'
+author = u'Global Mining Standards and Guidelines Group'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

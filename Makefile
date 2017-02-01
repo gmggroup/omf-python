@@ -1,6 +1,6 @@
 PACKAGE_NAME=omf
 
-.PHONY: install docs coverage lint lint-html graphs tests
+.PHONY: install docs coverage lint lint-html graphs tests test-docs
 
 install:
 	python setup.py install
@@ -27,3 +27,6 @@ graphs:
 tests:
 	nosetests --logging-level=INFO --with-coverage --cover-package=$(PACKAGE_NAME)
 	make lint
+
+test-docs:
+	nosetests --logging-level=INFO docs
