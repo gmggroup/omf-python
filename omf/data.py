@@ -115,7 +115,7 @@ class ScalarColormap(ContentModel):
             raise ValueError('Colormap gradient must be length 128')
 
     @properties.validator('limits')
-    def _check_limits_on_change(self, change):
+    def _check_limits_on_change(self, change):                                 #pylint: disable=no-self-use
         """Ensure limits are valid"""
         if change['value'][0] > change['value'][1]:
             raise ValueError('Colormap limits[0] must be <= limits[1]')
