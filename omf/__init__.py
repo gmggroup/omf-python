@@ -5,9 +5,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from .base import Project
-from .data import (ColorArray, ColorData, DateTimeArray, DateTimeData,
-                   Legend, MappedData, ScalarArray, ScalarData,
-                   StringArray, StringData, Vector2Array, Vector2Data,
+from .data import (ColorArray, ColorData,
+                   DateTimeArray, DateTimeColormap, DateTimeData,
+                   Legend, MappedData,
+                   ScalarArray, ScalarColormap, ScalarData,
+                   StringArray, StringData,
+                   Vector2Array, Vector2Data,
                    Vector3Array, Vector3Data)
 from .lineset import LineSetGeometry, LineSetElement
 from .pointset import PointSetGeometry, PointSetElement

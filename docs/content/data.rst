@@ -82,3 +82,13 @@ Legend
 ------
 
 .. autoclass:: omf.data.Legend
+
+ScalarColormap
+--------------
+
+.. autoclass:: omf.data.ScalarColormap
+
+DateTimeColormap
+----------------
+
+.. autoclass:: omf.data.DateTimeColormap
