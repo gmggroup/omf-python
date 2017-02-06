@@ -157,12 +157,13 @@ class TestDocEx(unittest.TestCase):
 
         serial_file = os.path.sep.join([dirname, 'out.omf'])
         omf.OMFWriter(proj, serial_file)
-        new_proj = omf.OMFReader(serial_file)
+        reader = omf.OMFReader(serial_file)
+        new_proj = reader.get_project()
 
         assert new_proj.validate()
         assert str(new_proj.elements[3].textures[0].uid) == \
             str(proj.elements[3].textures[0].uid)
-
+        del reader
         os.remove(serial_file)
 
 
