@@ -11,6 +11,9 @@ import properties
 
 class UidModel(properties.HasProperties):
     """UidModel is a HasProperties object with uid"""
+
+    _REGISTRY = dict()
+
     uid = properties.Uuid(
         'Unique identifier',
         serializer=lambda val, **kwargs: None,
