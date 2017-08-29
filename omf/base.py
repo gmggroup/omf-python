@@ -44,7 +44,7 @@ class UidModel(properties.HasProperties):
             ):
                 self._backend['date_modified'] = val.date_modified
 
-    def serialize(self, include_class=True, registry=None,
+    def serialize(self, include_class=True, registry=None,                     #pylint: disable=arguments-differ
                   skip_validation=False, **kwargs):
         """Serialize nested UidModels to a flat dictionary with pointers"""
         if registry is None:
@@ -65,7 +65,7 @@ class UidModel(properties.HasProperties):
         return str(self.uid)
 
     @classmethod
-    def deserialize(cls, uid, trusted=True, registry=None, **kwargs):
+    def deserialize(cls, uid, trusted=True, registry=None, **kwargs):          #pylint: disable=arguments-differ
         """Deserialize nested UidModels from flat pointer dictionary"""
         if registry is None:
             raise ValueError('no registry provided')
