@@ -18,7 +18,7 @@ class PointSetGeometry(ProjectElementGeometry):
         Vector3Array
     )
 
-    _valid_locations = ('vertices')
+    _valid_locations = ('vertices',)
 
     def location_length(self, location):
         """Return correct data length based on location"""
