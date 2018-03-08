@@ -150,7 +150,8 @@ class ProjectElement(ContentModel):
     data = properties.List(
         'Data defined on the element',
         prop=ProjectElementData,
-        required=False
+        required=False,
+        default=list,
     )
     color = properties.Color(
         'Solid color',
@@ -204,7 +205,8 @@ class Project(ContentModel):
     )
     elements = properties.List(
         'Project Elements',
-        prop=ProjectElement
+        prop=ProjectElement,
+        default=list,
     )
     origin = properties.Vector3(
         'Origin point for all elements in the project',

@@ -123,7 +123,8 @@ class SurfaceElement(ProjectElement):
     textures = properties.List(
         'Images mapped on the surface element',
         prop=ImageTexture,
-        required=False
+        required=False,
+        default=list,
     )
     subtype = properties.StringChoice(
         'Category of Surface',
