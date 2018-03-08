@@ -26,7 +26,7 @@ setup(
     packages=find_packages(exclude=('tests',)),
     install_requires=[
         'numpy>=1.7',
-        'properties>=0.3.0',
+        'properties==0.4.0',
         'pypng',
         'six',
         'vectormath',
