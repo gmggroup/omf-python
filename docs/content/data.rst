@@ -3,7 +3,7 @@
 Data
 ****
 
-ProjectElements include a list of ProjetElementData. These specify mesh location
+ProjectElements include a list of ProjectElementData. These specify mesh location
 ('vertices', 'faces', etc.) as well as the array, name, and
 description. See class descriptions below for specific types of Data.
 
