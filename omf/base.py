@@ -74,11 +74,11 @@ class UidModel(properties.HasProperties):
         if not isinstance(registry[uid], UidModel):
             date_created = registry[uid]['date_created']
             date_modified = registry[uid]['date_modified']
+            kwargs.update({'verbose': False})
             new_model = super(UidModel, cls).deserialize(
                 value=registry[uid],
                 registry=registry,
                 trusted=trusted,
-                verbose=False,
                 **kwargs
             )
             new_model._backend.update({
