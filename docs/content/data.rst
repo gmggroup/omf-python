@@ -4,7 +4,7 @@ Data
 ****
 
 ProjectElements include a list of ProjetElementData. These specify mesh location
-('vertices', 'faces', etc.) as well as the array, title, and
+('vertices', 'faces', etc.) as well as the array, name, and
 description. See class descriptions below for specific types of Data.
 
 Mapping array values to a mesh is staightforward for unstructured meshes
@@ -28,13 +28,13 @@ the surface contains a mesh with 9 vertices and 4 faces (ie a 2x2 square grid).
     >> my_surface = omf.Surface(...)
     >> ...
     >> my_node_data = omf.ScalarData(
-           title='Nine Numbers',
+           name='Nine Numbers',
            array=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
            location='vertices',
            order='c'  # Default
        )
     >> my_face_data = omf.ScalarData(
-           title='Four Numbers',
+           name='Four Numbers',
            array=[0.0, 1.0, 2.0, 3.0],
            location='faces'
        )

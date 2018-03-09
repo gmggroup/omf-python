@@ -161,7 +161,7 @@ Piecewise building example:
 
     ...
     pts = omf.PointSetElement()
-    pts.title='Random Points',
-    pts.mesh=omf.PointSetGeometry()
-    pts.mesh.vertices=np.random.rand(100, 3)
+    pts.name = 'Random Points',
+    pts.mesh = omf.PointSetGeometry()
+    pts.mesh.vertices = np.random.rand(100, 3)
     ...
