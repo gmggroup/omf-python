@@ -105,6 +105,9 @@ class OMFReader(object):
         self._uid, self._json_start = self.read_header()
         self._project_json = self.read_json()
 
+    def __del__(self):
+        self._fopen.close()
+
     def get_project(self, element_uids=None):
         """Fully loads project elements.
         Elements can be filtered by specifying their UUIDs.

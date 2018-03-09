@@ -44,7 +44,8 @@ class PointSetElement(ProjectElement):
     textures = properties.List(
         'Images mapped on the element',
         prop=ImageTexture,
-        required=False
+        required=False,
+        default=list,
     )
     subtype = properties.StringChoice(
         'Category of PointSet',

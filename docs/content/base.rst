@@ -24,6 +24,6 @@ Content Model
 Uid Model
 ---------
 
-UidModel gives all content a title, description, and unique uid.
+UidModel gives all content a name, description, and unique uid.
 
 .. autoclass:: omf.base.UidModel

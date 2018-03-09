@@ -75,7 +75,8 @@ class StringArray(ScalarArray):
     """Shared array of text strings"""
     array = properties.List(
         'Shared array of text strings',
-        prop=properties.String('')
+        prop=properties.String(''),
+        default=list,
     )
 
 
@@ -83,7 +84,8 @@ class DateTimeArray(ScalarArray):
     """Shared array of DateTimes"""
     array = properties.List(
         'Shared array of DateTimes',
-        prop=properties.DateTime('')
+        prop=properties.DateTime(''),
+        default=list,
     )
 
 
@@ -91,7 +93,8 @@ class ColorArray(ScalarArray):
     """Shared array of Colors"""
     array = properties.List(
         'Shared array of Colors',
-        prop=properties.Color('')
+        prop=properties.Color(''),
+        default=list,
     )
 
 
@@ -105,7 +108,8 @@ class ScalarColormap(ContentModel):
         'Data range associated with the gradient',
         prop=properties.Float(''),
         min_length=2,
-        max_length=2
+        max_length=2,
+        default=properties.undefined,
     )
 
     @properties.validator('gradient')
@@ -132,7 +136,8 @@ class DateTimeColormap(ScalarColormap):
         'Data range associated with the gradient',
         prop=properties.DateTime(''),
         min_length=2,
-        max_length=2
+        max_length=2,
+        default=properties.undefined,
     )
 
 
@@ -231,7 +236,11 @@ class MappedData(ProjectElementData):
         'indices into 1 or more legends for locations on a mesh',
         ScalarArray
     )
-    legends = properties.List('legends into which the indices map', Legend)
+    legends = properties.List(
+        'legends into which the indices map',
+        Legend,
+        default=list,
+    )
 
     @property
     def indices(self):
