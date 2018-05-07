@@ -65,10 +65,9 @@ used in the mining community.
 Connections
 -----------
 
-This library makes use of the `properties <https://github.com/3ptscience/properties>`_
+This library makes use of the `properties <https://github.com/seequent/properties>`_
 open-source project, which is designed and publicly supported by
-`3point Science <https://www.3ptscience.com>`_, an
-`ARANZ Geo Limited <http://www.aranzgeo.com>`_ company.
+`Seequent <https://seequent.com>`_.
 
 Installation
 ------------

@@ -32,7 +32,7 @@ setup(
         'vectormath==0.2.0',
     ],
     author='Global Mining Standards and Guidelines Group',
-    author_email='info@3ptscience.com',
+    author_email='it@seequent.com',
     description='API Library for Open Mining Format',
     long_description=LONG_DESCRIPTION,
     keywords='mining data interchange',
