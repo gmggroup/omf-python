@@ -29,7 +29,7 @@ setup(
         'properties==0.4.0',
         'pypng',
         'six',
-        'vectormath',
+        'vectormath==0.2.0',
     ],
     author='Global Mining Standards and Guidelines Group',
     author_email='info@3ptscience.com',
