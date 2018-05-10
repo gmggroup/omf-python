@@ -67,7 +67,7 @@ Connections
 
 This library makes use of the `properties <https://github.com/seequent/properties>`_
 open-source project, which is designed and publicly supported by
-`Seequent <https://seequent.com>`_.
+`Seequent <https://www.seequent.com>`_.
 
 Installation
 ------------
