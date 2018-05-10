@@ -21,6 +21,7 @@ def array_serializer(arr, open_file, **kwargs):                                #
         raise ValueError('file mode must be wb')
     if not isinstance(arr, np.ndarray):
         raise ValueError('Array must by numpy ndarray')
+    arr = arr.view(np.ndarray)
     if isinstance(arr.flatten()[0], np.floating):                              #pylint: disable=no-member
         dtype = '<f8'
         nan_mask = ~np.isnan(arr)

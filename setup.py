@@ -22,17 +22,17 @@ with open('README.rst') as f:
 
 setup(
     name='omf',
-    version='0.9.2',
+    version='0.9.3',
     packages=find_packages(exclude=('tests',)),
     install_requires=[
         'numpy>=1.7',
         'properties==0.4.0',
         'pypng',
         'six',
-        'vectormath',
+        'vectormath==0.2.0',
     ],
     author='Global Mining Standards and Guidelines Group',
-    author_email='info@3ptscience.com',
+    author_email='it@seequent.com',
     description='API Library for Open Mining Format',
     long_description=LONG_DESCRIPTION,
     keywords='mining data interchange',

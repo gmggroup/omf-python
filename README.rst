@@ -22,7 +22,7 @@ omf
     :alt: Code coverage
 
 
-Version: 0.9.2
+Version: 0.9.3
 
 API library for Open Mining Format, a new standard for mining data backed by
 the `Global Mining Standards & Guidelines Group <http://www.globalminingstandards.org/>`_.
@@ -65,10 +65,9 @@ used in the mining community.
 Connections
 -----------
 
-This library makes use of the `properties <https://github.com/3ptscience/properties>`_
+This library makes use of the `properties <https://github.com/seequent/properties>`_
 open-source project, which is designed and publicly supported by
-`3point Science <https://www.3ptscience.com>`_, an
-`ARANZ Geo Limited <http://www.aranzgeo.com>`_ company.
+`Seequent <https://www.seequent.com>`_.
 
 Installation
 ------------
