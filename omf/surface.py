@@ -64,12 +64,16 @@ class SurfaceGeometry(ProjectElementGeometry):
         pts.SetData(nps.numpy_to_vtk(self.vertices))
 
         # Generate the triangle cells
+        import time
+        start_time = time.time()
         for t in self.triangles:
+            # TODO: this desperately need optimizing
             triangle = vtk.vtkTriangle()
             triangle.GetPointIds().SetId(0, t[0])
             triangle.GetPointIds().SetId(1, t[1])
             triangle.GetPointIds().SetId(2, t[2])
             cells.InsertNextCell(triangle)
+        print("--- %s seconds ---" % (time.time() - start_time))
 
         output.SetPoints(pts)
         output.SetCells(vtk.VTK_TRIANGLE, cells)
