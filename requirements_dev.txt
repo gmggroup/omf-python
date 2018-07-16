@@ -1,4 +1,5 @@
 sphinx
 nose-cov
 pylint
+vtk
 -e .
