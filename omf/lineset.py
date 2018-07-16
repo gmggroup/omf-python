@@ -61,3 +61,27 @@ class LineSetElement(ProjectElement):
         choices=('line', 'borehole'),
         default='line'
     )
+
+    def toVTK(self):
+        """Convert the line set to a ``vtkPloyData`` data object."""
+        import vtk
+
+        output = vtk.vtkPolyData()
+        cells = vtk.vtkCellArray()
+        pts = vtk.vtkPoints()
+
+        for v in self.geometry.vertices:
+            pts.InsertNextPoint(v[0],v[1],v[2])
+
+        for i in range(len(self.geometry.segments)-1):
+            seg = self.geometry.segments[i]
+            aLine = vtk.vtkLine()
+            aLine.GetPointIds().SetId(0, seg[0])
+            aLine.GetPointIds().SetId(1, seg[1])
+            cells.InsertNextCell(aLine)
+
+        output.SetPoints(pts)
+        output.SetLines(cells)
+
+        # TODO: Add cell data to allow coloring by line:
+        return output

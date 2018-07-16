@@ -49,6 +49,32 @@ class SurfaceGeometry(ProjectElementGeometry):
             raise ValueError('Triangles expects more vertices than provided')
         return True
 
+    def toVTK(self):
+        """Convert the triangulated surface to a ``vtkUnstructuredGrid`` object
+        """
+        import vtk
+        from vtk.util import numpy_support as nps
+
+        output = vtk.vtkUnstructuredGrid()
+        pts = vtk.vtkPoints()
+        cells = vtk.vtkCellArray()
+
+        # Generate the points
+        for v in self.vertices:
+            pts.InsertNextPoint(v[0], v[1], v[2])
+
+        # Generate the triangle cells
+        for t in self.triangles:
+            triangle = vtk.vtkTriangle()
+            triangle.GetPointIds().SetId(0, t[0])
+            triangle.GetPointIds().SetId(1, t[1])
+            triangle.GetPointIds().SetId(2, t[2])
+            cells.InsertNextCell(triangle)
+
+        output.SetPoints(pts)
+        output.SetCells(vtk.VTK_TRIANGLE, cells)
+        return output
+
 
 class SurfaceGridGeometry(ProjectElementGeometry):
     """Contains spatial information of a 2D grid"""
@@ -113,6 +139,20 @@ class SurfaceGridGeometry(ProjectElementGeometry):
             )
         return True
 
+    def toVTK(self):
+        """Convert the 2D grid to a ``vtkStructuredGrid`` object."""
+        import vtk
+        from vtk.util import numpy_support as nps
+
+        output = vtk.vtkStructuredGrid()
+
+        # TODO: build!
+        # Build out all nodes in the mesh
+
+        # Add to output
+
+        return output
+
 
 class SurfaceElement(ProjectElement):
     """Contains mesh, data, textures, and options of a surface"""
@@ -131,3 +171,9 @@ class SurfaceElement(ProjectElement):
         choices=('surface',),
         default='surface'
     )
+
+    def toVTK(self):
+        """Convert the surface to a its appropriate VTK data object type."""
+        output = self.geometry.toVTK()
+        # TODO: handle textures
+        return output

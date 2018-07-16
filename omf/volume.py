@@ -71,6 +71,25 @@ class VolumeGridGeometry(ProjectElementGeometry):
             raise ValueError('axis_u, axis_v, and axis_w must be orthogonal')
         return True
 
+    def toVTK(self):
+        """Convert the 3D gridded volume to a ``vtkStructuredGrid``
+        (or a ``vtkRectilinearGrid`` when apprropriate) object contatining the
+        2D surface.
+        """
+        import vtk
+        from vtk.util import numpy_support as nps
+
+        # if axis orientations are standard then use a vtkRectilinearGrid
+        #- otherwise use a vtkStructuredGrid
+        output = vtk.vtkStructuredGrid()
+
+        # TODO: build!
+        # Build out all nodes in the mesh
+
+        # Add to output
+
+        return output
+
 
 class VolumeElement(ProjectElement):
     """Contains mesh, data, and options of a volume"""
@@ -83,3 +102,8 @@ class VolumeElement(ProjectElement):
         choices=('volume',),
         default='volume'
     )
+
+    def toVTK(self):
+        """Convert the volume element to a VTK data object."""
+        output = self.geometry.toVTK()
+        return output

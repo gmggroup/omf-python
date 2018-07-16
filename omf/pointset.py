@@ -52,3 +52,34 @@ class PointSetElement(ProjectElement):
         choices=('point', 'collar', 'blasthole'),
         default='point'
     )
+
+    def toVTK(self):
+        """Convert the point set to a ``vtkPloyData`` data object
+        which contatins the point set."""
+        import vtk
+        import numpy as np
+        from vtk.util import numpy_support as nps
+
+        output = vtk.vtkPolyData()
+        points = self.geometry.vertices
+        npoints = self.geometry.num_nodes
+
+        # Make VTK cells array
+        cells = np.hstack((np.ones((npoints, 1)),
+                           np.arange(npoints).reshape(-1, 1)))
+        cells = np.ascontiguousarray(cells, dtype=np.int64)
+        vtkcells = vtk.vtkCellArray()
+        vtkcells.SetCells(npoints, nps.numpy_to_vtkIdTypeArray(cells, deep=True))
+
+        # Convert points to vtk object
+        pts = vtk.vtkPoints()
+        for r in points:
+            pts.InsertNextPoint(r[0],r[1],r[2])
+
+        # Create polydata
+        pdata = vtk.vtkPolyData()
+        pdata.SetPoints(pts)
+        pdata.SetVerts(vtkcells)
+
+        # TODO: handle textures
+        return pdata

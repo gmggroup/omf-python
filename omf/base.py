@@ -184,6 +184,11 @@ class ProjectElement(ContentModel):
                 )
         return True
 
+    def toVTK(self):
+        """Convert the project element to a VTK data structure.
+        This must be overridden by subclasses."""
+        raise NotImplementedError()
+
 
 class Project(ContentModel):
     """OMF Project for serializing to .omf file"""
