@@ -70,18 +70,32 @@ class LineSetElement(ProjectElement):
         cells = vtk.vtkCellArray()
         pts = vtk.vtkPoints()
 
+        # Make a data array for grouping the line segments
+        data = vtk.vtkIntArray()
+        data.SetNumberOfValues(self.geometry.num_cells - 1)
+        data.SetName('Line Index')
+
+        # Generate VTK Points from the vertices
         for v in self.geometry.vertices:
             pts.InsertNextPoint(v[0],v[1],v[2])
 
+        last = self.geometry.segments[0][0]
+        segi = 0
         for i in range(len(self.geometry.segments)-1):
+            # Create a VTK Line cell for each segment
             seg = self.geometry.segments[i]
             aLine = vtk.vtkLine()
             aLine.GetPointIds().SetId(0, seg[0])
             aLine.GetPointIds().SetId(1, seg[1])
             cells.InsertNextCell(aLine)
+            # Group segments by connectivity:
+            if seg[0] != last:
+                segi += 1
+            last = seg[1]
+            data.SetValue(i, segi)
 
+        # Generate the output
         output.SetPoints(pts)
         output.SetLines(cells)
-
-        # TODO: Add cell data to allow coloring by line:
+        output.GetCellData().AddArray(data)
         return output
