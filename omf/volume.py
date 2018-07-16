@@ -88,7 +88,7 @@ class VolumeGridGeometry(ProjectElementGeometry):
         ox, oy, oz = self.origin
 
         def checkOrientation():
-            if np.allclose(self.axis_u, (1,0,0)) and np.allclose(self.axis_v, (0,1,0)) and np.allclose(self.axis_w, (0,0,1)):
+            if np.allclose(self.axis_u, (1, 0, 0)) and np.allclose(self.axis_v, (0, 1, 0)) and np.allclose(self.axis_w, (0, 0, 1)):
                 return True
             return False
 
@@ -119,7 +119,7 @@ class VolumeGridGeometry(ProjectElementGeometry):
 
         # Build out all nodes in the mesh
         xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
-        points = np.stack( (xx.flatten(), yy.flatten(), zz.flatten()) ).T
+        points = np.stack((xx.flatten(), yy.flatten(), zz.flatten())).T
 
         # Rotate the points based on the axis orientations
         rmtx = rotationMatrix()
@@ -127,8 +127,8 @@ class VolumeGridGeometry(ProjectElementGeometry):
 
         # Convert points to vtk object
         pts = vtk.vtkPoints()
-        for r in points:
-            pts.InsertNextPoint(r[0], r[1], r[2])
+        pts.SetNumberOfPoints(len(points))
+        pts.SetData(nps.numpy_to_vtk(points))
         # Now build the output
         output.SetPoints(pts)
 

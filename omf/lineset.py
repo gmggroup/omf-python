@@ -77,8 +77,8 @@ class LineSetElement(ProjectElement):
         indexArr.SetName('Line Index')
 
         # Generate VTK Points from the vertices
-        for v in self.geometry.vertices:
-            pts.InsertNextPoint(v[0],v[1],v[2])
+        pts.SetNumberOfPoints(self.geometry.num_nodes)
+        pts.SetData(nps.numpy_to_vtk(self.geometry.vertices))
 
         last = self.geometry.segments[0][0]
         segi = 0

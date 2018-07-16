@@ -72,8 +72,8 @@ class PointSetElement(ProjectElement):
 
         # Convert points to vtk object
         pts = vtk.vtkPoints()
-        for r in points:
-            pts.InsertNextPoint(r[0], r[1], r[2])
+        pts.SetNumberOfPoints(self.geometry.num_nodes)
+        pts.SetData(nps.numpy_to_vtk(points))
 
         # Create polydata
         output = vtk.vtkPolyData()

@@ -60,8 +60,8 @@ class SurfaceGeometry(ProjectElementGeometry):
         cells = vtk.vtkCellArray()
 
         # Generate the points
-        for v in self.vertices:
-            pts.InsertNextPoint(v[0], v[1], v[2])
+        pts.SetNumberOfPoints(self.num_nodes)
+        pts.SetData(nps.numpy_to_vtk(self.vertices))
 
         # Generate the triangle cells
         for t in self.triangles:
