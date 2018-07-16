@@ -65,15 +65,16 @@ class LineSetElement(ProjectElement):
     def toVTK(self):
         """Convert the line set to a ``vtkPloyData`` data object."""
         import vtk
+        from vtk.util import numpy_support as nps
 
         output = vtk.vtkPolyData()
         cells = vtk.vtkCellArray()
         pts = vtk.vtkPoints()
 
         # Make a data array for grouping the line segments
-        data = vtk.vtkIntArray()
-        data.SetNumberOfValues(self.geometry.num_cells - 1)
-        data.SetName('Line Index')
+        indexArr = vtk.vtkIntArray()
+        indexArr.SetNumberOfValues(self.geometry.num_cells)
+        indexArr.SetName('Line Index')
 
         # Generate VTK Points from the vertices
         for v in self.geometry.vertices:
@@ -81,7 +82,7 @@ class LineSetElement(ProjectElement):
 
         last = self.geometry.segments[0][0]
         segi = 0
-        for i in range(len(self.geometry.segments)-1):
+        for i in range(len(self.geometry.segments)):
             # Create a VTK Line cell for each segment
             seg = self.geometry.segments[i]
             aLine = vtk.vtkLine()
@@ -92,10 +93,20 @@ class LineSetElement(ProjectElement):
             if seg[0] != last:
                 segi += 1
             last = seg[1]
-            data.SetValue(i, segi)
+            indexArr.SetValue(i, segi)
 
         # Generate the output
         output.SetPoints(pts)
         output.SetLines(cells)
-        output.GetCellData().AddArray(data)
+        output.GetCellData().AddArray(indexArr)
+
+        # Now add data to lines:
+        for data in self.data:
+            arr = data.array.array
+            c = nps.numpy_to_vtk(num_array=arr)
+            c.SetName(data.name)
+            output.GetCellData().AddArray(c)
+
+        # TODO: if subtype is borehole make a tube
+
         return output

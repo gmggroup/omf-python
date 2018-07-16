@@ -60,7 +60,6 @@ class PointSetElement(ProjectElement):
         import numpy as np
         from vtk.util import numpy_support as nps
 
-        output = vtk.vtkPolyData()
         points = self.geometry.vertices
         npoints = self.geometry.num_nodes
 
@@ -74,12 +73,20 @@ class PointSetElement(ProjectElement):
         # Convert points to vtk object
         pts = vtk.vtkPoints()
         for r in points:
-            pts.InsertNextPoint(r[0],r[1],r[2])
+            pts.InsertNextPoint(r[0], r[1], r[2])
 
         # Create polydata
-        pdata = vtk.vtkPolyData()
-        pdata.SetPoints(pts)
-        pdata.SetVerts(vtkcells)
+        output = vtk.vtkPolyData()
+        output.SetPoints(pts)
+        output.SetVerts(vtkcells)
 
         # TODO: handle textures
-        return pdata
+
+        # Now add point data:
+        for data in self.data:
+            arr = data.array.array
+            c = nps.numpy_to_vtk(num_array=arr)
+            c.SetName(data.name)
+            output.GetPointData().AddArray(c)
+
+        return output

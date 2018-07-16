@@ -174,6 +174,17 @@ class SurfaceElement(ProjectElement):
 
     def toVTK(self):
         """Convert the surface to a its appropriate VTK data object type."""
+        from vtk.util import numpy_support as nps
+
         output = self.geometry.toVTK()
+
         # TODO: handle textures
+
+        # Now add point data:
+        for data in self.data:
+            arr = data.array.array
+            c = nps.numpy_to_vtk(num_array=arr)
+            c.SetName(data.name)
+            output.GetPointData().AddArray(c)
+
         return output
