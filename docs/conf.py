@@ -54,8 +54,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'omf'
-copyright = u'2017, Global Mining Standards and Guidelines Group'
-author = u'Global Mining Standards and Guidelines Group'
+copyright = u'2017, Global Mining Guidelines Group'
+author = u'Global Mining Guidelines Group'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -244,7 +244,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'omf.tex', u'omf Documentation',
-     u'Global Mining Standards and Guidelines Group', 'manual'),
+     u'Global Mining Guidelines Group', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
