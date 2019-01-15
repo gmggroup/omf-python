@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from .base import Project
 from .data import (ColorArray, ColorData,
                    DateTimeArray, DateTimeColormap, DateTimeData,
+                   Int2Array, Int3Array,
                    Legend, MappedData,
                    ScalarArray, ScalarColormap, ScalarData,
                    StringArray, StringData,
