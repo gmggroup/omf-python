@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from collections import OrderedDict
 import datetime
 
 import properties
@@ -11,6 +12,8 @@ import properties
 
 class UidModel(properties.HasProperties):
     """UidModel is a HasProperties object with uid"""
+    _REGISTRY = OrderedDict()
+
     uid = properties.Uuid(
         'Unique identifier',
         serializer=lambda val, **kwargs: None,
