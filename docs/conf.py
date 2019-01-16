@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'omf'
-copyright = u'2017, Global Mining Guidelines Group'
+copyright = u'2019, Global Mining Guidelines Group'
 author = u'Global Mining Guidelines Group'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -288,7 +288,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'omf', u'omf Documentation',
-     author, 'omf', 'One line description of project.',
+     author, 'omf', 'omf Documentation.',
      'Miscellaneous'),
 ]
 
@@ -310,7 +310,7 @@ intersphinx_mapping = {'https://docs.python.org/': None,
                        # 'http://docs.scipy.org/doc/numpy/': None,
                        # 'http://docs.scipy.org/doc/scipy/reference/': None,
                        'http://propertiespy.readthedocs.io/en/latest/': None}
-linkcheck_ignore = ['http://www.globalminingstandards.org/']
+linkcheck_ignore = ['https://gmggroup.org']
 linkcheck_retries = 10
 
 
