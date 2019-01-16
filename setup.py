@@ -26,10 +26,10 @@ setup(
     packages=find_packages(exclude=('tests',)),
     install_requires=[
         'numpy>=1.7',
-        'properties==0.4.0',
+        'properties>=0.5.5',
         'pypng',
         'six',
-        'vectormath==0.2.0',
+        'vectormath>=0.2.0',
     ],
     author='Global Mining Guidelines Group',
     author_email='it@seequent.com',
