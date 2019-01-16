@@ -21,7 +21,7 @@ from .volume import VolumeGridGeometry, VolumeElement
 
 from .fileio import OMFReader, OMFWriter
 
-__version__ = '0.9.3'
+__version__ = '1.0.0'
 __author__ = 'Global Mining Guidelines Group'
 __license__ = 'MIT License'
 __copyright__ = 'Copyright 2019 Global Mining Guidelines Group'
