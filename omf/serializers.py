@@ -43,7 +43,7 @@ def array_serializer(arr, open_file, **kwargs):                                #
     index['length'] = open_file.tell() - index['start']
     return index
 
-class array_deserializer(object):                                              #pylint: disable=invalid-name, too-few-public-methods, useless-object-inheritance
+class array_deserializer(object):                                              #pylint: disable=invalid-name, too-few-public-methods
     """Convert binary to numpy array based on input shape"""
 
     def __init__(self, shape):

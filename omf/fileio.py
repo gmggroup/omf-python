@@ -15,7 +15,7 @@ from .base import UidModel
 COMPATIBILITY_VERSION = b'OMF-v0.9.0'
 
 
-class OMFWriter(object):                                                       #pylint: disable=useless-object-inheritance
+class OMFWriter(object):
     """OMFWriter serializes a OMF project to a file
 
     .. code::
@@ -81,7 +81,7 @@ class OMFWriter(object):                                                       #
         fopen.seek(json_start)
 
 
-class OMFReader(object):                                                       #pylint: disable=useless-object-inheritance
+class OMFReader(object):
     """OMFReader deserializes an OMF file.
 
     .. code::
