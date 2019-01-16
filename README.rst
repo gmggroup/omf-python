@@ -86,3 +86,13 @@ Or from `github <https://github.com/gmggroup/omf>`_:
     git clone https://github.com/gmggroup/omf.git
     cd omf
     pip install -e .
+    
+
+3D Visualization
+----------------
+
+To easily visualize OMF project files and data objects in a pure Python environment, check out ``omfvtk`` (`OMF-VTK`_) which provides tools for creating interactive renderings of OMF datasets using ``vtki`` (the vtkInterface_).
+
+.. _OMF-VTK: https://github.com/OpenGeoVis/omfvtk
+
+.. _vtkInterface: https://github.com/akaszynski/vtki
