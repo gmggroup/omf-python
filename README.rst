@@ -10,22 +10,22 @@ omf
     :alt: Documentation
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
-    :target: https://github.com/GMSGDataExchange/omf/blob/master/LICENSE
+    :target: https://github.com/gmggroup/omf/blob/master/LICENSE
     :alt: MIT license
 
-.. image:: https://travis-ci.org/GMSGDataExchange/omf.svg?branch=master
-    :target: https://travis-ci.org/GMSGDataExchange/omf
+.. image:: https://travis-ci.org/gmggroup/omf.svg?branch=master
+    :target: https://travis-ci.org/gmggroup/omf
     :alt: Travis tests
 
-.. image:: https://codecov.io/gh/GMSGDataExchange/omf/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/GMSGDataExchange/omf
+.. image:: https://codecov.io/gh/gmggroup/omf/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/gmggroup/omf
     :alt: Code coverage
 
 
-Version: 0.9.3
+Version: 1.0.0
 
 API library for Open Mining Format, a new standard for mining data backed by
-the `Global Mining Standards & Guidelines Group <http://www.globalminingstandards.org/>`_.
+the `Global Mining Guidelines Group <https://gmggroup.org>`_.
 
 .. warning::
     **Pre-Release Notice**
@@ -79,10 +79,10 @@ To install the repository, ensure that you have
 
     pip install omf
 
-Or from `github <https://github.com/GMSGDataExchange/omf>`_:
+Or from `github <https://github.com/gmggroup/omf>`_:
 
 .. code::
 
-    git clone https://github.com/GMSGDataExchange/omf.git
+    git clone https://github.com/gmggroup/omf.git
     cd omf
     pip install -e .

@@ -12,7 +12,7 @@ from six import string_types
 
 from .base import UidModel
 
-__version__ = b'OMF-v0.9.0'
+COMPATIBILITY_VERSION = b'OMF-v0.9.0'
 
 
 class OMFWriter(object):
@@ -66,7 +66,9 @@ class OMFWriter(object):
         """
         fopen.seek(0, 0)
         fopen.write(b'\x84\x83\x82\x81')
-        fopen.write(struct.pack('<32s', __version__.ljust(32, b'\x00')))
+        fopen.write(
+            struct.pack('<32s', COMPATIBILITY_VERSION.ljust(32, b'\x00'))
+        )
         fopen.write(struct.pack('<16s', uid.bytes))
         fopen.seek(8, 1)
 
@@ -152,13 +154,13 @@ class OMFReader(object):
         if self._fopen.read(4) != b'\x84\x83\x82\x81':
             raise ValueError('Invalid OMF file')
         file_version = struct.unpack('<32s', self._fopen.read(32))[0]
-        file_version = file_version[0:len(__version__)]
-        if file_version != __version__:
+        file_version = file_version[0:len(COMPATIBILITY_VERSION)]
+        if file_version != COMPATIBILITY_VERSION:
             raise ValueError(
                 'Version mismatch: file version {fv}, '
                 'reader version {rv}'.format(
                     fv=file_version,
-                    rv=__version__
+                    rv=COMPATIBILITY_VERSION
                 )
             )
         uid = uuid.UUID(bytes=struct.unpack('<16s', self._fopen.read(16))[0])
