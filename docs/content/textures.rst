@@ -17,7 +17,7 @@ extent vectors for the plane defining where images rests.
 The `axis_*` properties define the extent of that image out from the origin. 
 Given a rectangular PNG image, the `origin` is the bottom left, 
 `origin + axis_u` is the bottom right, and `origin + axis_v` is the top left. 
-This allows teh image to be rotated and/or skewed. 
+This allows the image to be rotated and/or skewed. 
 These values are independent of the corresponding Surface; in fact, there is 
 nothing requiring the image to actually align with the Surface.
 
