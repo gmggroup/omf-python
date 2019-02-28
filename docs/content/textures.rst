@@ -11,8 +11,15 @@ are mapped laterally to the element position.
 
 .. image:: /images/ImageTexture.png
 
-Like data, multiple textures can be applied to a element. Simply provide a
-list of textures.
+Like data, multiple textures can be applied to a element; simply provide a
+list of textures. Each of these textures provides an origin point and two 
+extent vectors for the plane defining where images rests. 
+The `axis_*` properties define the extent of that image out from the origin. 
+Given a rectangular PNG image, the `origin` is the bottom left, 
+`origin + axis_u` is the bottom right, and `origin + axis_v` is the top left. 
+This allows the image to be rotated and/or skewed. 
+These values are independent of the corresponding Surface; in fact, there is 
+nothing requiring the image to actually align with the Surface.
 
 .. code:: python
 
@@ -20,15 +27,15 @@ list of textures.
     >> my_surface = omf.SurfaceElement(...)
     >> ...
     >> my_tex_1 = omf.ImageTexture(
-           O=[0.0, 0.0, 0.0],
-           U=[1.0, 0.0, 0.0],
-           V=[0.0, 1.0, 0.0],
+           origin=[0.0, 0.0, 0.0],
+           axis_u=[1.0, 0.0, 0.0],
+           axis_v=[0.0, 1.0, 0.0],
            image='image1.png'
        )
     >> my_tex_2 = omf.ImageTexture(
-           O=[0.0, 0.0, 0.0],
-           U=[1.0, 0.0, 0.0],
-           V=[0.0, 0.0, 1.0],
+           origin=[0.0, 0.0, 0.0],
+           axis_u=[1.0, 0.0, 0.0],
+           axis_v=[0.0, 0.0, 1.0],
            image='image2.png'
        )
     >> my_surface.textures = [
