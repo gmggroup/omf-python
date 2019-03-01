@@ -33,19 +33,19 @@ class LineSetGeometry(ProjectElementGeometry):
     @property
     def num_nodes(self):
         """Number of nodes (vertices)"""
-        return len(self.vertices)
+        return len(self.vertices.array)
 
     @property
     def num_cells(self):
         """Number of cells (segments)"""
-        return len(self.segments)
+        return len(self.segments.array)
 
     @properties.validator
     def _validate_mesh(self):
         """Ensures segment indices are valid"""
-        if np.min(self.segments) < 0:
+        if np.min(self.segments.array) < 0:
             raise ValueError('Segments may only have positive integers')
-        if np.max(self.segments) >= len(self.vertices):
+        if np.max(self.segments.array) >= len(self.vertices.array):
             raise ValueError('Segments expects more vertices than provided')
         return True
 

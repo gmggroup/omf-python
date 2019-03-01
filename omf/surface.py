@@ -43,9 +43,9 @@ class SurfaceGeometry(ProjectElementGeometry):
 
     @properties.validator
     def _validate_mesh(self):
-        if np.min(self.triangles) < 0:
+        if np.min(self.triangles.array) < 0:
             raise ValueError('Triangles may only have positive integers')
-        if np.max(self.triangles) >= len(self.vertices):
+        if np.max(self.triangles.array) >= len(self.vertices.array):
             raise ValueError('Triangles expects more vertices than provided')
         return True
 
@@ -103,7 +103,7 @@ class SurfaceGridGeometry(ProjectElementGeometry):
             raise ValueError('axis_u and axis_v must be orthogonal')
         if self.offset_w is properties.undefined or self.offset_w is None:
             return True
-        if len(self.offset_w) != self.num_nodes:
+        if len(self.offset_w.array) != self.num_nodes:
             raise ValueError(
                 'Length of offset_w, {zlen}, must equal number of nodes, '
                 '{nnode}'.format(
