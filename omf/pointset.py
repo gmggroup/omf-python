@@ -27,7 +27,7 @@ class PointSetGeometry(ProjectElementGeometry):
     @property
     def num_nodes(self):
         """Number of nodes (vertices)"""
-        return len(self.vertices)
+        return len(self.vertices.array)
 
     @property
     def num_cells(self):
