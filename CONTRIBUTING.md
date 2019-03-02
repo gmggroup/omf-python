@@ -30,7 +30,7 @@ Any questions/feedback/problems should be raised as
 existing, relevant issues or
 [create a new issue](https://github.com/gmggroup/omf/issues/new). There
 is no restriction on what issues are "supposed to" look like; this is
-the place for anyone to voice anything about OMF. Examples include:
+a place for anyone to voice anything about OMF. Examples include:
 - detailed technical questions around implementation
 - problems encountered when attempting to support OMF
 - confusion around the documentation
@@ -40,9 +40,10 @@ the place for anyone to voice anything about OMF. Examples include:
 - etc!
 
 If the question is non-technical, follow up may happen outside of
-GitHub, but this is the place to start.
+GitHub, but this is a place to start.
 
-And, please, read and follow our [Code of Conduct](code_of_conduct.md).
+To ensure the OMF community remains welcoming and productive, please read and
+follow our [Code of Conduct](code_of_conduct.md).
 
 ## <a name="code"></a>Contributing to code development
 
@@ -63,8 +64,8 @@ When working on your contribution, you may
 your personal or company GitHub organization and develop there.
 Alternatively, if you are interested in being identified as a contributor
 to the [GMG Group GitHub organization](https://github.com/gmggroup),
-reach out to [fwkoch](https://github.com/fwkoch) (note: this is
-distinct from [GMG Group membership](#membership)). Once you are
+reach out to [*info@gmggroup.org*](mailto:info@gmggroup.org) (note: this
+is distinct from [GMG Group membership](#membership)). Once you are
 a contributor on GitHub, you may
 [create feature branches](https://help.github.com/en/articles/creating-and-deleting-branches-within-your-repository)
 directly in the GMG Group OMF repository.
@@ -78,9 +79,9 @@ When submitting a pull request, please base off the `dev` branch.
 Contributions will be collected here, then version-bumped and deployed
 via pull request from `dev` to `master` as appropriate.
 
-Finally, everyone appreciates unit tests, code documentation, consistent
-style, and please always read and follow our
-[Code of Conduct](code_of_conduct.md).
+Finally, everyone appreciates unit tests, code documentation, and
+consistent style. And, to ensure the OMF community remains welcoming
+and productive, read and follow our [Code of Conduct](code_of_conduct.md).
 
 ### <a name="docs"></a>Contributing documentation and examples
 
