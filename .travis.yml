@@ -18,11 +18,13 @@ script:
   - make docker-docs
 
 after_success:
+  - pip install coverage
+  - sed -i "s+/usr/src/app+${PWD}+g" .coverage
   - bash <(curl -s https://codecov.io/bash)
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a $TRAVIS_PYTHON_VERSION == "2.7" -a -n "$(grep version setup.py | cut -d \' -f 2 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" ]; then
+  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" -a -n "$(grep version setup.py | cut -d \' -f 2 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$')" ]; then
       make publish;
     fi
-  - if [ "$TRAVIS_BRANCH" = "beta" -a "$TRAVIS_PULL_REQUEST" = "false" -a $TRAVIS_PYTHON_VERSION == "2.7" -a -n "$(grep version setup.py | cut -d \' -f 2 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$')" ]; then
+  - if [ "$TRAVIS_BRANCH" = "beta" -a "$TRAVIS_PULL_REQUEST" = "false" -a -n "$(grep version setup.py | cut -d \' -f 2 | grep -E '^[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$')" ]; then
       make publish;
     fi
 
