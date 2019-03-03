@@ -4,3 +4,4 @@ __pycache__/
 *.egg-info/
 
 docs/_build/
+notebooks/.ipynb_checkpoints
