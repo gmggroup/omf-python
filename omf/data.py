@@ -253,6 +253,8 @@ class MappedData(ProjectElementData):
 
     def value_dict(self, i):
         """Return a dictionary of legend entries based on index"""
+        if self.indices[i] == -1:
+            return None
         entry = {legend.name: legend.values[self.indices[i]]                    #pylint: disable=unsubscriptable-object
                  for legend in self.legends}                                    #pylint: disable=not-an-iterable
         return entry
