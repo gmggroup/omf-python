@@ -13,7 +13,7 @@ import omf
 
 @pytest.mark.parametrize(('arr', 'mode'), [
     ([1, 2, 3], 'wb'),
-    (['a', 'b', 'c'], 'wb'),
+    (np.array(['a', 'b', 'c']), 'wb'),
     (np.array([1, 2, 3]), 'w'),
 ])
 def test_bad_array_serializer(arr, mode):
@@ -43,6 +43,15 @@ def test_array_serializer(arr, dtype):
     assert output['start'] == 0
     assert output['dtype'] == dtype
     assert output['length'] == 0
+
+def test_array_serializer_none():
+    open_file = mock.MagicMock(
+        mode='wb',
+        write=lambda _: None,
+        tell=lambda: 0,
+    )
+    output = omf.serializers.array_serializer(None, open_file)
+    assert output is None
 
 
 def test_bad_shape():
