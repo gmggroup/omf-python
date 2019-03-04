@@ -64,6 +64,7 @@ def test_mapped_data():
     mdata.array.array[0] = -10
     with pytest.raises(ValueError):
         mdata.validate()
+    mdata.array.array[0] = 0
     mdata.legends.append(
         omf.data.Legend(
             name='short',
