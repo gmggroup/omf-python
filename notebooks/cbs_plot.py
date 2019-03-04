@@ -113,3 +113,19 @@ def plot_osbm(osbm, ax=None):
                 continue
             plot_block(block, parent_corner)
     
+    
+def plot_asbm(asbm, ax=None):
+    if ax is None:
+        plt.figure()
+        ax = plt.subplot(111, projection='3d')
+    
+    def plot_block(centroid, size):
+        cnr = [
+            c - s / 2.0
+            for c, s in zip(centroid, size)
+        ]
+        _plot_rbm([1, 1, 1], size, cnr, ax=ax)
+        
+    for centroids, sizes in asbm._get_lists():
+        for i in range(centroids.shape[0]):
+            plot_block(centroids[i, :], sizes[i, :])

@@ -98,6 +98,9 @@ class BaseCompressedBlockStorage(properties.HasProperties):
         self.compressed_block_storage # assert that _cbs exists
         return (self._cbs[1:] - self._cbs[:-1]) > 1
     
+    def _get_starting_cbs(self):
+        return np.arange(self.num_parent_blocks + 1, dtype='uint32')
+    
     @property
     def compressed_block_storage(self):
         # Need the block counts to exist
@@ -115,7 +118,7 @@ class BaseCompressedBlockStorage(properties.HasProperties):
         # If the sub block storage does not exist, create it
         if not hasattr(self, '_cbs'):
             # Each parent cell has a single attribute before refinement
-            self._cbs = np.arange(self.num_parent_blocks + 1)
+            self._cbs = self._get_starting_cbs()
         return self._cbs
     
     def _get_parent_index(self, ijk):
@@ -213,3 +216,50 @@ class OctreeSubBlockModel(BaseMetadata, BaseOrientation, BaseCompressedBlockStor
         self._cbs[parent_index + 1:] += 7
         
         return children
+    
+class ArbitrarySubBlockModel(BaseMetadata, BaseOrientation, BaseCompressedBlockStorage):
+    
+    def _get_starting_cbs(self):
+        """Unlike octree and rsbm, this has zero sub-blocks to start with."""
+        return np.zeros(self.num_parent_blocks + 1, dtype='uint32')
+    
+    def _get_lists(self):
+        """Want a set before we create the array.
+        This may not be useful for less dynamic implementations.
+        """
+        if not hasattr(self, '_lists'):
+            # Do your part for the planet:
+            # Plant trees in every parent block.
+            self._lists = [
+                (np.zeros((0, 3)), np.zeros((0, 3)))
+                for _ in range(self.num_parent_blocks)
+            ]
+        return self._lists
+    
+    def _add_sub_blocks(self, ijk, new_centroids, new_sizes):
+        self.compressed_block_storage # assert that _cbs exists
+        parent_index = self._get_parent_index(ijk)
+        centroids, sizes = self._get_lists()[parent_index]
+        
+        if not isinstance(new_centroids, np.ndarray):
+            new_centroids = np.array(new_centroids)
+        new_centroids = new_centroids.reshape((-1, 3))
+            
+        if not isinstance(new_sizes, np.ndarray):
+            new_sizes = np.array(new_sizes)
+        new_sizes = new_sizes.reshape((-1, 3))
+
+        assert (
+            (new_centroids.size % 3 == 0) & 
+            (new_sizes.size % 3 == 0) & 
+            (new_centroids.size == new_sizes.size)
+        )
+        
+        # TODO: Check that the centroid exists in the block
+        
+        self._lists[parent_index] = (
+            np.r_[centroids, new_centroids],
+            np.r_[sizes, new_sizes],
+        )
+        
+        self._cbs[parent_index + 1:] += new_sizes.size // 3
