@@ -5,7 +5,7 @@
 When attempting to overcome challenges alone, the obstacles can seem
 monumental. When approached together, however, anything is possible.
 
-The GMG group is a community of mining companies, OEMs, OTMs, research
+The GMG Group is a community of mining companies, OEMs, OTMs, research
 organizations, and consultants from around the world who recognize that
 innovation does not happen in silos. Together, this diverse community
 addresses common challenges and creates tangible deliverables,
