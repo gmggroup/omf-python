@@ -15,7 +15,7 @@ class PointSetGeometry(ProjectElementGeometry):
     """Contains spatial information of a point set"""
     vertices = properties.Instance(
         'Spatial coordinates of points relative to point set origin',
-        Vector3Array
+        Vector3Array,
     )
 
     _valid_locations = ('vertices',)
@@ -39,7 +39,7 @@ class PointSetElement(ProjectElement):
     """Contains mesh, data, textures, and options of a point set"""
     geometry = properties.Instance(
         'Structure of the point set element',
-        instance_class=PointSetGeometry
+        instance_class=PointSetGeometry,
     )
     textures = properties.List(
         'Images mapped on the element',
@@ -50,5 +50,5 @@ class PointSetElement(ProjectElement):
     subtype = properties.StringChoice(
         'Category of PointSet',
         choices=('point', 'collar', 'blasthole'),
-        default='point'
+        default='point',
     )

@@ -16,7 +16,7 @@ class ScalarArray(UidModel):
     array = properties.Array(
         'Shared Scalar Array',
         serializer=array_serializer,
-        deserializer=array_deserializer(('*',))
+        deserializer=array_deserializer(('*',)),
     )
 
     def __init__(self, array=None, **kwargs):
@@ -36,7 +36,7 @@ class Vector2Array(ScalarArray):
     array = properties.Vector2Array(
         'Shared Vector2 Array',
         serializer=array_serializer,
-        deserializer=array_deserializer(('*', 2))
+        deserializer=array_deserializer(('*', 2)),
     )
 
 
@@ -45,7 +45,7 @@ class Vector3Array(ScalarArray):
     array = properties.Vector3Array(
         'Shared Vector3 Array',
         serializer=array_serializer,
-        deserializer=array_deserializer(('*', 3))
+        deserializer=array_deserializer(('*', 3)),
     )
 
 
@@ -56,7 +56,7 @@ class Int2Array(ScalarArray):
         dtype=int,
         shape=('*', 2),
         serializer=array_serializer,
-        deserializer=array_deserializer(('*', 2))
+        deserializer=array_deserializer(('*', 2)),
     )
 
 
@@ -67,7 +67,7 @@ class Int3Array(ScalarArray):
         dtype=int,
         shape=('*', 3),
         serializer=array_serializer,
-        deserializer=array_deserializer(('*', 3))
+        deserializer=array_deserializer(('*', 3)),
     )
 
 
@@ -102,7 +102,7 @@ class ScalarColormap(ContentModel):
     """Length-128 color gradient with min/max values, used with ScalarData"""
     gradient = properties.Instance(
         'length-128 ColorArray defining the gradient',
-        ColorArray
+        ColorArray,
     )
     limits = properties.List(
         'Data range associated with the gradient',
@@ -145,12 +145,12 @@ class ScalarData(ProjectElementData):
     """Data array with scalar values"""
     array = properties.Instance(
         'scalar values at locations on a mesh (see location parameter)',
-        ScalarArray
+        ScalarArray,
     )
     colormap = properties.Instance(
         'colormap associated with the data',
         ScalarColormap,
-        required=False
+        required=False,
     )
 
 
@@ -158,7 +158,7 @@ class Vector3Data(ProjectElementData):
     """Data array with 3D vectors"""
     array = properties.Instance(
         '3D vectors at locations on a mesh (see location parameter)',
-        Vector3Array
+        Vector3Array,
     )
 
 
@@ -166,7 +166,7 @@ class Vector2Data(ProjectElementData):
     """Data array with 2D vectors"""
     array = properties.Instance(
         '2D vectors at locations on a mesh (see location parameter)',
-        Vector2Array
+        Vector2Array,
     )
 
 
@@ -185,7 +185,7 @@ class ColorData(ProjectElementData):
         'RGB color values at locations on a mesh (see location parameter)',
         props=(
             Int3Array,
-            ColorArray
+            ColorArray,
         )
     )
 
@@ -200,7 +200,7 @@ class StringData(ProjectElementData):
     """Data array with text entries"""
     array = properties.Instance(
         'text at locations on a mesh (see location parameter)',
-        StringArray
+        StringArray,
     )
 
 
@@ -208,12 +208,12 @@ class DateTimeData(ProjectElementData):
     """Data array with DateTime entries"""
     array = properties.Instance(
         'datetimes at locations on a mesh (see location parameter)',
-        DateTimeArray
+        DateTimeArray,
     )
     colormap = properties.Instance(
         'colormap associated with the data',
         DateTimeColormap,
-        required=False
+        required=False,
     )
 
 
@@ -225,7 +225,7 @@ class Legend(ContentModel):
             ColorArray,
             DateTimeArray,
             StringArray,
-            ScalarArray
+            ScalarArray,
         )
     )
 
@@ -234,7 +234,7 @@ class MappedData(ProjectElementData):
     """Data array of indices linked to legend values or -1 for no data"""
     array = properties.Instance(
         'indices into 1 or more legends for locations on a mesh',
-        ScalarArray
+        ScalarArray,
     )
     legends = properties.List(
         'legends into which the indices map',
