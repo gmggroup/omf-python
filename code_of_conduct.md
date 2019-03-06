@@ -94,6 +94,12 @@ offender is unresponsive, etc. In that case, please file a report
 by emailing [*info@gmggroup.org*](mailto:info@gmggroup.org). This will
 be kept anonymous and action will be taken.
 
+## Antitrust Compliance
+
+All participants in GMG Group activity must comply with applicable
+antitrust laws. Please refer to the detailed guidelines provided on the
+[GMG Group governance page](https://gmggroup.org/about-us/governance/).
+
 #### Attribution
 
 This document is modified from other codes of conduct, courtesy of the
