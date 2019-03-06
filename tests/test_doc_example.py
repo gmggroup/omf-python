@@ -148,6 +148,7 @@ def test_doc_ex():
     assert proj.validate()
     serialfile = os.path.sep.join([dirname, 'out.omf'])
     omf.OMFWriter(proj, serialfile)
+    omf.base.UidModel._INSTANCES = {}
     reader = omf.OMFReader(serialfile)
     new_proj = reader.get_project()
     assert new_proj.validate()

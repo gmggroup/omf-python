@@ -6,30 +6,38 @@ from __future__ import unicode_literals
 
 from collections import OrderedDict
 import datetime
+import uuid
 
 import properties
+import properties.extras
+import six
 
 
-class UidModel(properties.HasProperties):
+class UIDMetaclass(properties.base.PropertyMetaclass):
+    """Metaclass to access value from an instance registry by uid"""
+
+    def __call__(cls, *args, **kwargs):
+        """Look up an instance by uid in the registry, or make a new one"""
+        if (
+                len(args) == 1 and not kwargs and
+                isinstance(args[0], six.string_types) and
+                args[0] in cls._INSTANCES
+        ):
+            return cls._INSTANCES[args[0]]
+        return super(UIDMetaclass, cls).__call__(*args, **kwargs)
+
+
+class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
     """UidModel is a HasProperties object with uid"""
     _REGISTRY = OrderedDict()
 
-    uid = properties.Uuid(
-        'Unique identifier',
-        serializer=lambda val, **kwargs: None,
-        deserializer=lambda val, **kwargs: None
-    )
-    date_created = properties.GettableProperty(
+    date_created = properties.DateTime(
         'Date project was created',
         default=datetime.datetime.utcnow,
-        serializer=properties.DateTime.to_json,
-        deserializer=lambda val, **kwargs: None
     )
-    date_modified = properties.GettableProperty(
+    date_modified = properties.DateTime(
         'Date project was modified',
         default=datetime.datetime.utcnow,
-        serializer=properties.DateTime.to_json,
-        deserializer=lambda val, **kwargs: None
     )
 
     @properties.observer(properties.everything)
@@ -47,50 +55,18 @@ class UidModel(properties.HasProperties):
             ):
                 self._backend['date_modified'] = val.date_modified
 
-    def serialize(self, include_class=True, registry=None,                     #pylint: disable=arguments-differ
-                  skip_validation=False, **kwargs):
-        """Serialize nested UidModels to a flat dictionary with pointers"""
-        if registry is None:
-            if not skip_validation:
-                self.validate()
-            registry = dict()
-            root = True
-        else:
-            root = False
-        if str(self.uid) not in registry:
-            registry.update({
-                str(self.uid): super(UidModel, self).serialize(
-                    include_class, registry=registry, **kwargs
-                )
-            })
-        if root:
-            return registry
-        return str(self.uid)
+    @properties.validator('uid')
+    def _ensure_uuid(self, change):
+        """Validate that new uids are UUID"""
+        self.validate_uid(change['value'])
+        return True
+
 
     @classmethod
-    def deserialize(cls, uid, trusted=True, registry=None, **kwargs):          #pylint: disable=arguments-differ
-        """Deserialize nested UidModels from flat pointer dictionary"""
-        if registry is None:
-            raise ValueError('no registry provided')
-        if uid not in registry:
-            raise ValueError('uid not found: {}'.format(uid))
-        if not isinstance(registry[uid], UidModel):
-            date_created = registry[uid]['date_created']
-            date_modified = registry[uid]['date_modified']
-            kwargs.update({'verbose': False})
-            new_model = super(UidModel, cls).deserialize(
-                value=registry[uid],
-                registry=registry,
-                trusted=trusted,
-                **kwargs
-            )
-            new_model._backend.update({
-                'uid': properties.Uuid.from_json(uid),
-                'date_created': properties.DateTime.from_json(date_created),
-                'date_modified': properties.DateTime.from_json(date_modified)
-            })
-            registry.update({uid: new_model})
-        return registry[uid]
+    def validate_uid(cls, uid):
+        """Validate that uid is a UUID"""
+        uuid.UUID(uid)
+        return True
 
 
 class ContentModel(UidModel):
@@ -158,7 +134,7 @@ class ProjectElement(ContentModel):
     )
     color = properties.Color(
         'Solid color',
-        default='random'
+        default='random',
     )
     geometry = None
 

@@ -7,15 +7,16 @@ except ImportError:
 import uuid
 
 import properties
+import properties.extras
 import pytest
 
 import omf
 
 
-@mock.patch('properties.basic.uuid')
+@mock.patch('properties.extras.uid.uuid')
 def test_uid_model(mock_uuid):
     """Test UidModel default behaviour"""
-    my_id = uuid.uuid4()
+    my_id = str(uuid.uuid4())
     mock_uuid.UUID = uuid.UUID
     mock_uuid.uuid4 = lambda: my_id
     now = datetime.datetime.utcnow()
@@ -24,17 +25,6 @@ def test_uid_model(mock_uuid):
     assert model.uid == my_id
     assert model.date_created - now < delta
     assert model.date_modified - now < delta
-
-
-@pytest.mark.parametrize(('prop', 'value'), [
-    ('uid', uuid.uuid4()),
-    ('date_created', datetime.datetime.utcnow()),
-    ('date_modified', datetime.datetime.utcnow())
-])
-def test_bad_uid_model_init(prop, value):
-    """Test invalid UidModel init arguments"""
-    with pytest.raises(AttributeError):
-        omf.base.UidModel(**{prop: value})
 
 
 class MyModelWithInt(omf.base.UidModel):
@@ -96,10 +86,13 @@ def test_uid_model_serialize(include_class, skip_validation, registry):
         assert output_registry['key'] == 'value'
         output_registry.pop('key')
         output = output_registry
-    assert len(output) == 3
+        assert len(output) == 3
+    else:
+        assert len(output) == 4
     for model in [model, model.my_model, model.my_model.my_model]:
-        assert str(model.uid) in output
+        assert model.uid in output
         expected_dict = {
+            'uid': model.uid,
             'date_created': properties.DateTime.to_json(model.date_created),
             'date_modified': properties.DateTime.to_json(model.date_modified),
         }
@@ -115,13 +108,13 @@ def test_uid_model_serialize(include_class, skip_validation, registry):
         assert output[str(model.uid)] == expected_dict
 
 
-@pytest.mark.parametrize(('uid', 'registry'), [
-    ('my_int', {'my_model': 1}), ('my_int', None)
+@pytest.mark.parametrize('registry', [
+    {'__root__': 'my_int', 'my_model': 1}, None
 ])
-def test_bad_deserialize(uid, registry):
+def test_bad_deserialize(registry):
     """Test deserialize fails with bad registry"""
     with pytest.raises(ValueError):
-        omf.base.UidModel.deserialize(uid=uid, registry=registry)
+        omf.base.UidModel.deserialize(registry, trusted=True)
 
 
 def test_deserialize():
@@ -136,16 +129,19 @@ def test_deserialize():
             'date_modified': string_dates[1],
             'my_int': 0,
             'my_model': uid_b,
+            'uid': uid_a,
             '__class__': 'MyModelWithIntAndInstance',
         },
         uid_b: {
             'date_created': string_dates[2],
             'date_modified': string_dates[3],
             'my_int': 1,
+            'uid': uid_b,
             '__class__': 'MyModelWithInt',
-        }
+        },
+        '__root__': uid_a,
     }
-    model_a = omf.base.UidModel.deserialize(uid=uid_a, registry=input_dict)
+    model_a = omf.base.UidModel.deserialize(input_dict, trusted=True)
     assert isinstance(model_a, MyModelWithIntAndInstance)
     #pylint: disable=no-member
     assert str(model_a.uid) == uid_a
@@ -156,7 +152,9 @@ def test_deserialize():
     assert model_a.my_model.date_created == dates[2]
     assert model_a.my_model.date_modified == dates[3]
     assert model_a.my_model.my_int == 1
-    model_b = omf.base.UidModel.deserialize(uid=uid_b, registry=input_dict)
+    input_dict['__root__'] = uid_b
+    properties.extras.HasUID._INSTANCES = {}
+    model_b = omf.base.UidModel.deserialize(input_dict, trusted=True)
     assert properties.equal(model_b, model_a.my_model)
     #pylint: enable=no-member
 
