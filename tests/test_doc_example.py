@@ -149,6 +149,7 @@ def test_doc_ex():
     serialfile = os.path.sep.join([dirname, 'out.omf'])
     omf.OMFWriter(proj, serialfile)
     reader = omf.OMFReader(serialfile)
+    reader.get_project_overview()
     new_proj = reader.get_project()
     assert new_proj.validate()
     assert str(new_proj.elements[3].textures[0].uid) == \

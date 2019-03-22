@@ -15,32 +15,32 @@ class VolumeGridGeometry(ProjectElementGeometry):
     tensor_u = properties.Array(
         'Tensor cell widths, u-direction',
         shape=('*',),
-        dtype=float
+        dtype=float,
     )
     tensor_v = properties.Array(
         'Tensor cell widths, v-direction',
         shape=('*',),
-        dtype=float
+        dtype=float,
     )
     tensor_w = properties.Array(
         'Tensor cell widths, w-direction',
         shape=('*',),
-        dtype=float
+        dtype=float,
     )
     axis_u = properties.Vector3(
         'Vector orientation of u-direction',
         default='X',
-        length=1
+        length=1,
     )
     axis_v = properties.Vector3(
         'Vector orientation of v-direction',
         default='Y',
-        length=1
+        length=1,
     )
     axis_w = properties.Vector3(
         'Vector orientation of w-direction',
         default='Z',
-        length=1
+        length=1,
     )
 
     _valid_locations = ('vertices', 'cells')
@@ -76,10 +76,10 @@ class VolumeElement(ProjectElement):
     """Contains mesh, data, and options of a volume"""
     geometry = properties.Instance(
         'Structure of the volume element',
-        instance_class=VolumeGridGeometry
+        instance_class=VolumeGridGeometry,
     )
     subtype = properties.StringChoice(
         'Category of Volume',
         choices=('volume',),
-        default='volume'
+        default='volume',
     )
