@@ -1,5 +1,10 @@
 # Open Mining Format Code of Conduct
 
+- [Overview](#Overview)
+- [Principles](#Principles)
+- [Reporting](#Reporting)
+- [Antitrust Compliance](#Antitrust-Compliance)
+
 ## Overview
 
 When attempting to overcome challenges alone, the obstacles can seem
