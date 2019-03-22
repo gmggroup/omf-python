@@ -148,7 +148,7 @@ class OMFReader(object):
                 if prop in element:
                     del element[prop]
             filtered_json[uid] = element
-        project_json.update({'__root__': self._uid})
+        filtered_json.update({'__root__': self._uid})
         project = UidModel.deserialize(
             value=filtered_json,
             trusted=True,
