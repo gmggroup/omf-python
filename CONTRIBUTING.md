@@ -1,7 +1,7 @@
 # Contributing to the Open Mining Format
 
 There are many ways to contribute to OMF:
-- [**Become a member** of GMG Group](#membership)
+- [**Become a member** of GMG](#membership)
 - [**Raise issues** for any questions/feedback/problems you have](#issues)
 - [**Write code** to directly move the format forward](#code)
 - [**Provide documentation** and examples](#docs)
@@ -14,7 +14,7 @@ Mine Software Project under the
 This sub-committee is involved with all aspects of the success of OMF,
 including industry engagement and organization, technical design and
 development, and outreach and marketing.
-[Learn more about the GMG Group](https://gmggroup.org/) or
+[Learn more about GMG](https://gmggroup.org/) or
 [become a member](https://gmggroup.org/about-us/membership/)
 
 ## <a name="issues"></a>Raising questions, feedback, problems
@@ -22,7 +22,7 @@ development, and outreach and marketing.
 Given the *open* nature of OMF, all technical conversations and
 development happen, here, on GitHub, visible to everyone. To
 participate, all you need is a [free GitHub account](https://github.com/join);
-there is no requirement to be a member of GMG Group or even part of
+there is no requirement to be a member of GMG or even part of
 the mining community.
 
 Any questions/feedback/problems should be raised as
@@ -63,12 +63,12 @@ When working on your contribution, you may
 [fork](https://help.github.com/en/articles/fork-a-repo) the OMF repo to
 your personal or company GitHub organization and develop there.
 Alternatively, if you are interested in being identified as a contributor
-to the [GMG Group GitHub organization](https://github.com/gmggroup),
-reach out to [*info@gmggroup.org*](mailto:info@gmggroup.org) (note: this
-is distinct from [GMG Group membership](#membership)). Once you are
-a contributor on GitHub, you may
+to the [GMG GitHub organization](https://github.com/gmggroup),
+reach out to [David Sanguinetti](mailto:dsanguinetti@gmggroup.org),
+the program manager at GMG (note: this is distinct from
+[GMG membership](#membership)). Once you are a contributor on GitHub, you may
 [create feature branches](https://help.github.com/en/articles/creating-and-deleting-branches-within-your-repository)
-directly in the GMG Group OMF repository.
+directly in the GMG OMF repository.
 
 When creating a branch, consider naming it in the format
 `GH-##/human_readable_description`, where "##" is the related

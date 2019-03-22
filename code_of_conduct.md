@@ -5,10 +5,11 @@
 When attempting to overcome challenges alone, the obstacles can seem
 monumental. When approached together, however, anything is possible.
 
-The GMG Group is a community of mining companies, OEMs, OTMs, research
-organizations, and consultants from around the world who recognize that
-innovation does not happen in silos. Together, this diverse community
-addresses common challenges and creates tangible deliverables,
+The Global Mining Guidelines Group (GMG) is a community of mining
+companies, OEMs, OTMs, research organizations, and consultants
+from around the world who recognize that innovation does not
+happen in silos. Together, this diverse community addresses
+common challenges and creates tangible deliverables,
 enabling a productive, safe, and sustainable future for mining.
 
 A diverse community brings diverse ideas and perspectives to complex
@@ -91,14 +92,15 @@ help resolve a misunderstanding and de-escalate things.
 An informal enforcement of this process may be inadequate if there is
 urgency, risk to someone, no one is comfortable speaking out, the
 offender is unresponsive, etc. In that case, please file a report
-by emailing [*info@gmggroup.org*](mailto:info@gmggroup.org). This will
-be kept anonymous and action will be taken.
+by emailing [David Sanguinetti](mailto:dsanguinetti@gmggroup.org),
+the program manager at GMG. Reports will be kept anonymous and action
+will be taken.
 
 ## Antitrust Compliance
 
-All participants in GMG Group activity must comply with applicable
+All participants in GMG activity must comply with applicable
 antitrust laws. Please refer to the detailed guidelines provided on the
-[GMG Group governance page](https://gmggroup.org/about-us/governance/).
+[GMG governance page](https://gmggroup.org/about-us/governance/).
 
 #### Attribution
 
