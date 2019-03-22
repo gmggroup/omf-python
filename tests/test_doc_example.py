@@ -148,7 +148,6 @@ def test_doc_ex():
     assert proj.validate()
     serialfile = os.path.sep.join([dirname, 'out.omf'])
     omf.OMFWriter(proj, serialfile)
-    omf.base.UidModel._INSTANCES = {}                                          #pylint: disable=protected-access
     reader = omf.OMFReader(serialfile)
     new_proj_overview = reader.get_project_overview()
     new_proj = reader.get_project()

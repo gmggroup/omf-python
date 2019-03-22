@@ -127,6 +127,7 @@ class OMFReader(object):
             project_elements['elements'] = filtered_elements
 
         project_json.update({'__root__': self._uid})
+        UidModel._INSTANCES = {}
         project = UidModel.deserialize(
             value=project_json,
             trusted=True,
@@ -149,6 +150,7 @@ class OMFReader(object):
                     del element[prop]
             filtered_json[uid] = element
         filtered_json.update({'__root__': self._uid})
+        UidModel._INSTANCES = {}
         project = UidModel.deserialize(
             value=filtered_json,
             trusted=True,
