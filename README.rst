@@ -5,7 +5,7 @@ omf
     :target: https://pypi.python.org/pypi/omf
     :alt: Latest PyPI version
 
-.. image:: https://readthedocs.org/projects/omf/badge/?version=latest
+.. image:: https://readthedocs.org/projects/omf/badge/?version=stable
     :target: http://omf.readthedocs.io/en/latest/
     :alt: Documentation
 

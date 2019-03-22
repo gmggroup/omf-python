@@ -45,6 +45,7 @@ def test_array_serializer(arr, dtype):
     assert output['length'] == 0
 
 def test_array_serializer_none():
+    """Test array serializer when value is None"""
     open_file = mock.MagicMock(
         mode='wb',
         write=lambda _: None,
