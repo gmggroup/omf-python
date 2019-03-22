@@ -1,32 +1,72 @@
-PACKAGE_NAME=omf
+ORG=gmggroup
+APP=omf
 
 .PHONY: install publish docs coverage lint lint-html graphs test-docs tests
 
 install:
 	python setup.py install
 
-publish:
-	python setup.py sdist upload
-
 docs:
 	cd docs && make html
 
-coverage:
-	nosetests --logging-level=INFO --with-coverage --cover-package=$(PACKAGE_NAME) --cover-html
-	open cover/index.html
-
 lint:
-	pylint $(PACKAGE_NAME)
-
-lint-html:
-	pylint --output-format=html $(PACKAGE_NAME) > pylint.html
-
-graphs:
-	pyreverse -my -A -o pdf -p $(PACKAGE_NAME) $(PACKAGE_NAME)/**.py $(PACKAGE_NAME)/**/**.py
+	pylint $(APP)
 
 test-docs:
 	nosetests --logging-level=INFO docs
 
 tests:
-	nosetests --logging-level=INFO --with-coverage --cover-package=$(PACKAGE_NAME)
-	make lint
+	pytest tests/
+
+docker-build:
+	docker build -t $(ORG)/$(APP):latest -f Dockerfile .
+
+docker-build-27:
+	docker build -t $(ORG)/$(APP):latest27 -f Dockerfile.27 .
+
+docker-tests: docker-build
+	mkdir -p cover
+	docker run -it --rm \
+		--name=$(APP)-tests \
+		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
+		-v $(shell pwd)/tests:/usr/src/app/tests \
+		-v $(shell pwd)/cover:/usr/src/app/cover \
+		$(ORG)/$(APP):latest \
+		bash -c "pytest --cov=$(APP) --cov-report term --cov-report html:cover/ tests/ && cp .coverage cover/"
+	mv -f cover/.coverage ./
+
+docker-tests-27: docker-build-27
+	docker run -it --rm \
+		--name=$(APP)-tests \
+		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
+		-v $(shell pwd)/tests:/usr/src/app/tests \
+		$(ORG)/$(APP):latest27 \
+		bash -c "pytest tests/"
+
+docker-lint: docker-build
+	docker run -it --rm \
+		--name=$(APP)-tests \
+		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
+		-v $(shell pwd)/tests:/usr/src/app/tests \
+		-v $(shell pwd)/.pylintrc:/usr/src/app/.pylintrc \
+		$(ORG)/$(APP):latest \
+		pylint --rcfile=.pylintrc $(APP) tests
+
+docker-docs: docker-build
+	docker run -it --rm \
+		--name=$(APP)-tests \
+		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
+		-v $(shell pwd)/docs:/usr/src/app/docs \
+		$(ORG)/$(APP):latest \
+		nosetests --logging-level=INFO docs
+
+publish: docker-build
+	mkdir -p dist
+	docker run -it --rm \
+		--name=$(APP)-publish \
+		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
+		-v $(shell pwd)/dist:/usr/src/app/dist \
+		$(ORG)/$(APP) \
+		python setup.py sdist bdist_wheel
+	pip install twine
+	twine upload dist/*
