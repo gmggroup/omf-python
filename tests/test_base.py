@@ -153,7 +153,7 @@ def test_deserialize():
     assert model_a.my_model.date_modified == dates[3]
     assert model_a.my_model.my_int == 1
     input_dict['__root__'] = uid_b
-    properties.extras.HasUID._INSTANCES = {}
+    properties.extras.HasUID._INSTANCES = {}                                   #pylint: disable=protected-access
     model_b = omf.base.UidModel.deserialize(input_dict, trusted=True)
     assert properties.equal(model_b, model_a.my_model)
     #pylint: enable=no-member
