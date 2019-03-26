@@ -52,6 +52,12 @@ class SurfaceGeometry(ProjectElementGeometry):
 
 class SurfaceGridGeometry(ProjectElementGeometry):
     """Contains spatial information of a 2D grid"""
+
+    corner = properties.Vector3(
+        'Origin of the Mesh relative to origin of the Project',
+        default=[0., 0., 0.]
+    )
+
     tensor_u = properties.Array(
         'Grid cell widths, u-direction',
         shape=('*',),

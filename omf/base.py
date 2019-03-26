@@ -61,7 +61,6 @@ class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
         self.validate_uid(change['value'])
         return True
 
-
     @classmethod
     def validate_uid(cls, uid):
         """Validate that uid is a UUID"""
@@ -99,11 +98,6 @@ class ProjectElementGeometry(UidModel):
     """Base class for all ProjectElement meshes"""
 
     _valid_locations = None
-
-    origin = properties.Vector3(
-        'Origin of the Mesh relative to origin of the Project',
-        default=[0., 0., 0.]
-    )
 
     def location_length(self, location):
         """Return correct data length based on location"""
@@ -187,7 +181,4 @@ class Project(ContentModel):
         prop=ProjectElement,
         default=list,
     )
-    origin = properties.Vector3(
-        'Origin point for all elements in the project',
-        default=[0., 0., 0.]
-    )
+

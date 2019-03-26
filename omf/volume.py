@@ -12,6 +12,12 @@ from .base import ProjectElement, ProjectElementGeometry
 
 class VolumeGridGeometry(ProjectElementGeometry):
     """Contains spatial information of a 3D grid volume."""
+
+    corner = properties.Vector3(
+        'Origin of the Mesh relative to origin of the Project',
+        default=[0., 0., 0.]
+    )
+
     tensor_u = properties.Array(
         'Tensor cell widths, u-direction',
         shape=('*',),
