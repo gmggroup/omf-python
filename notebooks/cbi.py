@@ -16,7 +16,7 @@ class BaseMetadata(properties.HasProperties):
 
 class BaseOrientation(properties.HasProperties):
     corner = properties.Vector3(
-        'Vector orientation of u-direction',
+        'Origin of the block model, where axes extend from',
         default='ZERO',
     )
     axis_u = properties.Vector3(

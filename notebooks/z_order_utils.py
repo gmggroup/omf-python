@@ -5,23 +5,24 @@ and left-shits the resulting index and adds the level information.
 The resulting index is a Z-Order Curve that can store a linear octree.
 
 Example encoding:
-                              111 = 7
-  0  0  0  0  0  0  0  0  0  1    = 1
- 0  0  0  0  0  1  0  0  0  0     = 16
-0  0  0  0  0  0  0  0  0  0      = 0
-000000000000000010000000000001111 = 65551
+
+level of block        |                          0111 = 7
+corner of sub-block,  |u   0  0  0  0  0  0  0  1     = 1
+indexed by smallest   |v  0  0  0  1  0  0  0  0      = 16
+possible level        |w 0  0  0  0  0  0  0  0       = 0
+                      |  0000000000100000000000010111 = 131095
 """
 
 import numpy as np
 
 dimension = 3 # Always in 3D
 level_bits = 3 # Enough for eight refinements
-max_bits = 10 # max necessary per integer, enough for UInt32
+max_bits = 8 # max necessary per integer, enough for UInt32
 total_bits = max_bits * dimension + level_bits
 
 
-# Below code is a bit general. For this implementation, 
-# we can remove/hard-code dimension. And probably use 
+# Below code is a bit general. For this implementation,
+# we can remove/hard-code dimension. And probably use
 # `0b01010101` like integers instead of doing for-loops.
 # See https://en.wikipedia.org/wiki/Z-order_curve
 
@@ -48,7 +49,7 @@ def get_index(pointer, level):
 def get_pointer(index):
     level = index & (2 ** level_bits - 1)
     index = index >> level_bits
-    
+
     pointer = [0] * dimension
     iwidth = max_bits * dimension
     for i in range(iwidth):
@@ -63,7 +64,7 @@ def level_width(level):
     # Remove assert to be more efficient?
     assert 0 <= level < total_levels
     return 2 ** (total_levels - level)
-    
+
 
 
 def _print_example(pointer, level):
@@ -81,5 +82,5 @@ def _print_example(pointer, level):
     print_binary(pointer[1], lambda b: ' ' + b + ' ')
     print_binary(pointer[2], lambda b: '' + b + '  ')
     print("{0:b}".format(ind).rjust(total_bits, '0') + ' = ' + str(ind))
-    
+
     return ind
