@@ -47,7 +47,7 @@ class array_deserializer(object):                                              #
     """Convert binary to numpy array based on input shape"""
 
     def __init__(self, shape):
-        if sum([dim == '*' for dim in shape]) > 2:
+        if sum([dim == '*' for dim in shape]) > 1:
             raise TypeError('array_deserializer shape may only have one '
                             'unknown dimension')
         self.shape = shape
@@ -68,7 +68,7 @@ class array_deserializer(object):                                              #
                 (int(unknown_dim) if dim == '*' else dim for dim in self.shape)
             )
         else:
-            assert abs(unknown_dim) < 1e-9, 'bad shape'
+            assert abs(unknown_dim - 1) < 1e-9, 'bad shape'
             shape = self.shape
         arr = arr.reshape(shape)
         return arr

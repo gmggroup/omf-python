@@ -16,11 +16,11 @@ class SurfaceGeometry(ProjectElementGeometry):
     """Contains spatial information about a triangulated surface"""
     vertices = properties.Instance(
         'Spatial coordinates of vertices relative to surface origin',
-        Vector3Array
+        Vector3Array,
     )
     triangles = properties.Instance(
         'Vertex indices of surface triangles',
-        Int3Array
+        Int3Array,
     )
 
     _valid_locations = ('vertices', 'faces')
@@ -55,27 +55,27 @@ class SurfaceGridGeometry(ProjectElementGeometry):
     tensor_u = properties.Array(
         'Grid cell widths, u-direction',
         shape=('*',),
-        dtype=float
+        dtype=float,
     )
     tensor_v = properties.Array(
         'Grid cell widths, v-direction',
         shape=('*',),
-        dtype=float
+        dtype=float,
     )
     axis_u = properties.Vector3(
         'Vector orientation of u-direction',
         default='X',
-        length=1
+        length=1,
     )
     axis_v = properties.Vector3(
         'Vector orientation of v-direction',
         default='Y',
-        length=1
+        length=1,
     )
     offset_w = properties.Instance(
         'Node offset',
         ScalarArray,
-        required=False
+        required=False,
     )
 
     _valid_locations = ('vertices', 'faces')
@@ -118,7 +118,10 @@ class SurfaceElement(ProjectElement):
     """Contains mesh, data, textures, and options of a surface"""
     geometry = properties.Union(
         'Structure of the surface element',
-        props=(SurfaceGeometry, SurfaceGridGeometry)
+        props=(
+            SurfaceGridGeometry,
+            SurfaceGeometry,
+        ),
     )
     textures = properties.List(
         'Images mapped on the surface element',
@@ -129,5 +132,5 @@ class SurfaceElement(ProjectElement):
     subtype = properties.StringChoice(
         'Category of Surface',
         choices=('surface',),
-        default='surface'
+        default='surface',
     )

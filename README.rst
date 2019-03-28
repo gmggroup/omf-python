@@ -2,11 +2,11 @@ omf
 ***
 
 .. image:: https://img.shields.io/pypi/v/omf.svg
-    :target: https://pypi.python.org/pypi/omf
+    :target: https://pypi.org/project/omf/
     :alt: Latest PyPI version
 
 .. image:: https://readthedocs.org/projects/omf/badge/?version=stable
-    :target: http://omf.readthedocs.io/en/latest/
+    :target: https://omf.readthedocs.io/en/latest/
     :alt: Documentation
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
@@ -86,7 +86,7 @@ Or from `github <https://github.com/gmggroup/omf>`_:
     git clone https://github.com/gmggroup/omf.git
     cd omf
     pip install -e .
-    
+
 
 3D Visualization
 ----------------
@@ -95,4 +95,4 @@ To easily visualize OMF project files and data objects in a pure Python environm
 
 .. _OMF-VTK: https://github.com/OpenGeoVis/omfvtk
 
-.. _vtkInterface: https://github.com/akaszynski/vtki
+.. _vtkInterface: https://github.com/vtkiorg/vtki

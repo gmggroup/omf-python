@@ -15,11 +15,11 @@ class LineSetGeometry(ProjectElementGeometry):
     """Contains spatial information of a line set"""
     vertices = properties.Instance(
         'Spatial coordinates of line vertices relative to line set origin',
-        Vector3Array
+        Vector3Array,
     )
     segments = properties.Instance(
         'Endpoint vertex indices of line segments',
-        Int2Array
+        Int2Array,
     )
 
     _valid_locations = ('vertices', 'segments')
@@ -54,10 +54,10 @@ class LineSetElement(ProjectElement):
     """Contains mesh, data, and options of a line set"""
     geometry = properties.Instance(
         'Structure of the line element',
-        instance_class=LineSetGeometry
+        instance_class=LineSetGeometry,
     )
     subtype = properties.StringChoice(
         'Category of LineSet',
         choices=('line', 'borehole'),
-        default='line'
+        default='line',
     )

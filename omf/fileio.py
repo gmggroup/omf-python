@@ -50,6 +50,7 @@ class OMFWriter(object):
         with open(fname, 'wb') as fopen:
             self.initialize_header(fopen, project.uid)
             self.project_json = project.serialize(open_file=fopen)
+            self.project_json.pop('__root__')
             self.update_header(fopen)
             fopen.write(json.dumps(self.project_json).encode('utf-8'))
 
@@ -69,7 +70,7 @@ class OMFWriter(object):
         fopen.write(
             struct.pack('<32s', COMPATIBILITY_VERSION.ljust(32, b'\x00'))
         )
-        fopen.write(struct.pack('<16s', uid.bytes))
+        fopen.write(struct.pack('<16s', uuid.UUID(uid).bytes))
         fopen.seek(8, 1)
 
     @staticmethod
@@ -125,9 +126,13 @@ class OMFReader(object):
                                  if uid in element_uids]
             project_elements['elements'] = filtered_elements
 
-        project = UidModel.deserialize(uid=self._uid,
-                                       registry=project_json,
-                                       open_file=self._fopen)
+        project_json.update({'__root__': self._uid})
+        UidModel._INSTANCES = {}                                               #pylint: disable=protected-access
+        project = UidModel.deserialize(
+            value=project_json,
+            trusted=True,
+            open_file=self._fopen,
+        )
         return project
 
     def get_project_overview(self):
@@ -144,9 +149,13 @@ class OMFReader(object):
                 if prop in element:
                     del element[prop]
             filtered_json[uid] = element
-        project = UidModel.deserialize(uid=self._uid,
-                                       registry=filtered_json,
-                                       open_file=self._fopen)
+        filtered_json.update({'__root__': self._uid})
+        UidModel._INSTANCES = {}                                               #pylint: disable=protected-access
+        project = UidModel.deserialize(
+            value=filtered_json,
+            trusted=True,
+            open_file=self._fopen,
+        )
         return project
 
     def read_header(self):
