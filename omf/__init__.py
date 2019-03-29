@@ -13,11 +13,11 @@ from .data import (ColorArray, ColorData,
                    StringArray, StringData,
                    Vector2Array, Vector2Data,
                    Vector3Array, Vector3Data)
-from .lineset import LineSetGeometry, LineSetElement
-from .pointset import PointSetGeometry, PointSetElement
-from .surface import SurfaceGeometry, SurfaceGridGeometry, SurfaceElement
+from .lineset import LineSetElement
+from .pointset import PointSetElement
+from .surface import SurfaceElement, SurfaceGridElement
 from .texture import ImageTexture
-from .volume import VolumeGridGeometry, VolumeElement
+from .volume import VolumeGridElement
 
 from .fileio import OMFReader, OMFWriter
 

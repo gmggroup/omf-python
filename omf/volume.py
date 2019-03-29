@@ -7,11 +7,11 @@ from __future__ import unicode_literals
 import numpy as np
 import properties
 
-from .base import ProjectElement, ProjectElementGeometry
+from .base import ProjectElement
 
 
-class VolumeGridGeometry(ProjectElementGeometry):
-    """Contains spatial information of a 3D grid volume."""
+class VolumeGridElement(ProjectElement):
+    """Contains 3D grid volume spatial information and attributes"""
     tensor_u = properties.Array(
         'Tensor cell widths, u-direction',
         shape=('*',),
@@ -42,6 +42,15 @@ class VolumeGridGeometry(ProjectElementGeometry):
         default='Z',
         length=1,
     )
+    origin = properties.Vector3(
+        'Origin of the Mesh relative to Project coordinate reference system',
+        default=[0., 0., 0.],
+    )
+    subtype = properties.StringChoice(
+        'Category of Volume',
+        choices=('volume',),
+        default='volume',
+    )
 
     _valid_locations = ('vertices', 'cells')
 
@@ -70,16 +79,3 @@ class VolumeGridGeometry(ProjectElementGeometry):
                 np.abs(self.axis_w.dot(self.axis_u) < 1e-6)):                  #pylint: disable=no-member
             raise ValueError('axis_u, axis_v, and axis_w must be orthogonal')
         return True
-
-
-class VolumeElement(ProjectElement):
-    """Contains mesh, data, and options of a volume"""
-    geometry = properties.Instance(
-        'Structure of the volume element',
-        instance_class=VolumeGridGeometry,
-    )
-    subtype = properties.StringChoice(
-        'Category of Volume',
-        choices=('volume',),
-        default='volume',
-    )

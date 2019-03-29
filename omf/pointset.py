@@ -6,16 +6,27 @@ from __future__ import unicode_literals
 
 import properties
 
-from .base import ProjectElement, ProjectElementGeometry
+from .base import ProjectElement
 from .data import Vector3Array
 from .texture import ImageTexture
 
 
-class PointSetGeometry(ProjectElementGeometry):
-    """Contains spatial information of a point set"""
+class PointSetElement(ProjectElement):
+    """Contains point set spatial information and attributes"""
     vertices = properties.Instance(
         'Spatial coordinates of points relative to point set origin',
         Vector3Array,
+    )
+    textures = properties.List(
+        'Images mapped on the element',
+        prop=ImageTexture,
+        required=False,
+        default=list,
+    )
+    subtype = properties.StringChoice(
+        'Category of PointSet',
+        choices=('point', 'collar', 'blasthole'),
+        default='point',
     )
 
     _valid_locations = ('vertices',)
@@ -33,22 +44,3 @@ class PointSetGeometry(ProjectElementGeometry):
     def num_cells(self):
         """Number of cell centers (same as nodes)"""
         return self.num_nodes
-
-
-class PointSetElement(ProjectElement):
-    """Contains mesh, data, textures, and options of a point set"""
-    geometry = properties.Instance(
-        'Structure of the point set element',
-        instance_class=PointSetGeometry,
-    )
-    textures = properties.List(
-        'Images mapped on the element',
-        prop=ImageTexture,
-        required=False,
-        default=list,
-    )
-    subtype = properties.StringChoice(
-        'Category of PointSet',
-        choices=('point', 'collar', 'blasthole'),
-        default='point',
-    )

@@ -7,20 +7,23 @@ from __future__ import unicode_literals
 import numpy as np
 import properties
 
-from .base import ProjectElement, ProjectElementGeometry
+from .base import ProjectElement
 from .data import Int3Array, ScalarArray, Vector3Array
 from .texture import ImageTexture
 
 
-class SurfaceGeometry(ProjectElementGeometry):
-    """Contains spatial information about a triangulated surface"""
-    vertices = properties.Instance(
-        'Spatial coordinates of vertices relative to surface origin',
-        Vector3Array,
+class BaseSurfaceElement(ProjectElement):
+    """Base class for surface elements"""
+    textures = properties.List(
+        'Images mapped on the surface element',
+        prop=ImageTexture,
+        required=False,
+        default=list,
     )
-    triangles = properties.Instance(
-        'Vertex indices of surface triangles',
-        Int3Array,
+    subtype = properties.StringChoice(
+        'Category of Surface',
+        choices=('surface',),
+        default='surface',
     )
 
     _valid_locations = ('vertices', 'faces')
@@ -30,6 +33,28 @@ class SurfaceGeometry(ProjectElementGeometry):
         if location == 'faces':
             return self.num_cells
         return self.num_nodes
+
+    @property
+    def num_nodes(self):
+        """get number of nodes"""
+        raise NotImplementedError()
+
+    @property
+    def num_cells(self):
+        """get number of cells"""
+        raise NotImplementedError()
+
+
+class SurfaceElement(BaseSurfaceElement):
+    """Contains triangulated surface spatial information and attributes"""
+    vertices = properties.Instance(
+        'Spatial coordinates of vertices relative to surface origin',
+        Vector3Array,
+    )
+    triangles = properties.Instance(
+        'Vertex indices of surface triangles',
+        Int3Array,
+    )
 
     @property
     def num_nodes(self):
@@ -50,8 +75,8 @@ class SurfaceGeometry(ProjectElementGeometry):
         return True
 
 
-class SurfaceGridGeometry(ProjectElementGeometry):
-    """Contains spatial information of a 2D grid"""
+class SurfaceGridElement(BaseSurfaceElement):
+    """Contains 2D grid spatial information and attributes"""
     tensor_u = properties.Array(
         'Grid cell widths, u-direction',
         shape=('*',),
@@ -77,14 +102,10 @@ class SurfaceGridGeometry(ProjectElementGeometry):
         ScalarArray,
         required=False,
     )
-
-    _valid_locations = ('vertices', 'faces')
-
-    def location_length(self, location):
-        """Return correct data length based on location"""
-        if location == 'faces':
-            return self.num_cells
-        return self.num_nodes
+    origin = properties.Vector3(
+        'Origin of the Mesh relative to Project coordinate reference system',
+        default=[0., 0., 0.],
+    )
 
     @property
     def num_nodes(self):
@@ -112,25 +133,3 @@ class SurfaceGridGeometry(ProjectElementGeometry):
                 )
             )
         return True
-
-
-class SurfaceElement(ProjectElement):
-    """Contains mesh, data, textures, and options of a surface"""
-    geometry = properties.Union(
-        'Structure of the surface element',
-        props=(
-            SurfaceGridGeometry,
-            SurfaceGeometry,
-        ),
-    )
-    textures = properties.List(
-        'Images mapped on the surface element',
-        prop=ImageTexture,
-        required=False,
-        default=list,
-    )
-    subtype = properties.StringChoice(
-        'Category of Surface',
-        choices=('surface',),
-        default='surface',
-    )
