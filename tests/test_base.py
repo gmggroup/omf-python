@@ -169,15 +169,13 @@ def test_project_element():
     element = omf.base.ProjectElement()
     with pytest.raises(AssertionError):
         element.validate()
-    element.geometry = mock.MagicMock(
-        _valid_locations=('vertices',),
-        location_length=lambda _: 5,
-    )
+    element._valid_locations = ('vertices',)                                   #pylint: disable=protected-access
+    element.location_length = lambda _: 5
     element.data = [MockData(location='faces')]
     with pytest.raises(ValueError):
         element.validate()
     element.data = [MockData(location='vertices')]
     with pytest.raises(ValueError):
         element.validate()
-    element.geometry.location_length = lambda _: 3
+    element.location_length = lambda _: 3
     assert element.validate()
