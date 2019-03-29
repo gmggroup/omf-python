@@ -13,6 +13,10 @@ from six import string_types
 from .base import UidModel
 
 COMPATIBILITY_VERSION = b'OMF-v0.9.0'
+IGNORED_OVERVIEW_PROPS = (
+    'data', 'textures', 'vertices', 'segments', 'triangles', 'offset_w'
+)
+
 
 
 class OMFWriter(object):
@@ -145,7 +149,7 @@ class OMFReader(object):
         filtered_json = {self._uid: project_elements}
         for uid in element_uids:
             element = self._project_json[uid].copy()
-            for prop in ('data', 'geometry', 'textures'):
+            for prop in IGNORED_OVERVIEW_PROPS:
                 if prop in element:
                     del element[prop]
             filtered_json[uid] = element
