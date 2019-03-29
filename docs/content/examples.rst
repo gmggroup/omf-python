@@ -38,14 +38,14 @@ bottom of page).
         textures=[
             omf.ImageTexture(
                 name='test image',
-                image=pngfile,
+                image='test_image.png',
                 origin=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 1, 0],
             ),
             omf.ImageTexture(
                 name='test image',
-                image=pngfile,
+                image='test_image.png',
                 origin=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 0, 1],
@@ -115,7 +115,7 @@ bottom of page).
         textures=[
             omf.ImageTexture(
                 name='test image',
-                image=pngfile,
+                image='test_image.png',
                 origin=[2., 2., 2.],
                 axis_u=[5., 0, 0],
                 axis_v=[0, 2., 5.],
