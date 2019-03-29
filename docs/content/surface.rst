@@ -7,32 +7,18 @@ Transfer geological domains from 3D modelling software to Resource Estimation so
 
 .. image:: /images/Surface.png
 
-Element
--------
-
-.. autoclass:: omf.surface.SurfaceElement
-
-Geometry
+Elements
 --------
-
-Surfaces have two available geometries: SurfaceGeometry, an unstructured triangular mesh,
-and SurfaceGridGeometry, a gridded mesh.
-
-SurfaceGeometry
-===============
 
 .. image:: /images/SurfaceGeometry.png
     :align: center
 
-.. autoclass:: omf.surface.SurfaceGeometry
-
-SurfaceGridGeometry
-===================
+.. autoclass:: omf.surface.SurfaceElement
 
 .. image:: /images/SurfaceGridGeometry.png
     :align: center
 
-.. autoclass:: omf.surface.SurfaceGridGeometry
+.. autoclass:: omf.surface.SurfaceGridElement
 
 Data
 ----

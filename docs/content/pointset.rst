@@ -11,16 +11,11 @@ Transfering LIDAR point-cloud data from surveying software into 3D modelling sof
 Element
 -------
 
-.. autoclass:: omf.pointset.PointSetElement
-
-Geometry
---------
-
 .. image:: /images/PointSetGeometry.png
     :width: 80%
     :align: center
 
-.. autoclass:: omf.pointset.PointSetGeometry
+.. autoclass:: omf.pointset.PointSetElement
 
 Data
 ----
