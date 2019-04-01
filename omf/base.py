@@ -118,16 +118,6 @@ class ProjectElement(ContentModel):
         """Return correct data length based on location"""
         raise NotImplementedError()
 
-    @property
-    def num_nodes(self):
-        """get number of nodes"""
-        raise NotImplementedError()
-
-    @property
-    def num_cells(self):
-        """get number of cells"""
-        raise NotImplementedError()
-
     @properties.validator
     def _validate_data(self):
         """Check if element is built correctly"""
