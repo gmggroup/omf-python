@@ -13,7 +13,7 @@ omf
     :target: https://github.com/gmggroup/omf/blob/master/LICENSE
     :alt: MIT license
 
-.. image:: https://travis-ci.org/gmggroup/omf.svg?branch=master
+.. image:: https://api.travis-ci.org/gmggroup/omf.svg?branch=master
     :target: https://travis-ci.org/gmggroup/omf
     :alt: Travis tests
 

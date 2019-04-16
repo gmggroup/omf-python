@@ -26,45 +26,43 @@ class RegularBlockModel(ProjectElement):
         max_length=3,
     )
 
+    @properties.validator('size_blocks')
+    def _validate_size_is_not_zero(self, change):
+        if change['value'] == 0:
+            raise properties.ValidationError(
+                'Block size cannot be 0',
+                prop='size_blocks',
+                instance=self,
+                reason='invalid',
+            )
+
     _valid_locations = ('cells',)
 
-    @properties.Property(
+    @properties.Array(
         'Compressed block count - for regular block models this must '
         'have length equal to the product of num_blocks and all values '
         'must be 1 (if attributes exist on the block) or 0; the default '
         'is an array of 1s',
+        shape=('*',),
+        dtype=(int, bool),
+        coerce=False,
     )
     def cbc(self):
+        """Compressed block count"""
         cbc_cache = getattr(self, '_cbc', None)
         if not self.num_blocks:
             return cbc_cache
         cbc_len = np.prod(self.num_blocks)
         if cbc_cache is None or len(cbc_cache) != cbc_len:
-            self._cbc = np.ones(cbc_len, dtype='int8')
+            self._cbc = np.ones(cbc_len, dtype=np.bool)                        # pylint: disable=attribute-defined-outside-init
         return self._cbc
 
     @cbc.setter
     def cbc(self, value):
-        self._cbc = self.validate_cbc(value)
+        self._cbc = self.validate_cbc(value)                                   # pylint: disable=attribute-defined-outside-init
 
     def validate_cbc(self, value):
         """Ensure cbc is correct size and values"""
-        if isinstance(value, (list, tuple)):
-            value = np.array(value, dtype='int8')
-        if not isinstance(value, np.ndarray):
-            raise properties.ValidationError(
-                'cbc must be an array',
-                prop='cbc',
-                instance=self,
-                reason='invalid',
-            )
-        if len(value.shape) != 1:
-            raise properties.ValidationError(
-                'cbc must be a 1-dimensional array',
-                prop='cbc',
-                instance=self,
-                reason='invalid',
-            )
         if self.num_blocks and len(value) != np.prod(self.num_blocks):
             raise properties.ValidationError(
                 'cbc must have length equal to the product '
@@ -93,17 +91,24 @@ class RegularBlockModel(ProjectElement):
         'product of num_blocks plus 1 and monotonically increasing',
         shape=('*',),
         dtype=int,
+        coerce=False,
     )
     def cbi(self):
+        """Compressed block index"""
         if self.cbc is None:
-            return
+            return None
         # Recalculating the sum on the fly is faster than checking md5
         cbi = np.r_[
-            np.array([0], dtype='int8'),
-            np.cumsum(self.cbc, dtype='int8'),
+            np.array([0], dtype=np.uint8),
+            np.cumsum(self.cbc, dtype=np.uint8),
         ]
         return cbi
 
     @property
     def num_cells(self):
-        return self.cbi[-1]
+        """Number of cells from last value in the compressed block index"""
+        return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
+
+    def location_length(self, location):
+        """Return correct data length based on location"""
+        return self.num_cells
