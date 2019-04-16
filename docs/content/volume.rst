@@ -11,16 +11,11 @@ Transferring a block model from Resource Estimation software into Mine planning 
 Element
 -------
 
-.. autoclass:: omf.volume.VolumeElement
-
-Geometry
---------
-
 .. image:: /images/VolumeGridGeometry.png
     :width: 80%
     :align: center
 
-.. autoclass:: omf.volume.VolumeGridGeometry
+.. autoclass:: omf.volume.VolumeGridElement
 
 Data
 ----

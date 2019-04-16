@@ -7,12 +7,12 @@ from __future__ import unicode_literals
 import numpy as np
 import properties
 
-from .base import ProjectElement, ProjectElementGeometry
+from .base import ProjectElement
 from .data import Int2Array, Vector3Array
 
 
-class LineSetGeometry(ProjectElementGeometry):
-    """Contains spatial information of a line set"""
+class LineSetElement(ProjectElement):
+    """Contains line set spatial information and attributes"""
     vertices = properties.Instance(
         'Spatial coordinates of line vertices relative to line set origin',
         Vector3Array,
@@ -20,6 +20,11 @@ class LineSetGeometry(ProjectElementGeometry):
     segments = properties.Instance(
         'Endpoint vertex indices of line segments',
         Int2Array,
+    )
+    subtype = properties.StringChoice(
+        'Category of LineSet',
+        choices=('line', 'borehole'),
+        default='line',
     )
 
     _valid_locations = ('vertices', 'segments')
@@ -48,16 +53,3 @@ class LineSetGeometry(ProjectElementGeometry):
         if np.max(self.segments.array) >= len(self.vertices.array):
             raise ValueError('Segments expects more vertices than provided')
         return True
-
-
-class LineSetElement(ProjectElement):
-    """Contains mesh, data, and options of a line set"""
-    geometry = properties.Instance(
-        'Structure of the line element',
-        instance_class=LineSetGeometry,
-    )
-    subtype = properties.StringChoice(
-        'Category of LineSet',
-        choices=('line', 'borehole'),
-        default='line',
-    )

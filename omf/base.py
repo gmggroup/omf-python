@@ -95,15 +95,24 @@ class ProjectElementData(ContentModel):
         raise ValueError('Cannot access array of base ProjectElementData')
 
 
-class ProjectElementGeometry(UidModel):
-    """Base class for all ProjectElement meshes"""
+class ProjectElement(ContentModel):
+    """Base ProjectElement class for OMF file
+
+    ProjectElement subclasses must define their geometric definition.
+    ProjectElements include PointSet, LineSet, Surface, and Volume
+    """
+    data = properties.List(
+        'Data defined on the element',
+        prop=ProjectElementData,
+        required=False,
+        default=list,
+    )
+    color = properties.Color(
+        'Solid color',
+        default='random',
+    )
 
     _valid_locations = None
-
-    origin = properties.Vector3(
-        'Origin of the Mesh relative to origin of the Project',
-        default=[0., 0., 0.]
-    )
 
     def location_length(self, location):
         """Return correct data length based on location"""
@@ -119,38 +128,19 @@ class ProjectElementGeometry(UidModel):
         """get number of cells"""
         raise NotImplementedError()
 
-
-class ProjectElement(ContentModel):
-    """Base ProjectElement class for OMF file
-
-    ProjectElement subclasses must define their mesh.
-    ProjectElements include PointSet, LineSet, Surface, and Volume
-    """
-    data = properties.List(
-        'Data defined on the element',
-        prop=ProjectElementData,
-        required=False,
-        default=list,
-    )
-    color = properties.Color(
-        'Solid color',
-        default='random',
-    )
-    geometry = None
-
     @properties.validator
     def _validate_data(self):
         """Check if element is built correctly"""
-        assert self.geometry is not None, 'ProjectElement must have a mesh'
+        assert self._valid_locations, 'ProjectElement needs _valid_locations'
         for i, dat in enumerate(self.data):
-            if dat.location not in self.geometry._valid_locations:             #pylint: disable=protected-access
+            if dat.location not in self._valid_locations:                      #pylint: disable=protected-access
                 raise ValueError(
                     'Invalid location {loc} - valid values: {locs}'.format(
                         loc=dat.location,
-                        locs=', '.join(self.geometry._valid_locations)         #pylint: disable=protected-access
+                        locs=', '.join(self._valid_locations)                  #pylint: disable=protected-access
                     )
                 )
-            valid_length = self.geometry.location_length(dat.location)
+            valid_length = self.location_length(dat.location)
             if len(dat.array) != valid_length:
                 raise ValueError(
                     'data[{index}] length {datalen} does not match '

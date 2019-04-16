@@ -11,16 +11,11 @@ Transfer mapped geological contacts from a GIS software package into a 3D modell
 Element
 -------
 
-.. autoclass:: omf.lineset.LineSetElement
-
-Geometry
---------
-
 .. image:: /images/LineSetGeometry.png
     :width: 80%
     :align: center
 
-.. autoclass:: omf.lineset.LineSetGeometry
+.. autoclass:: omf.lineset.LineSetElement
 
 Data
 ----

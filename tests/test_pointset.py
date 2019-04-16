@@ -6,7 +6,7 @@ import omf
 
 def test_pointset():
     """Test pointset geometry validation"""
-    geom = omf.pointset.PointSetGeometry()
-    geom.vertices = np.random.rand(10, 3)
-    assert geom.validate()
-    assert geom.location_length('vertices') == 10
+    elem = omf.pointset.PointSetElement()
+    elem.vertices = np.random.rand(10, 3)
+    assert elem.validate()
+    assert elem.location_length('vertices') == 10
