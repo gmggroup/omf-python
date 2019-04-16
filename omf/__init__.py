@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from .base import Project
+from .blockmodel import RegularBlockModel
 from .data import (ColorArray, ColorData,
                    DateTimeArray, DateTimeColormap, DateTimeData,
                    Int2Array, Int3Array,
