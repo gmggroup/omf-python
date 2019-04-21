@@ -101,7 +101,7 @@ def test_doc_ex():
         geometry=omf.SurfaceGridGeometry(
             tensor_u=np.ones(10).astype(float),
             tensor_v=np.ones(15).astype(float),
-            origin=[50., 50., 50.],
+            corner=[50., 50., 50.],
             axis_u=[1., 0, 0],
             axis_v=[0, 0, 1.],
             offset_w=np.random.rand(11*16),
@@ -134,7 +134,7 @@ def test_doc_ex():
             tensor_u=np.ones(10).astype(float),
             tensor_v=np.ones(15).astype(float),
             tensor_w=np.ones(20).astype(float),
-            origin=[10., 10., -10]
+            corner=[10., 10., -10]
         ),
         data=[
             omf.ScalarData(

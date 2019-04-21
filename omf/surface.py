@@ -54,7 +54,7 @@ class SurfaceGridGeometry(ProjectElementGeometry):
     """Contains spatial information of a 2D grid"""
 
     corner = properties.Vector3(
-        'Origin of the Mesh relative to origin of the Project',
+        'Origin of the Mesh relative to the coordinate reference system',
         default=[0., 0., 0.]
     )
 
