@@ -62,7 +62,7 @@ class RegularBlockModel(_ParentBlockIndexMixin, ProjectElement):
 
     @properties.validator('size_blocks')
     def _validate_size_is_not_zero(self, change):
-        if change['value'] == 0:
+        if 0 in change['value']:
             raise properties.ValidationError(
                 'Block size cannot be 0',
                 prop='size_blocks',
@@ -133,8 +133,8 @@ class RegularBlockModel(_ParentBlockIndexMixin, ProjectElement):
             return None
         # Recalculating the sum on the fly is faster than checking md5
         cbi = np.r_[
-            np.array([0], dtype=np.uint8),
-            np.cumsum(self.cbc, dtype=np.uint8),
+            np.array([0], dtype=np.uint32),
+            np.cumsum(self.cbc, dtype=np.uint32),
         ]
         return cbi
 
