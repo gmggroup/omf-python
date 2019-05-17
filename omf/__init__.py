@@ -5,7 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from .base import Project
-from .blockmodel import RegularBlockModel, RegularSubBlockModel
+from .blockmodel import TensorBlockModel, RegularBlockModel, RegularSubBlockModel
 from .data import (ColorArray, ColorData,
                    DateTimeArray, DateTimeColormap, DateTimeData,
                    Int2Array, Int3Array,
@@ -18,7 +18,6 @@ from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
 from .texture import ImageTexture
-from .volume import VolumeGridElement
 
 from .fileio import OMFReader, OMFWriter
 

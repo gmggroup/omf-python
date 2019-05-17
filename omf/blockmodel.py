@@ -10,7 +10,36 @@ import properties
 from .base import ProjectElement
 
 
-class _ParentBlockIndexMixin(object):
+class BaseBlockModel(ProjectElement):
+    """Basic orientation properties for all block models"""
+    axis_u = properties.Vector3(
+        'Vector orientation of u-direction',
+        default='X',
+        length=1,
+    )
+    axis_v = properties.Vector3(
+        'Vector orientation of v-direction',
+        default='Y',
+        length=1,
+    )
+    axis_w = properties.Vector3(
+        'Vector orientation of w-direction',
+        default='Z',
+        length=1,
+    )
+    corner = properties.Vector3(
+        'Corner of the block model relative to Project coordinate reference system',
+        default=[0., 0., 0.],
+    )
+
+    @properties.validator
+    def _validate_axes(self):
+        """Check if mesh content is built correctly"""
+        if not (np.abs(self.axis_u.dot(self.axis_v) < 1e-6) and                #pylint: disable=no-member
+                np.abs(self.axis_v.dot(self.axis_w) < 1e-6) and                #pylint: disable=no-member
+                np.abs(self.axis_w.dot(self.axis_u) < 1e-6)):                  #pylint: disable=no-member
+            raise ValueError('axis_u, axis_v, and axis_w must be orthogonal')
+        return True
 
     @property
     def num_parent_blocks(self):
@@ -44,7 +73,65 @@ class _ParentBlockIndexMixin(object):
         return index
 
 
-class RegularBlockModel(_ParentBlockIndexMixin, ProjectElement):
+class TensorBlockModel(BaseBlockModel):
+    """Block model with variable spacing in each dimension"""
+    tensor_u = properties.Array(
+        'Tensor cell widths, u-direction',
+        shape=('*',),
+        dtype=float,
+    )
+    tensor_v = properties.Array(
+        'Tensor cell widths, v-direction',
+        shape=('*',),
+        dtype=float,
+    )
+    tensor_w = properties.Array(
+        'Tensor cell widths, w-direction',
+        shape=('*',),
+        dtype=float,
+    )
+
+    _valid_locations = ('vertices', 'cells')
+
+    def location_length(self, location):
+        """Return correct data length based on location"""
+        if location == 'cells':
+            return self.num_cells
+        return self.num_nodes
+
+    def _tensors_defined(self):
+        tensors = [self.tensor_u, self.tensor_v, self.tensor_w]
+        return all([tensor is not None for tensor in tensors])
+
+    @property
+    def num_nodes(self):
+        """Number of nodes (vertices)"""
+        if not self._tensors_defined():
+            return None
+        nodes = (
+            (len(self.tensor_u)+1) *
+            (len(self.tensor_v)+1) *
+            (len(self.tensor_w)+1)
+        )
+        return nodes
+
+    @property
+    def num_cells(self):
+        """Number of cells"""
+        if not self._tensors_defined():
+            return None
+        cells = len(self.tensor_u) * len(self.tensor_v) * len(self.tensor_w)
+        return cells
+
+    @property
+    def num_parent_blocks(self):
+        if not self._tensors_defined:
+            return None
+        blocks = [len(self.tensor_u), len(self.tensor_v), len(self.tensor_w)]
+        return blocks
+
+
+class RegularBlockModel(BaseBlockModel):
     """Block model with constant spacing in each dimension"""
 
     num_blocks = properties.List(
@@ -141,6 +228,8 @@ class RegularBlockModel(_ParentBlockIndexMixin, ProjectElement):
     @property
     def num_cells(self):
         """Number of cells from last value in the compressed block index"""
+        if self.cbi is None:
+            return None
         return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
@@ -152,7 +241,7 @@ class RegularBlockModel(_ParentBlockIndexMixin, ProjectElement):
         return self.num_blocks
 
 
-class RegularSubBlockModel(_ParentBlockIndexMixin, ProjectElement):
+class RegularSubBlockModel(BaseBlockModel):
     """Regular block model with an additional level of sub-blocks"""
 
     num_parent_blocks = properties.List(
@@ -273,6 +362,8 @@ class RegularSubBlockModel(_ParentBlockIndexMixin, ProjectElement):
     @property
     def num_cells(self):
         """Number of cells from last value in the compressed block index"""
+        if self.cbi is None:
+            return None
         return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
@@ -282,4 +373,8 @@ class RegularSubBlockModel(_ParentBlockIndexMixin, ProjectElement):
         return self.num_cells
 
     def refine(self, ijk):
-        self.cbc[self.ijk_to_index(ijk)] = np.prod(self.num_sub_blocks)
+        try:
+            inds = self.ijk_array_to_indices(ijk)
+        except ValueError:
+            inds = self.ijk_to_index(ijk)
+        self.cbc[inds] = np.prod(self.num_sub_blocks)

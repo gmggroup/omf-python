@@ -8,7 +8,7 @@ import omf
 
 def test_ijk_to_index():
 
-    class BlockModelTester(omf.blockmodel._ParentBlockIndexMixin):
+    class BlockModelTester(omf.blockmodel.BaseBlockModel):
 
         num_parent_blocks = None
 
@@ -37,6 +37,21 @@ def test_ijk_to_index():
     assert np.array_equal(block_model.ijk_array_to_indices([
         (0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (2, 3, 4)
     ]), [0, 1, 3, 12, 59])
+
+
+def test_tensorblockmodel():
+    """Test volume grid geometry validation"""
+    elem = omf.TensorBlockModel()
+    elem.tensor_u = [1., 1.]
+    elem.tensor_v = [2., 2., 2.]
+    elem.tensor_w = [3.]
+    assert elem.validate()
+    assert elem.location_length('vertices') == 24
+    assert elem.location_length('cells') == 6
+    elem.axis_v = [1., 1., 0]
+    with pytest.raises(ValueError):
+        elem.validate()
+    elem.axis_v = 'Y'
 
 
 class TestRegularBlockModel(object):

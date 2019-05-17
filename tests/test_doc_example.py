@@ -120,12 +120,12 @@ def test_doc_ex():
             ),
         ],
     )
-    vol = omf.VolumeGridElement(
+    vol = omf.TensorBlockModel(
         name='vol',
         tensor_u=np.ones(10).astype(float),
         tensor_v=np.ones(15).astype(float),
         tensor_w=np.ones(20).astype(float),
-        origin=[10., 10., -10],
+        corner=[10., 10., -10],
         data=[
             omf.ScalarData(
                 name='Random Data',
