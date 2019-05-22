@@ -95,5 +95,5 @@ To easily visualize OMF project files and data objects in a pure Python environm
 check out omfvista_ which provides a module for loading OMF datasets into PyVista_
 mesh objects for 3D visualization and analysis.
 
-.. _omfvista: https://github.com/OpenGeoVis/omfvtk
+.. _omfvista: https://github.com/OpenGeoVis/omfvista
 .. _PyVista: https://github.com/pyvista/pyvista
