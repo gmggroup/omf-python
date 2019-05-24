@@ -7,10 +7,15 @@ import omf
 
 
 def test_ijk_to_index():
+    """Test ijk indexing into parent blocks works as expected"""
 
     class BlockModelTester(omf.blockmodel.BaseBlockModel):
+        """Dummy Block Model class for overriding num_parent_blocks"""
 
         num_parent_blocks = None
+
+        def location_length(self, location):
+            return 0
 
     block_model = BlockModelTester()
     with pytest.raises(AttributeError):
@@ -55,6 +60,7 @@ def test_tensorblockmodel():
 
 
 class TestRegularBlockModel(object):
+    """Test class for regular block model functionality"""
 
     bm_class = omf.RegularBlockModel
 
@@ -134,6 +140,7 @@ class TestRegularBlockModel(object):
 
 
 class TestRegularSubBlockModel(object):
+    """Test class for regular sub block model functionality"""
 
     bm_class = omf.RegularSubBlockModel
 
@@ -228,6 +235,7 @@ class TestRegularSubBlockModel(object):
         )
 
     def test_location_length(self):
+        """Ensure location length updates as expected with block refinement"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
             num_sub_blocks=[3, 4, 5],
@@ -238,4 +246,3 @@ class TestRegularSubBlockModel(object):
         block_model.refine([0, 0, 0])
         assert block_model.location_length('parent_blocks') == 8
         assert block_model.location_length('sub_blocks') == 67
-

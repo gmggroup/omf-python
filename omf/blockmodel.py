@@ -43,12 +43,19 @@ class BaseBlockModel(ProjectElement):
 
     @property
     def num_parent_blocks(self):
+        """Computed property for number of parent blocks
+
+        This is required for ijk indexing. For tensor and regular block
+        models, all the blocks are considered parent blocks.
+        """
         raise NotImplementedError()
 
     def ijk_to_index(self, ijk):
+        """Return index for single ijk triple"""
         return self.ijk_array_to_indices([ijk])[0]
 
     def ijk_array_to_indices(self, ijk_array):
+        """Return an array of indices for a list of ijk triples"""
         blocks = self.num_parent_blocks
         if not blocks:
             raise AttributeError(
@@ -270,6 +277,7 @@ class RegularSubBlockModel(BaseBlockModel):
         max_length=3,
     )
     def size_sub_blocks(self):
+        """Computed sub block size"""
         if not self.num_sub_blocks or not self.size_parent_blocks:
             return None
         return self.size_parent_blocks / np.array(self.num_sub_blocks)
@@ -369,12 +377,18 @@ class RegularSubBlockModel(BaseBlockModel):
     def location_length(self, location):
         """Return correct data length based on location"""
         if location == 'parent_blocks':
-            return np.sum(self.cbc.astype(np.bool))
+            return np.sum(self.cbc.astype(np.bool))                            # pylint: disable=no-member
         return self.num_cells
 
     def refine(self, ijk):
+        """Refine parent blocks at a single ijk or a list of multiple ijks"""
+        if not self.cbc or not self.num_sub_blocks:
+            raise ValueError(
+                'Cannot refine sub block model without specifying number '
+                'of parent and sub blocks'
+            )
         try:
             inds = self.ijk_array_to_indices(ijk)
         except ValueError:
             inds = self.ijk_to_index(ijk)
-        self.cbc[inds] = np.prod(self.num_sub_blocks)
+        self.cbc[inds] = np.prod(self.num_sub_blocks)                          # pylint: disable=unsupported-assignment-operation
