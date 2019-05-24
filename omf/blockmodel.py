@@ -382,7 +382,7 @@ class RegularSubBlockModel(BaseBlockModel):
 
     def refine(self, ijk):
         """Refine parent blocks at a single ijk or a list of multiple ijks"""
-        if not self.cbc or not self.num_sub_blocks:
+        if self.cbc is None or not self.num_sub_blocks:
             raise ValueError(
                 'Cannot refine sub block model without specifying number '
                 'of parent and sub blocks'
