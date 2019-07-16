@@ -360,10 +360,9 @@ class RegularSubBlockModel(BaseBlockModel):
         """Compressed block index"""
         if self.cbc is None:
             return None
-        # Recalculating the sum on the fly is faster than checking md5
         cbi = np.r_[
-            np.array([0], dtype=np.uint32),
-            np.cumsum(self.cbc, dtype=np.uint32),
+            np.array([0], dtype=np.uint64),
+            np.cumsum(self.cbc, dtype=np.uint64),
         ]
         return cbi
 
@@ -392,3 +391,274 @@ class RegularSubBlockModel(BaseBlockModel):
         except ValueError:
             inds = self.ijk_to_index(ijk)
         self.cbc[inds] = np.prod(self.num_sub_blocks)                          # pylint: disable=unsupported-assignment-operation
+
+
+class OctreeSubBlockModel(BaseBlockModel):
+    """Block model where sub-blocks follow an octree pattern"""
+
+    max_level = 8  # Maximum times blocks can be subdivided
+    level_bits = 4  # Enough for 0 to 8 refinements
+
+    num_parent_blocks = properties.List(
+        'Number of parent blocks along u, v, and w axes',
+        properties.Integer('', min=1),
+        min_length=3,
+        max_length=3,
+    )
+    size_parent_blocks = properties.List(
+        'Size of parent blocks in the u, v, and w dimensions',
+        properties.Float('', min=0),
+        min_length=3,
+        max_length=3,
+    )
+
+    _valid_locations = ('parent_blocks', 'sub_blocks')
+
+    @properties.Array(
+        'Compressed block count - for octree sub block models this must '
+        'have length equal to the product of num_parent_blocks and each '
+        'value must be equal to the number of octree sub blocks within '
+        'the corresponding parent block (since max level is 8 in each '
+        'dimension, the max number of sub blocks in a parent is (2^8)^3), '
+        '1 (if parent block is not subdivided) or 0 (if parent block is '
+        'unused); the default is an array of 1s',
+        shape=('*',),
+        dtype=(int, bool),
+        coerce=False,
+    )
+    def cbc(self):
+        """Compressed block count"""
+        cbc_cache = getattr(self, '_cbc', None)
+        if not self.num_parent_blocks:
+            return cbc_cache
+        cbc_len = np.prod(self.num_parent_blocks)
+        if cbc_cache is None or len(cbc_cache) != cbc_len:
+            self._cbc = np.ones(cbc_len, dtype=np.uint32)                        # pylint: disable=attribute-defined-outside-init
+        return self._cbc
+
+    @cbc.setter
+    def cbc(self, value):
+        self._cbc = self.validate_cbc(value)                                   # pylint: disable=attribute-defined-outside-init
+
+    def validate_cbc(self, value):
+        """Ensure cbc is correct size and values"""
+        if not self.num_parent_blocks:
+            pass
+        elif len(value) != np.prod(self.num_parent_blocks):
+            raise properties.ValidationError(
+                'cbc must have length equal to the product '
+                'of num_parent_blocks',
+                prop='cbc',
+                instance=self,
+                reason='invalid',
+            )
+        if np.max(value) > 8**8 or np.min(value) < 0:
+            raise properties.ValidationError(
+                'cbc must have values between 0 and 8^8',
+                prop='cbc',
+                instance=self,
+                reason='invalid',
+            )
+        return value
+
+    @properties.validator
+    def _validate_cbc(self):
+        self.validate_cbc(self.cbc)
+
+    @properties.Array(
+        'Compressed block index - used for indexing attributes '
+        'into the sub block model; must have length equal to the '
+        'product of num_parent_blocks plus 1 and monotonically increasing',
+        shape=('*',),
+        dtype=int,
+        coerce=False,
+    )
+    def cbi(self):
+        """Compressed block index"""
+        if self.cbc is None:
+            return None
+        cbi = np.r_[
+            np.array([0], dtype=np.uint64),
+            np.cumsum(self.cbc, dtype=np.uint64),
+        ]
+        return cbi
+
+    @properties.Array(
+        'Z-order curves - sub block location pointer and level, encoded '
+        'as bits',
+        shape=('*',),
+        dtype=int,
+        coerce=False,
+    )
+    def zoc(self):
+        zoc_cache = getattr(self, '_zoc', None)
+        if not self.num_parent_blocks:
+            return zoc_cache
+        if zoc_cache is None:
+            self._zoc = np.zeros(
+                np.prod(self.num_parent_blocks),
+                dtype=np.int32,
+            )
+        return self._zoc
+
+    @zoc.setter
+    def zoc(self, value):
+        self._zoc = self.validate_zoc(value)
+
+    def validate_zoc(self, value):
+        """Ensure Z-order curve array is correct length and valid values"""
+        cbi = self.cbi
+        if cbi is None:
+            pass
+        elif len(value) != cbi[-1]:
+            raise properties.ValidationError(
+                'zoc must have length equal to maximum compressed block '
+                'index value',
+                prop='zoc',
+                instance=self,
+                reason='invalid',
+            )
+        max_curve_value = 268435448  # -> 0b1111111111111111111111111000
+        if np.max(value) > max_curve_value or np.min(value) < 0:
+            raise properties.ValidationError(
+                'zoc must have values between 0 and 8^8',
+                prop='cbc',
+                instance=self,
+                reason='invalid',
+            )
+        return value
+
+    @properties.validator
+    def _validate_zoc(self):
+        self.validate_zoc(self.zoc)
+
+    @property
+    def num_cells(self):
+        """Number of cells from last value in the compressed block index"""
+        if self.cbi is None:
+            return None
+        return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
+
+    def location_length(self, location):
+        """Return correct data length based on location"""
+        if location == 'parent_blocks':
+            return np.sum(self.cbc.astype(np.bool))                            # pylint: disable=no-member
+        return self.num_cells
+
+    @staticmethod
+    def bitrange(x, width, start, end):
+        """Extract a bit range as an integer
+
+        [start, end) is inclusive lower bound, exclusive upper bound.
+        """
+        return x >> (width - end) & ((2 ** (end - start)) - 1)
+
+    @classmethod
+    def get_curve_value(self, pointer, level):
+        """Get Z-order curve value from pointer and level
+
+        Values range from 0 (pointer=[0, 0, 0], level=0) to
+        268435448 (pointer=[255, 255, 255], level=8).
+        """
+        idx = 0
+        iwidth = self.max_level * 3
+        for i in range(iwidth):
+            bitoff = self.max_level - (i // 3) - 1
+            poff = 3 - (i % 3) - 1
+            b = self.bitrange(
+                x=pointer[3 - 1 - poff],
+                width=self.max_level,
+                start=bitoff,
+                end=bitoff + 1,
+            ) << i
+            idx |= b
+        return (idx << self.level_bits) + level
+
+    @classmethod
+    def get_pointer(self, curve_value):
+        """Get pointer value from Z-order curve value
+
+        Pointer values are length-3 with values between 0 and 255
+        """
+        index = curve_value >> self.level_bits
+        pointer = [0] * 3
+        iwidth = self.max_level * 3
+        for i in range(iwidth):
+            b = self.bitrange(
+                x=index,
+                width=iwidth,
+                start=i,
+                end=i + 1,
+            ) << (iwidth - i - 1) // 3
+            pointer[i % 3] |= b
+        pointer.reverse()
+        return pointer
+
+    @classmethod
+    def get_level(self, curve_value):
+        """Get level value from Z-order curve value
+
+        Level comes from the last 4 bits, with values between 0 and 8
+        """
+        return curve_value & (2 ** self.level_bits - 1)
+
+    @classmethod
+    def level_width(self, level):
+        """Width of a level, in bits
+
+        Max level of 8 has level width of 1; min level of 0 has level
+        width of 256.
+        """
+        if not 0 <= level <= self.max_level:
+            raise ValueError(
+                'level must be between 0 and {}'.format(max_level)
+            )
+        return 2 ** (self.max_level - level)
+
+    def refine(self, index, ijk=None, refinements=1):
+        """Subdivide at the given index
+
+        If ijk is provided, index is relative to ijk parent block.
+        Otherwise, index is relative to the entire block model.
+
+        By default, blocks are refined a single level, from 1 sub-block
+        to 8 sub-blocks. However, a greater number of refinements may be
+        specified, where the final number of sub-blocks equals
+        (2**refinements)**3.
+        """
+        if ijk is not None:
+            index += int(self.cbi[self.ijk_to_index(ijk)])
+        parent_index = np.sum(index >= self.cbi) - 1
+        if not 0 <= index < len(self.zoc):
+            raise ValueError(
+                'index must be between 0 and {}'.format(len(self.zoc))
+            )
+
+        curve_value = self.zoc[index]
+        level = self.get_level(curve_value)
+        if not 0 <= refinements <= self.max_level - level:
+            raise ValueError(
+                'refinements must be between 0 and {}'.format(
+                    self.max_level - level
+                )
+            )
+        new_width = self.level_width(level + refinements)
+
+        new_pointers = np.indices([2**refinements]*3)
+        new_pointers = new_pointers.reshape(3, (2**refinements)**3).T
+        new_pointers = new_pointers * new_width
+
+        pointer = self.get_pointer(curve_value)
+        new_pointers = new_pointers + pointer
+
+        new_curve_values = sorted([
+            self.get_curve_value(pointer, level + refinements)
+            for pointer in new_pointers
+        ])
+
+        self.cbc[parent_index] += len(new_curve_values) - 1
+        self.zoc = np.r_[
+            self.zoc[:index],
+            new_curve_values,
+            self.zoc[index+1:],
+        ]
