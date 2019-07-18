@@ -14,7 +14,7 @@ These different elements may have :ref:`data` or image :ref:`textures`.
     pointset
     lineset
     surface
-    volume
+    blockmodel
     data
     textures
     arrays

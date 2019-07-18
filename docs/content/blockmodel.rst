@@ -1,7 +1,7 @@
 .. _volumes:
 
-Volume
-******
+Block Models
+************
 
 Transferring a block model from Resource Estimation software into Mine planning software.
 
@@ -15,7 +15,7 @@ Element
     :width: 80%
     :align: center
 
-.. autoclass:: omf.volume.VolumeGridElement
+.. autoclass:: omf.blockmodel.TensorBlockModel
 
 Data
 ----
