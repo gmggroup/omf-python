@@ -91,8 +91,9 @@ Or from `github <https://github.com/gmggroup/omf>`_:
 3D Visualization
 ----------------
 
-To easily visualize OMF project files and data objects in a pure Python environment, check out ``omfvtk`` (`OMF-VTK`_) which provides tools for creating interactive renderings of OMF datasets using ``vtki`` (the vtkInterface_).
+To easily visualize OMF project files and data objects in a pure Python environment,
+check out omfvista_ which provides a module for loading OMF datasets into PyVista_
+mesh objects for 3D visualization and analysis.
 
-.. _OMF-VTK: https://github.com/OpenGeoVis/omfvtk
-
-.. _vtkInterface: https://github.com/vtkiorg/vtki
+.. _omfvista: https://github.com/OpenGeoVis/omfvista
+.. _PyVista: https://github.com/pyvista/pyvista
