@@ -1,4 +1,5 @@
 """Tests for data object validation"""
+import datetime
 import pytest
 
 import omf
@@ -65,6 +66,12 @@ def test_mapped_data():
     with pytest.raises(ValueError):
         mdata.validate()
     mdata.array.array[0] = 0
+    mdata.metadata = {
+        'units': 'm',
+        'date_created': str(datetime.datetime.utcnow()),
+        'version': 'v1.3',
+    }
+    assert mdata.validate()
     mdata.legends.append(
         omf.data.Legend(
             name='short',
