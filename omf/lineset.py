@@ -49,7 +49,7 @@ class LineSetElement(ProjectElement):
     def _validate_mesh(self):
         """Ensures segment indices are valid"""
         if np.min(self.segments.array) < 0:
-            raise ValueError('Segments may only have positive integers')
+            raise properties.ValidationError('Segments may only have positive integers')
         if np.max(self.segments.array) >= len(self.vertices.array):
-            raise ValueError('Segments expects more vertices than provided')
+            raise properties.ValidationError('Segments expects more vertices than provided')
         return True

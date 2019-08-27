@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from .base import Project
 from .blockmodel import RegularBlockModel
+from .composite import CompositeElement
 from .data import (ColorArray, ColorData,
                    DateTimeArray, DateTimeColormap, DateTimeData,
                    Int2Array, Int3Array,
