@@ -13,6 +13,8 @@ from .texture import ImageTexture
 
 class PointSetElement(ProjectElement):
     """Contains point set spatial information and attributes"""
+    class_type = 'omf.element.pointset'
+
     vertices = properties.Instance(
         'Spatial coordinates of points relative to point set origin',
         Vector3Array,

@@ -12,6 +12,8 @@ from .serializers import png_serializer, png_deserializer
 
 class ImageTexture(ContentModel):
     """Contains an image that can be mapped to a point set or surface"""
+    class_type = 'omf.texture.image'
+
     origin = properties.Vector3(
         'Origin point of the texture',
         default=[0., 0., 0.],

@@ -69,6 +69,52 @@ class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
         return True
 
 
+    def serialize(self, include_class=True, save_dynamic=False, **kwargs):
+        output = super(UidModel, self).serialize(
+            include_class,
+            save_dynamic,
+            **kwargs
+        )
+        dict_to_mutate = None
+        if isinstance(output, dict):
+            dict_to_mutate = output
+        elif kwargs.get('registry', None):
+            dict_to_mutate = kwargs.get('registry')
+        if dict_to_mutate:
+            for entry in dict_to_mutate.values():
+                if not isinstance(entry, dict) or '__class__' not in entry:
+                    continue
+                entry.update(
+                    {'type': self._REGISTRY[entry.pop('__class__')].class_type}
+                )
+        return output
+
+
+    @classmethod
+    def deserialize(cls, value, trusted=False, strict=False,
+                    assert_valid=False, **kwargs):
+        if kwargs.get('registry', None) is None:
+            if not isinstance(value, dict):
+                raise ValueError('UidModel must deserialize from dictionary')
+            value = value.copy()
+            for entry in value.values():
+                if not isinstance(entry, dict) or 'type' not in entry:
+                    continue
+                class_type = entry.pop('type')
+                for class_name, class_value in cls._REGISTRY.items():
+                    if getattr(class_value, 'class_type', '') == class_type:
+                        entry['__class__'] = class_name
+                        break
+                else:
+                    raise ValueError(
+                        'Unrecognized class type: {}'.format(class_type)
+                    )
+        return super(UidModel, cls).deserialize(
+            value, trusted, strict, assert_valid, **kwargs
+        )
+
+
+
 class ContentModel(UidModel):
     """ContentModel is a UidModel with title and description"""
     name = properties.String(
@@ -146,6 +192,8 @@ class ProjectElement(ContentModel):
 
 class Project(ContentModel):
     """OMF Project for serializing to .omf file"""
+    class_type = 'omf.project'
+
     author = properties.String(
         'Author',
         default=''

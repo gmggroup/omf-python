@@ -47,6 +47,8 @@ class BaseSurfaceElement(ProjectElement):
 
 class SurfaceElement(BaseSurfaceElement):
     """Contains triangulated surface spatial information and attributes"""
+    class_type = 'omf.element.surface'
+
     vertices = properties.Instance(
         'Spatial coordinates of vertices relative to surface origin',
         Vector3Array,
@@ -77,6 +79,8 @@ class SurfaceElement(BaseSurfaceElement):
 
 class SurfaceGridElement(BaseSurfaceElement):
     """Contains 2D grid spatial information and attributes"""
+    class_type = 'omf.element.surfacegrid'
+
     tensor_u = properties.Array(
         'Grid cell widths, u-direction',
         shape=('*',),
