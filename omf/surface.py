@@ -9,17 +9,11 @@ import properties
 
 from .base import ProjectElement
 from .data import Int3Array, ScalarArray, Vector3Array
-from .texture import ImageTexture
+from .texture import HasTexturesMixin
 
 
-class BaseSurfaceElement(ProjectElement):
+class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
     """Base class for surface elements"""
-    textures = properties.List(
-        'Images mapped on the surface element',
-        prop=ImageTexture,
-        required=False,
-        default=list,
-    )
     subtype = properties.StringChoice(
         'Category of Surface',
         choices=('surface',),
@@ -45,7 +39,7 @@ class BaseSurfaceElement(ProjectElement):
         raise NotImplementedError()
 
 
-class SurfaceElement(BaseSurfaceElement):
+class SurfaceElement(BaseSurfaceElement):                                      #pylint: disable=too-many-ancestors
     """Contains triangulated surface spatial information and attributes"""
     vertices = properties.Instance(
         'Spatial coordinates of vertices relative to surface origin',
@@ -75,7 +69,7 @@ class SurfaceElement(BaseSurfaceElement):
         return True
 
 
-class SurfaceGridElement(BaseSurfaceElement):
+class SurfaceGridElement(BaseSurfaceElement):                                  #pylint: disable=too-many-ancestors
     """Contains 2D grid spatial information and attributes"""
     tensor_u = properties.Array(
         'Grid cell widths, u-direction',
