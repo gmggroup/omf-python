@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 from .base import Project
 from .blockmodel import RegularBlockModel
 from .data import (
-    Array, Legend, MappedData, Colormap, NumericData,
+    Array, Legend, CategoryData, Colormap, NumericData,
 )
 from .lineset import LineSetElement
 from .pointset import PointSetElement

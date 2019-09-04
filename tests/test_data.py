@@ -52,49 +52,44 @@ def test_array_instance_prop():
 def test_colormap():
     """Test colormap validation"""
     cmap = omf.data.Colormap()
-    with pytest.raises(ValueError):
+    with pytest.raises(properties.ValidationError):
         cmap.limits = [1., 0.]
-    cmap.gradient = [[0, 0, 0]]*128
+    cmap.gradient = [[0, 0, 0]]*100
     cmap.limits = [0., 1.]
     cmap.limits[0] = 2.
-    with pytest.raises(ValueError):
+    with pytest.raises(properties.ValidationError):
         cmap.validate()
+    cmap.limits[0] = 0.
+    cmap.validate()
+    with pytest.raises(properties.ValidationError):
+        cmap.gradient = np.array([[0, 0, -1]])
+    with pytest.raises(properties.ValidationError):
+        cmap.gradient = np.array([[0, 0, 256]])
 
 
 def test_mapped_data():
     """Test mapped data validation"""
-    mdata = omf.data.MappedData()
+    mdata = omf.data.CategoryData()
     mdata.indices = [0, 2, 1, -1]
-    mdata.legends = [
-        omf.data.Legend(
-            name='color',
-            values=[[0, 0, 0], [1, 1, 1], [255, 255, 255]],
-        ),
-        omf.data.Legend(
-            name='letter',
-            values=['x', 'y', 'z'],
-        ),
-    ]
+    mdata.categories = omf.data.Legend(
+        name='letter',
+        values=['x', 'y', 'z'],
+    )
     mdata.location = 'vertices'
     assert mdata.validate()
     assert mdata.indices is mdata.array
-    assert mdata.value_dict(0) == {'color': (0, 0, 0), 'letter': 'x'}
-    assert mdata.value_dict(1) == {'color': (255, 255, 255), 'letter': 'z'}
-    assert mdata.value_dict(2) == {'color': (1, 1, 1), 'letter': 'y'}
-    assert mdata.value_dict(3) is None
-    with pytest.raises(ValueError):
+    with pytest.raises(properties.ValidationError):
         mdata.array = [0.5, 1.5, 2.5]
-    with pytest.raises(ValueError):
-        mdata.array = [-10, 0, 1]
-    mdata.array.array[0] = -10
-    with pytest.raises(ValueError):
-        mdata.validate()
+    mdata.array = [-10, 0, 1]
+    assert mdata.validate()
     mdata.array.array[0] = 0
-    mdata.legends.append(
-        omf.data.Legend(
-            name='short',
-            values=[0.5, 0.6],
-        )
-    )
-    with pytest.raises(ValueError):
+    mdata.categories.colors = ['red', 'blue', 'green']
+    assert mdata.validate()
+    mdata.categories.colors = ['red', 'blue']
+    with pytest.raises(properties.ValidationError):
         mdata.validate()
+    with pytest.raises(properties.ValidationError):
+        mdata.categories = omf.data.Legend(
+            name='numeric',
+            values=[0.5, 0.6, 0.7],
+        )

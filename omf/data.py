@@ -180,30 +180,41 @@ class NumericData(ProjectElementData):
 
 
 class Legend(ContentModel):
-    """Legends to be used with DataMap indices"""
-    values = properties.Union(
+    """Legends to be used with CategoryData indices"""
+    values = properties.List(
         'values for mapping indexed data',
-        props=(
-            properties.List('', properties.Color('')),
-            properties.List('', properties.String('')),
-            properties.List('', properties.Integer('')),
-            properties.List('', properties.Float('')),
-        )
+        properties.String(''),
+    )
+    colors = properties.List(
+        'colors corresponding to values',
+        properties.Color(''),
+        required=False,
     )
 
+    @properties.validator
+    def _validate_lengths(self):
+        if self.colors is None or len(self.colors) == len(self.values):
+            return True
+        raise properties.ValidationError(
+            'Legend colors and values must be the same length'
+        )
 
-class MappedData(ProjectElementData):
-    """Data array of indices linked to legend values or -1 for no data"""
+
+class CategoryData(ProjectElementData):
+    """Data array of indices linked to category values
+
+    For no data, indices should correspond to a value outside the
+    range of the categories.
+    """
     array = ArrayInstanceProperty(
-        'indices into 1 or more legends for locations on a mesh',
+        'indices into the category values for locations on a mesh',
         shape=('*',),
         dtype=int,
 
     )
-    legends = properties.List(
-        'legends into which the indices map',
+    categories = properties.Instance(
+        'categories into which the indices map',
         Legend,
-        default=list,
     )
 
     @property
@@ -214,37 +225,3 @@ class MappedData(ProjectElementData):
     @indices.setter
     def indices(self, value):
         self.array = value
-
-    def value_dict(self, i):
-        """Return a dictionary of legend entries based on index"""
-        if self.indices[i] == -1:
-            return None
-        entry = {legend.name: legend.values[self.indices[i]]                    #pylint: disable=unsubscriptable-object
-                 for legend in self.legends}                                    #pylint: disable=not-an-iterable
-        return entry
-
-    @properties.validator('array')
-    def _validate_min_ind(self, change):                                       #pylint: disable=no-self-use
-        """This validation call fires immediately when indices is set"""
-        if change['value'].array.dtype.kind != 'i':
-            raise ValueError('DataMap indices must be integers')
-        if np.min(change['value'].array) < -1:
-            raise ValueError('DataMap indices must be >= -1')
-
-    @properties.validator
-    def _validate_indices(self):
-        """This validation call fires on validate() after everything is set"""
-        if np.min(self.indices.array) < -1:                                    #pylint: disable=no-member
-            raise ValueError(
-                'Indices of DataMap {} must be >= -1'.format(self.name)
-            )
-        for legend in self.legends:                                            #pylint: disable=not-an-iterable
-            if np.max(self.indices.array) >= len(legend.values):               #pylint: disable=no-member
-                raise ValueError(
-                    'Indices of DataMap {dm} exceed number of available '
-                    'entries in Legend {leg}'.format(
-                        dm=self.name,
-                        leg=legend.name
-                    )
-                )
-        return True
