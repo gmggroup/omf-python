@@ -7,15 +7,16 @@ from __future__ import unicode_literals
 import properties
 
 from .base import ProjectElement
-from .data import Vector3Array
+from .data import ArrayInstanceProperty
 from .texture import ImageTexture
 
 
 class PointSetElement(ProjectElement):
     """Contains point set spatial information and attributes"""
-    vertices = properties.Instance(
+    vertices = ArrayInstanceProperty(
         'Spatial coordinates of points relative to point set origin',
-        Vector3Array,
+        shape=('*', 3),
+        dtype=float,
     )
     textures = properties.List(
         'Images mapped on the element',

@@ -8,18 +8,20 @@ import numpy as np
 import properties
 
 from .base import ProjectElement
-from .data import Int2Array, Vector3Array
+from .data import ArrayInstanceProperty
 
 
 class LineSetElement(ProjectElement):
     """Contains line set spatial information and attributes"""
-    vertices = properties.Instance(
+    vertices = ArrayInstanceProperty(
         'Spatial coordinates of line vertices relative to line set origin',
-        Vector3Array,
+        shape=('*', 3),
+        dtype=float,
     )
-    segments = properties.Instance(
+    segments = ArrayInstanceProperty(
         'Endpoint vertex indices of line segments',
-        Int2Array,
+        shape=('*', 2),
+        dtype=int,
     )
     subtype = properties.StringChoice(
         'Category of LineSet',
