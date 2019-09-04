@@ -138,7 +138,7 @@ class ArrayInstanceProperty(properties.Instance):
 
 
 class Colormap(ContentModel):
-    """Length-128 color gradient with min/max values, used with ScalarData"""
+    """Color gradient with min/max values, used with NumericData"""
     gradient = ArrayInstanceProperty(
         'N x 3 Array of RGB values between 0 and 255 which defines '
         'the color gradient',
@@ -153,16 +153,26 @@ class Colormap(ContentModel):
         default=properties.undefined,
     )
 
+    @properties.validator('gradient')
+    def _check_gradient_values(self, change):
+        """Ensure gradient values are all between 0 and 255"""
+        arr = change['value'].array
+        if arr is None:
+            return
+        arr_uint8 = arr.astype('uint8')
+        if not np.array_equal(arr, arr_uint8):
+            raise properties.ValidationError(
+                'Gradient must be an array of RGB values between 0 and 255'
+            )
+        change['value'].array = arr_uint8
+
     @properties.validator('limits')
     def _check_limits_on_change(self, change):                                 #pylint: disable=no-self-use
         """Ensure limits are valid"""
         if change['value'][0] > change['value'][1]:
-            raise ValueError('Colormap limits[0] must be <= limits[1]')
-
-    @properties.validator
-    def _check_limits_on_validate(self):
-        """Ensure limits are valid"""
-        self._check_limits_on_change({'value': self.limits})
+            raise properties.ValidationError(
+                'Colormap limits[0] must be <= limits[1]'
+            )
 
 
 class NumericData(ProjectElementData):
