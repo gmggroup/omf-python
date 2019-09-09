@@ -11,7 +11,7 @@ Batch export multiple different object types from a geological modeling software
 
 .. image:: /images/ProjectExport.png
 
-.. autoclass:: omf.fileio.OMFWriter
+.. autofunction:: omf.fileio.save_as_omf
 
 
 OMF Reader
@@ -21,4 +21,4 @@ Select which objects from the file are to be imported into a 3D visualization so
 
 .. image:: /images/ProjectImport.png
 
-.. autoclass:: omf.fileio.OMFReader
+.. autofunction:: omf.fileio.load_omf
