@@ -20,7 +20,7 @@ from .surface import SurfaceElement, SurfaceGridElement
 from .texture import ImageTexture
 from .volume import VolumeGridElement
 
-from .fileio import OMFReader, OMFWriter
+from .fileio import load_omf, save_as_omf
 
 __version__ = '1.0.1'
 __author__ = 'Global Mining Guidelines Group'

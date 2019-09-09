@@ -11,20 +11,14 @@ import pytest
 import omf
 
 
-@pytest.mark.parametrize(('arr', 'mode'), [
-    ([1, 2, 3], 'wb'),
-    (np.array(['a', 'b', 'c']), 'wb'),
-    (np.array([1, 2, 3]), 'w'),
+@pytest.mark.parametrize('arr', [
+    [1, 2, 3],
+    np.array(['a', 'b', 'c']),
 ])
-def test_bad_array_serializer(arr, mode):
+def test_bad_array_serializer(arr):
     """Test array serializer failures"""
-    open_file = mock.MagicMock(
-        mode=mode,
-        write=lambda _: None,
-        tell=lambda: 0,
-    )
     with pytest.raises(ValueError):
-        omf.serializers.array_serializer(arr, open_file)
+        omf.serializers.array_serializer(arr, {})
 
 
 @pytest.mark.parametrize(('arr', 'dtype'), [
@@ -34,24 +28,16 @@ def test_bad_array_serializer(arr, mode):
 ])
 def test_array_serializer(arr, dtype):
     """Test array serializer creates correct output index"""
-    open_file = mock.MagicMock(
-        mode='wb',
-        write=lambda _: None,
-        tell=lambda: 0,
-    )
-    output = omf.serializers.array_serializer(arr, open_file)
+    binary_dict = {}
+    output = omf.serializers.array_serializer(arr, binary_dict)
     assert output['start'] == 0
     assert output['dtype'] == dtype
-    assert output['length'] == 0
+    assert output['length'] == 24
+    assert output['array'] in binary_dict
 
 def test_array_serializer_none():
     """Test array serializer when value is None"""
-    open_file = mock.MagicMock(
-        mode='wb',
-        write=lambda _: None,
-        tell=lambda: 0,
-    )
-    output = omf.serializers.array_serializer(None, open_file)
+    output = omf.serializers.array_serializer(None, {})
     assert output is None
 
 
@@ -78,9 +64,10 @@ def test_bad_deserialize(mock_decompress, mock_frombuffer, dtype, shape):
         'dtype': dtype,
         'start': 0,
         'length': 0,
+        'array': 'a',
     }
     with pytest.raises(AssertionError):
-        deserializer(index, io.BytesIO())
+        deserializer(index, {'a': None})
 
 
 @pytest.mark.parametrize('arr', [
@@ -91,20 +78,14 @@ def test_bad_deserialize(mock_decompress, mock_frombuffer, dtype, shape):
 ])
 def test_array_serialize_round_trip(arr):
     """Test array serialization/deserialization correctly round-trips"""
-    file = io.BytesIO()
-    mock_file = mock.MagicMock()
-    mock_file.seek = file.seek
-    mock_file.read = file.read
-    mock_file.tell = file.tell
-    mock_file.write = file.write
-    mock_file.mode = 'wb'
     for i in range(len(arr.shape) + 1):
         input_shape = list(arr.shape)
         if i > 0:
             input_shape[i-1] = '*'
-        index = omf.serializers.array_serializer(arr, mock_file)
+        binary_dict = {}
+        index = omf.serializers.array_serializer(arr, binary_dict)
         deserializer = omf.serializers.array_deserializer(input_shape)
-        output = deserializer(index, mock_file)
+        output = deserializer(index, binary_dict)
         assert output.shape == arr.shape
         assert output.dtype == arr.dtype
         assert np.allclose(output, arr, equal_nan=True)
@@ -113,30 +94,30 @@ def test_array_serialize_round_trip(arr):
 def test_bad_png_serializer():
     """Test invalid PNG serializer values"""
     with pytest.raises(ValueError):
-        omf.serializers.png_serializer(io.StringIO(), io.BytesIO())
+        omf.serializers.png_serializer(io.StringIO(), {})
 
 
 def test_png_serializer():
     """Test PNG image serializes correctly"""
-    output = omf.serializers.png_serializer(io.BytesIO(), io.BytesIO())
+    binary_dict = {}
+    output = omf.serializers.png_serializer(io.BytesIO(), binary_dict)
     assert output['start'] == 0
     assert output['dtype'] == 'image/png'
-    assert output['length'] == 8
-    assert omf.serializers.png_serializer(None, io.BytesIO()) is None
+    assert output['length'] == 0
+    assert output['image'] in binary_dict
+    assert omf.serializers.png_serializer(None, {}) is None
 
 
 def test_bad_png_deserializer():
     """Test invalid PNG deserialier input index"""
     index = {'start': 0, 'length': 0, 'dtype': 'image'}
     with pytest.raises(AssertionError):
-        omf.serializers.png_deserializer(index, io.BytesIO())
+        omf.serializers.png_deserializer(index, {})
 
 
 def test_png_serialize_round_trip():
     """Test PNG serialization/deserialization correctly round-trips"""
-    file = io.BytesIO()
-    index = omf.serializers.png_serializer(io.BytesIO(), file)
-    output = omf.serializers.png_deserializer(index, file)
-    assert output.tell() == 0
-    file.seek(0, 2)
+    binary_dict = {}
+    index = omf.serializers.png_serializer(io.BytesIO(), binary_dict)
+    output = omf.serializers.png_deserializer(index, binary_dict)
     assert output.tell() == 0

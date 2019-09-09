@@ -11,6 +11,11 @@ def test_doc_ex():
     """Acceptance test of the example from the documentation"""
     dirname, _ = os.path.split(os.path.abspath(__file__))
     pngfile = os.path.sep.join([dirname, 'out.png'])
+    serialfile = os.path.sep.join([dirname, 'out.omf'])
+    if os.path.exists(pngfile):
+        os.remove(pngfile)
+    if os.path.exists(serialfile):
+        os.remove(serialfile)
     img = ['110010010011', '101011010100', '110010110101', '100010010011']
     img = [[int(val) for val in value] for value in img]
     writer = png.Writer(len(img[0]), len(img), greyscale=True, bitdepth=16)
@@ -136,14 +141,13 @@ def test_doc_ex():
     )
     proj.elements = [pts, lin, surf, grid, vol]
     assert proj.validate()
-    serialfile = os.path.sep.join([dirname, 'out.omf'])
-    omf.OMFWriter(proj, serialfile)
-    reader = omf.OMFReader(serialfile)
-    reader.get_project_overview()
-    new_proj = reader.get_project()
+    omf.save_as_omf(proj, serialfile)
+    omf.base.UidModel._INSTANCES = {}                                          #pylint: disable=protected-access
+    omf.load_omf(serialfile, include_binary=False)
+    omf.base.UidModel._INSTANCES = {}                                          #pylint: disable=protected-access
+    new_proj = omf.load_omf(serialfile)
     assert new_proj.validate()
     assert str(new_proj.elements[3].textures[0].uid) == \
         str(proj.elements[3].textures[0].uid)
-    del reader
     os.remove(pngfile)
     os.remove(serialfile)
