@@ -39,7 +39,7 @@ def save_as_omf(project, filename):
         file=filename,
         mode='w',
         compression=zipfile.ZIP_DEFLATED,
-        allowZip64=False,
+        allowZip64=True,
     )
     serial_info = zipfile.ZipInfo(
         filename='project.json',
