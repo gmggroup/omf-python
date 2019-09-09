@@ -48,16 +48,14 @@ def test_bad_shape():
 
 
 @mock.patch('omf.serializers.np.frombuffer')
-@mock.patch('omf.serializers.zlib.decompress')
 @pytest.mark.parametrize(('dtype', 'shape'), [
     ('int', [3, 3]),
     ('<i8', [5]),
     ('<i8', [10]),
     ('<i8', [4, '*']),
 ])
-def test_bad_deserialize(mock_decompress, mock_frombuffer, dtype, shape):
+def test_bad_deserialize(mock_frombuffer, dtype, shape):
     """Test expected errors during deserialization"""
-    mock_decompress.return_value = None
     mock_frombuffer.return_value = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
     deserializer = omf.serializers.array_deserializer(shape)
     index = {
