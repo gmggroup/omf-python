@@ -20,9 +20,8 @@ from .surface import SurfaceElement, SurfaceGridElement
 from .texture import ImageTexture
 from .volume import VolumeGridElement
 
-from .fileio import load_omf, save_as_omf
+from .fileio import load_omf, save_as_omf, __version__
 
-__version__ = '1.0.1'
 __author__ = 'Global Mining Guidelines Group'
 __license__ = 'MIT License'
 __copyright__ = 'Copyright 2019 Global Mining Guidelines Group'

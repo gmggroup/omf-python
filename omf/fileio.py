@@ -11,6 +11,8 @@ import zipfile
 
 from .base import Project
 
+__version__ = '1.0.1'
+
 IGNORED_OVERVIEW_PROPS = (
     'data', 'textures', 'vertices', 'segments', 'triangles', 'offset_w'
 )
@@ -35,6 +37,7 @@ def save_as_omf(project, filename):
         raise ValueError('File already exists: {}'.format(filename))
     binary_dict = {}
     serial_dict = project.serialize(binary_dict=binary_dict)
+    serial_dict['version'] = __version__
     zip_file = zipfile.ZipFile(
         file=filename,
         mode='w',
@@ -77,6 +80,7 @@ def load_omf(filename, include_binary=True):
             elif include_binary:
                 binary_dict[info.filename] = file.read()
     zip_file.close()
+    serial_dict.pop('version')
     project = Project.deserialize(
         value=serial_dict,
         binary_dict=binary_dict,
