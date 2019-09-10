@@ -28,17 +28,17 @@ def setup_texture(func):
 
 
 @setup_texture
-def test_imagetexture(pngfile):
-    """Test image texture validation"""
-    tex = omf.ImageTexture()
+def test_projectedtexture(pngfile):
+    """Test projected texture validation"""
+    tex = omf.ProjectedTexture()
     tex.image = pngfile
     assert tex.validate()
 
 
 @setup_texture
-def test_uvtexture(pngfile):
-    """Test uv texture validation"""
-    tex = omf.UVTexture()
+def test_uvmappedtexture(pngfile):
+    """Test uv mapped texture validation"""
+    tex = omf.UVMappedTexture()
     tex.image = pngfile
     with pytest.raises(properties.ValidationError):
         tex.uv_coordinates = [0., 1., 0.5]

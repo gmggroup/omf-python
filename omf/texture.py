@@ -12,8 +12,8 @@ from .data import Vector2Array
 from .serializers import png_serializer, png_deserializer
 
 
-class ImageTexture(ContentModel):
-    """Contains an image that can be mapped to a point set or surface"""
+class ProjectedTexture(ContentModel):
+    """Contains an image that can be projected onto a point set or surface"""
     origin = properties.Vector3(
         'Origin point of the texture',
         default=[0., 0., 0.],
@@ -33,7 +33,7 @@ class ImageTexture(ContentModel):
     )
 
 
-class UVTexture(ContentModel):
+class UVMappedTexture(ContentModel):
     """Contains an image that is UV mapped to a geometry"""
 
     image = properties.ImagePNG(
@@ -60,7 +60,7 @@ class HasTexturesMixin(properties.HasProperties):
 
     textures = properties.List(
         'Images mapped on the element',
-        prop=properties.Union('', (ImageTexture, UVTexture)),
+        prop=properties.Union('', (ProjectedTexture, UVMappedTexture)),
         required=False,
         default=list,
     )
@@ -71,7 +71,7 @@ class HasTexturesMixin(properties.HasProperties):
         if not hasattr(self, 'num_nodes'):
             return True
         for i, tex in enumerate(self.textures):
-            if isinstance(tex, ImageTexture):
+            if isinstance(tex, ProjectedTexture):
                 continue
             if len(tex.uv_coordinates) != self.num_nodes:
                 raise properties.ValidationError(

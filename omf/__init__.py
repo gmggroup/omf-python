@@ -17,7 +17,7 @@ from .data import (ColorArray, ColorData,
 from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
-from .texture import ImageTexture, UVTexture
+from .texture import ProjectedTexture, UVMappedTexture
 from .volume import VolumeGridElement
 
 from .fileio import OMFReader, OMFWriter
