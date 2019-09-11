@@ -42,17 +42,11 @@ class UVMappedTexture(ContentModel):
         deserializer=png_deserializer,
     )
     uv_coordinates = properties.Instance(
-        'Normalized UV coordinates mapping the image element vertices',
+        'Normalized UV coordinates mapping the image to element vertices; '
+        'for values outside 0-1 the texture repeats at every integer level, '
+        'and NaN indicates no texture at a vertex',
         Vector2Array,
     )
-    @properties.validator
-    def _validate_uv(self):
-        """Validate UV values between 0 and 1"""
-        if np.min(self.uv_coordinates) < 0 or np.max(self.uv_coordinates) > 1:
-            raise properties.ValidationError(
-                'UV coordinates must be between 0 and 1'
-            )
-        return True
 
 
 class HasTexturesMixin(properties.HasProperties):
@@ -75,7 +69,7 @@ class HasTexturesMixin(properties.HasProperties):
                 continue
             if len(tex.uv_coordinates) != self.num_nodes:
                 raise properties.ValidationError(
-                    'data[{index}] length {datalen} does not match '
+                    'texture[{index}] length {datalen} does not match '
                     'vertices length {meshlen}'.format(
                         index=i,
                         datalen=len(tex.uv_coordinates),
