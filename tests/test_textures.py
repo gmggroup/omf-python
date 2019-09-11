@@ -1,5 +1,6 @@
 """Tests for texture validation"""
 import os
+import numpy as np
 import png
 import properties
 import pytest
@@ -43,9 +44,8 @@ def test_uvmappedtexture(pngfile):
     with pytest.raises(properties.ValidationError):
         tex.uv_coordinates = [0., 1., 0.5]
     tex.uv_coordinates = [[0., -0.5], [0.5, 1]]
-    with pytest.raises(properties.ValidationError):
-        tex.validate()
-    tex.uv_coordinates = [[0., 0.5], [0.5, 1]]
+    assert tex.validate()
+    tex.uv_coordinates = [[0., 0.5], [0.5, np.nan]]
     assert tex.validate()
 
     points = omf.PointSetElement()
