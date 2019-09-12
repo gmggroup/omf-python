@@ -12,6 +12,7 @@ import zipfile
 from .base import Project
 
 __version__ = '1.0.1'
+OMF_VERSION = '2.0'
 
 IGNORED_OVERVIEW_PROPS = (
     'data', 'textures', 'vertices', 'segments', 'triangles', 'offset_w'
@@ -40,7 +41,7 @@ def save_as_omf(project, filename, mode='x'):
     project.validate()
     binary_dict = {}
     serial_dict = project.serialize(binary_dict=binary_dict)
-    serial_dict['version'] = __version__
+    serial_dict['version'] = OMF_VERSION
     zip_file = zipfile.ZipFile(
         file=filename,
         mode='w',
@@ -85,10 +86,19 @@ def load_omf(filename, include_binary=True, project_json=None):
     if project_json:
         serial_dict = project_json
     zip_file.close()
-    serial_dict.pop('version', None)
+    file_version = serial_dict.pop('version', None)
+    if not check_omf_version(file_version):
+        raise ValueError('Unsupported file version: {}'.format(file_version))
     project = Project.deserialize(
         value=serial_dict,
         binary_dict=binary_dict,
         trusted=True,
     )
     return project
+
+
+def check_omf_version(file_version):
+    """Validate file version compatibility against the current OMF version"""
+    if file_version is None:
+        return True
+    return file_version == OMF_VERSION
