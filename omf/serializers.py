@@ -14,7 +14,7 @@ from six import PY2
 if PY2:
     memoryview = buffer                                                        #pylint: disable=redefined-builtin, invalid-name, undefined-variable
 
-def array_serializer(arr, binary_dict, **kwargs):                                #pylint: disable=unused-argument
+def array_serializer(arr, binary_dict=None, **kwargs):                                #pylint: disable=unused-argument
     """Convert array data to a serialized binary format"""
     if arr is None:
         return None
@@ -40,7 +40,8 @@ def array_serializer(arr, binary_dict, **kwargs):                               
     index['dtype'] = dtype
     index['array'] = uid
     index['length'] = arr.astype(dtype).nbytes
-    binary_dict[uid] = arr.astype(dtype).tobytes()
+    if binary_dict is not None:
+        binary_dict[uid] = arr.astype(dtype).tobytes()
     return index
 
 class array_deserializer(object):                                              #pylint: disable=invalid-name, too-few-public-methods
@@ -52,9 +53,9 @@ class array_deserializer(object):                                              #
                             'unknown dimension')
         self.shape = shape
 
-    def __call__(self, index, binary_dict, **kwargs):                            #pylint: disable=unused-argument
+    def __call__(self, index, binary_dict=None, **kwargs):                            #pylint: disable=unused-argument
         assert index['dtype'] in ('<i8', '<f8'), 'invalid dtype'
-        if index['array'] not in binary_dict:
+        if binary_dict is None or index['array'] not in binary_dict:
             return properties.undefined
         arr_buffer = binary_dict[index['array']]
         arr = np.frombuffer(arr_buffer, index['dtype'])
@@ -74,7 +75,7 @@ class array_deserializer(object):                                              #
         arr = arr.reshape(shape)
         return arr
 
-def png_serializer(img, binary_dict, **kwargs):                                  #pylint: disable=unused-argument
+def png_serializer(img, binary_dict=None, **kwargs):                                  #pylint: disable=unused-argument
     """Serialize PNG in bytes to file"""
     if img is None:
         return None
@@ -85,14 +86,15 @@ def png_serializer(img, binary_dict, **kwargs):                                 
     index['image'] = uid
     index['start'] = 0
     index['dtype'] = 'image/png'
-    binary_dict[uid] = img.read()
+    if binary_dict is not None:
+        binary_dict[uid] = img.read()
     index['length'] = img.tell()
     return index
 
-def png_deserializer(index, binary_dict, **kwargs):                              #pylint: disable=unused-argument
+def png_deserializer(index, binary_dict=None, **kwargs):                              #pylint: disable=unused-argument
     """Read PNG from file as bytes"""
     assert index['dtype'] == 'image/png', 'invalid dtype'
-    if index['image'] not in binary_dict:
+    if binary_dict is None or index['image'] not in binary_dict:
         return properties.undefined
     img = BytesIO()
     img.write(binary_dict[index['image']])

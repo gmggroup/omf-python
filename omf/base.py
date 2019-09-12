@@ -68,6 +68,15 @@ class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
         uuid.UUID(uid)
         return True
 
+    @classmethod
+    def deserialize(cls, value, trusted=False, strict=False,
+                    assert_valid=False, **kwargs):
+        cls._INSTANCES = {}
+        instance = super(UidModel, cls).deserialize(
+            value, trusted, strict, assert_valid, **kwargs
+        )
+        return instance
+
 
 class ContentModel(UidModel):
     """ContentModel is a UidModel with title and description"""

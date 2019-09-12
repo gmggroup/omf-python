@@ -64,7 +64,7 @@ def save_as_omf(project, filename, mode='x'):
     return filename
 
 
-def load_omf(filename, include_binary=True):
+def load_omf(filename, include_binary=True, project_json=None):
     """load_omf deserializes an OMF file into a project
 
     Optionally, :code:`include_binary=False` may be specified. This
@@ -82,8 +82,10 @@ def load_omf(filename, include_binary=True):
                 serial_dict = json.load(file)
             elif include_binary:
                 binary_dict[info.filename] = file.read()
+    if project_json:
+        serial_dict = project_json
     zip_file.close()
-    serial_dict.pop('version')
+    serial_dict.pop('version', None)
     project = Project.deserialize(
         value=serial_dict,
         binary_dict=binary_dict,
