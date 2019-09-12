@@ -135,7 +135,6 @@ class ArbitraryMetadataDict(properties.Dictionary):
     def __init__(self, doc, metadata_class, **kwargs):
         self.metadata_class = metadata_class
         kwargs.update({'key_prop': properties.String('')})
-        doc = '\n\n'.join([doc, metadata_class.__doc__])
         super(ArbitraryMetadataDict, self).__init__(doc, **kwargs)
 
     def validate(self, instance, value):
@@ -176,21 +175,32 @@ class ArbitraryMetadataDict(properties.Dictionary):
             setattr(instance, self.name, new_value)
         return value
 
+    @property
+    def info(self):
+        """Description of the property, supplemental to the basic doc"""
+        info = (
+            'an arbitrary JSON-serializable dictionary, with certain keys '
+            'validated against :class:`{cls} <{pref}.{cls}>`'.format(
+                cls=self.metadata_class.__name__,
+                pref=self.metadata_class.__module__,
+            )
+        )
+        return info
+
 
 class ContentModel(UidModel):
-    """ContentModel is a UidModel with title and description"""
-
+    """ContentModel is a UidModel with name, description, and metadata"""
     name = properties.String(
-        'Title',
-        default=''
+        'Title of the object',
+        default='',
     )
     description = properties.String(
-        'Description',
-        default=''
+        'Description of the object',
+        default='',
     )
     metadata = ArbitraryMetadataDict(
         'Basic object metadata',
-        metadata_class=properties.HasProperties,
+        metadata_class=BaseMetadata,
         default=dict,
     )
 
@@ -200,7 +210,7 @@ class ProjectElementData(ContentModel):
 
     location = properties.StringChoice(
         'Location of the data on mesh',
-        choices=('vertices', 'segments', 'faces', 'cells')
+        choices=('vertices', 'segments', 'faces', 'cells'),
     )
     metadata = ArbitraryMetadataDict(
         'Attribute metadata',
