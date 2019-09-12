@@ -13,7 +13,7 @@ def test_pointset():
     assert elem.location_length('vertices') == 10
     elem.metadata = {
         'color': 'green',
-        'date_created': str(datetime.datetime.utcnow()),
+        'date_created': datetime.datetime.utcnow(),
         'version': 'v1.3',
     }
     assert elem.validate()

@@ -144,7 +144,7 @@ def test_doc_ex():
     proj.elements = [pts, lin, surf, grid, vol]
     proj.metadata = {
         'coordinate_reference_system': 'epsg 3857',
-        'date_created': str(datetime.datetime.utcnow()),
+        'date_created': datetime.datetime.utcnow(),
         'version': 'v1.3',
         'revision': '10',
     }

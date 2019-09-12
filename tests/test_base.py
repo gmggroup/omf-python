@@ -1,4 +1,5 @@
 """Tests for base UidModel class behaviors"""
+import datetime
 import json
 try:
     from unittest import mock
@@ -29,6 +30,7 @@ class Metadata(properties.HasProperties):
     meta_string = properties.String('', required=False)
     meta_color = properties.Color('', required=False)
     meta_anything = properties.Property('', required=False)
+    meta_date = omf.base.StringDateTime('', required=False)
 
 
 def test_metadata_property():
@@ -64,6 +66,11 @@ def test_metadata_property():
     with pytest.raises(properties.ValidationError):
         has_metadata.validate()
     has_metadata.metadata['meta_anything'] = 'a string'
+    has_metadata.metadata['meta_date'] = 'some date'
+    with pytest.raises(properties.ValidationError):
+        has_metadata.validate()
+    has_metadata.metadata['meta_date'] = datetime.datetime(1980, 1, 1)
+    assert has_metadata.validate()
     has_metadata.metadata['another'] = 'a string'
     has_metadata.metadata['even another'] = 'a string'
     assert has_metadata.validate()
@@ -79,6 +86,7 @@ def test_metadata_property():
             'meta_string': 'a string',
             'meta_color': (255, 0, 0),
             'meta_anything': 'a string',
+            'meta_date': '1980-01-01T00:00:00Z',
             'another': 'a string',
             'even another': 'a string',
         }

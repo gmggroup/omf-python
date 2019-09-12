@@ -68,7 +68,7 @@ def test_mapped_data():
     mdata.array.array[0] = 0
     mdata.metadata = {
         'units': 'm',
-        'date_created': str(datetime.datetime.utcnow()),
+        'date_created': datetime.datetime.utcnow(),
         'version': 'v1.3',
     }
     assert mdata.validate()
