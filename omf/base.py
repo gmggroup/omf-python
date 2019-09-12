@@ -45,13 +45,21 @@ class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
         return True
 
 
+class StringDateTime(properties.DateTime):
+    """DateTime property validated to be a string"""
+
+    def validate(self, instance, value):
+        value = super(StringDateTime, self).validate(instance, value)
+        return self.to_json(value)
+
+
 class BaseMetadata(properties.HasProperties):
     """Validated metadata properties for all objects"""
-    date_created = properties.String(
+    date_created = StringDateTime(
         'Date object was created',
         required=False,
     )
-    date_modified = properties.String(
+    date_modified = StringDateTime(
         'Date object was modified',
         required=False,
     )
@@ -71,9 +79,9 @@ class ProjectMetadata(BaseMetadata):
         'Revision',
         required=False,
     )
-    date = properties.DateTime(
+    date = StringDateTime(
         'Date associated with the project data',
-        required=False
+        required=False,
     )
 
 
