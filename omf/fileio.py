@@ -18,7 +18,7 @@ IGNORED_OVERVIEW_PROPS = (
 )
 
 
-def save_as_omf(project, filename):
+def save_as_omf(project, filename, mode='x'):
     """save_as_omf serializes a OMF project to a file
 
     The .omf file is a ZIP archive containing the project JSON
@@ -31,10 +31,13 @@ def save_as_omf(project, filename):
         omf.save_as_omf(proj, 'outfile.omf')
     """
     time_tuple = datetime.datetime.utcnow().timetuple()[:6]
+    if mode not in ('w', 'x'):
+        raise ValueError("File mode must be 'w' or 'x'")
     if len(filename) < 4 or filename[-4:] != '.omf':
         filename = filename + '.omf'
-    if os.path.exists(filename):
+    if mode == 'x' and os.path.exists(filename):
         raise ValueError('File already exists: {}'.format(filename))
+    project.validate()
     binary_dict = {}
     serial_dict = project.serialize(binary_dict=binary_dict)
     serial_dict['version'] = __version__
