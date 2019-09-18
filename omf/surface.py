@@ -63,9 +63,9 @@ class SurfaceElement(BaseSurfaceElement):                                      #
     @properties.validator
     def _validate_mesh(self):
         if np.min(self.triangles.array) < 0:
-            raise ValueError('Triangles may only have positive integers')
+            raise properties.ValidationError('Triangles may only have positive integers')
         if np.max(self.triangles.array) >= len(self.vertices.array):
-            raise ValueError('Triangles expects more vertices than provided')
+            raise properties.ValidationError('Triangles expects more vertices than provided')
         return True
 
 
@@ -115,11 +115,11 @@ class SurfaceGridElement(BaseSurfaceElement):                                  #
     def _validate_mesh(self):
         """Check if mesh content is built correctly"""
         if not np.abs(self.axis_u.dot(self.axis_v)) < 1e-6:                    #pylint: disable=no-member
-            raise ValueError('axis_u and axis_v must be orthogonal')
+            raise properties.ValidationError('axis_u and axis_v must be orthogonal')
         if self.offset_w is properties.undefined or self.offset_w is None:
             return True
         if len(self.offset_w.array) != self.num_nodes:
-            raise ValueError(
+            raise properties.ValidationError(
                 'Length of offset_w, {zlen}, must equal number of nodes, '
                 '{nnode}'.format(
                     zlen=len(self.offset_w),

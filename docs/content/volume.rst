@@ -17,6 +17,8 @@ Element
 
 .. autoclass:: omf.volume.VolumeGridElement
 
+.. autoclass:: omf.blockmodel.RegularBlockModel
+
 Data
 ----
 
