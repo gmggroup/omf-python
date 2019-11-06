@@ -27,6 +27,14 @@ Version: 1.0.1
 API library for Open Mining Format, a new standard for mining data backed by
 the `Global Mining Guidelines Group <https://gmggroup.org>`_.
 
+.. warning::
+    **Pre-Release Notice**
+
+    Version 2 of the Open Mining Format (OMF) and the associated Python API
+    is under active development, and subject to backwards-incompatible changes
+    at any time. The latest stable release of Version 1 is
+    `available on PyPI <https://pypi.org/project/omf/1.0.1/>`_.
+
 Why?
 ----
 
