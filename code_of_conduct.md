@@ -97,8 +97,8 @@ help resolve a misunderstanding and de-escalate things.
 An informal enforcement of this process may be inadequate if there is
 urgency, risk to someone, no one is comfortable speaking out, the
 offender is unresponsive, etc. In that case, please file a report
-by emailing [David Sanguinetti](mailto:dsanguinetti@gmggroup.org),
-the program manager at GMG. Reports will be kept anonymous and action
+by emailing [Heather Turnbull](mailto:hturnbull@gmggroup.org),
+the Operations Manager at GMG. Reports will be kept anonymous and action
 will be taken.
 
 ## Antitrust Compliance
