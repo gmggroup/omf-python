@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from .base import Project
 from .blockmodel import TensorBlockModel, RegularBlockModel, RegularSubBlockModel
+from .composite import CompositeElement
 from .data import (ColorArray, ColorData,
                    DateTimeArray, DateTimeColormap, DateTimeData,
                    Int2Array, Int3Array,
@@ -17,7 +18,7 @@ from .data import (ColorArray, ColorData,
 from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
-from .texture import ImageTexture
+from .texture import ProjectedTexture, UVMappedTexture
 
 from .fileio import OMFReader, OMFWriter
 

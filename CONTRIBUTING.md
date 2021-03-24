@@ -64,8 +64,8 @@ When working on your contribution, you may
 your personal or company GitHub organization and develop there.
 Alternatively, if you are interested in being identified as a contributor
 to the [GMG GitHub organization](https://github.com/gmggroup),
-reach out to [David Sanguinetti](mailto:dsanguinetti@gmggroup.org),
-the program manager at GMG (note: this is distinct from
+reach out to [Heather Turnbull](mailto:hturnbull@gmggroup.org),
+the Operations Manager at GMG (note: this is distinct from
 [GMG membership](#membership)). Once you are a contributor on GitHub, you may
 [create feature branches](https://help.github.com/en/articles/creating-and-deleting-branches-within-your-repository)
 directly in the GMG OMF repository.
