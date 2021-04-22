@@ -9,17 +9,11 @@ import properties
 
 from .base import ProjectElement
 from .data import Int3Array, ScalarArray, Vector3Array
-from .texture import ImageTexture
+from .texture import HasTexturesMixin
 
 
-class BaseSurfaceElement(ProjectElement):
+class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
     """Base class for surface elements"""
-    textures = properties.List(
-        'Images mapped on the surface element',
-        prop=ImageTexture,
-        required=False,
-        default=list,
-    )
     subtype = properties.StringChoice(
         'Category of Surface',
         choices=('surface',),
@@ -45,7 +39,7 @@ class BaseSurfaceElement(ProjectElement):
         raise NotImplementedError()
 
 
-class SurfaceElement(BaseSurfaceElement):
+class SurfaceElement(BaseSurfaceElement):                                      #pylint: disable=too-many-ancestors
     """Contains triangulated surface spatial information and attributes"""
     class_type = 'org.omf.v2.element.surface'
 
@@ -71,13 +65,13 @@ class SurfaceElement(BaseSurfaceElement):
     @properties.validator
     def _validate_mesh(self):
         if np.min(self.triangles.array) < 0:
-            raise ValueError('Triangles may only have positive integers')
+            raise properties.ValidationError('Triangles may only have positive integers')
         if np.max(self.triangles.array) >= len(self.vertices.array):
-            raise ValueError('Triangles expects more vertices than provided')
+            raise properties.ValidationError('Triangles expects more vertices than provided')
         return True
 
 
-class SurfaceGridElement(BaseSurfaceElement):
+class SurfaceGridElement(BaseSurfaceElement):                                  #pylint: disable=too-many-ancestors
     """Contains 2D grid spatial information and attributes"""
     class_type = 'org.omf.v2.element.surfacegrid'
 
@@ -125,11 +119,11 @@ class SurfaceGridElement(BaseSurfaceElement):
     def _validate_mesh(self):
         """Check if mesh content is built correctly"""
         if not np.abs(self.axis_u.dot(self.axis_v)) < 1e-6:                    #pylint: disable=no-member
-            raise ValueError('axis_u and axis_v must be orthogonal')
+            raise properties.ValidationError('axis_u and axis_v must be orthogonal')
         if self.offset_w is properties.undefined or self.offset_w is None:
             return True
         if len(self.offset_w.array) != self.num_nodes:
-            raise ValueError(
+            raise properties.ValidationError(
                 'Length of offset_w, {zlen}, must equal number of nodes, '
                 '{nnode}'.format(
                     zlen=len(self.offset_w),

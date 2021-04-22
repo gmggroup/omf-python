@@ -1,5 +1,6 @@
 """Tests for base UidModel class behaviors"""
 import datetime
+import json
 try:
     from unittest import mock
 except ImportError:
@@ -19,12 +20,83 @@ def test_uid_model(mock_uuid):
     my_id = str(uuid.uuid4())
     mock_uuid.UUID = uuid.UUID
     mock_uuid.uuid4 = lambda: my_id
-    now = datetime.datetime.utcnow()
-    delta = datetime.timedelta(seconds=0.1)
     model = omf.base.UidModel()
     assert model.uid == my_id
-    assert model.date_created - now < delta
-    assert model.date_modified - now < delta
+
+
+class Metadata(properties.HasProperties):
+    """Metadata class for testing"""
+    meta_int = properties.Integer('', required=False)
+    meta_string = properties.String('', required=False)
+    meta_color = properties.Color('', required=False)
+    meta_anything = properties.Property('', required=False)
+    meta_date = omf.base.StringDateTime('', required=False)
+
+
+def test_metadata_property():
+    """Test metadata validates predefined keys but allows any keys"""
+
+    class WithMetadata(properties.HasProperties):
+        """Test class with metadata"""
+        metadata = omf.base.ArbitraryMetadataDict(
+            'Some metadata',
+            Metadata,
+            default=dict,
+        )
+
+    with pytest.raises(AttributeError):
+        WithMetadata._props['metadata'].metadata_class = object                #pylint: disable=no-member
+
+    has_metadata = WithMetadata()
+    assert has_metadata.validate()
+    has_metadata.metadata['meta_int'] = 5
+    assert has_metadata.validate()
+    has_metadata.metadata['meta_int'] = 'not an int'
+    with pytest.raises(properties.ValidationError):
+        has_metadata.validate()
+    has_metadata.metadata['meta_int'] = 5
+    has_metadata.metadata['meta_string'] = 'a string'
+    assert has_metadata.validate()
+    has_metadata.metadata['meta_color'] = 'red'
+    assert has_metadata.validate()
+    assert has_metadata.metadata['meta_color'] == (255, 0, 0)
+    has_metadata.metadata['meta_anything'] = 'a string'
+    assert has_metadata.validate()
+    has_metadata.metadata['meta_anything'] = Metadata
+    with pytest.raises(properties.ValidationError):
+        has_metadata.validate()
+    has_metadata.metadata['meta_anything'] = 'a string'
+    has_metadata.metadata['meta_date'] = 'some date'
+    with pytest.raises(properties.ValidationError):
+        has_metadata.validate()
+    has_metadata.metadata['meta_date'] = datetime.datetime(1980, 1, 1)
+    assert has_metadata.validate()
+    has_metadata.metadata['another'] = 'a string'
+    has_metadata.metadata['even another'] = 'a string'
+    assert has_metadata.validate()
+
+    has_metadata.metadata['and another'] = Metadata
+    with pytest.raises(properties.ValidationError):
+        has_metadata.validate()
+    has_metadata.metadata.pop('and another')
+    serialized_has_meta = has_metadata.serialize(include_class=False)
+    assert serialized_has_meta == {
+        'metadata': {
+            'meta_int': 5,
+            'meta_string': 'a string',
+            'meta_color': (255, 0, 0),
+            'meta_anything': 'a string',
+            'meta_date': '1980-01-01T00:00:00Z',
+            'another': 'a string',
+            'even another': 'a string',
+        }
+    }
+    new_metadata = WithMetadata.deserialize(
+        json.loads(json.dumps(serialized_has_meta))
+    )
+    new_metadata.validate()
+    assert properties.equal(has_metadata, new_metadata)
+    assert new_metadata.serialize(include_class=False) == serialized_has_meta
 
 
 class MyModelWithInt(omf.base.UidModel):
@@ -37,29 +109,6 @@ class MyModelWithIntAndInstance(MyModelWithInt):
     """Test class with an integer property and an instance property"""
     class_type = 'my.model.with.int.and.instance'
     my_model = properties.Instance('', omf.base.UidModel)
-
-
-def test_modify():
-    """Test that date_modified updates correctly on set"""
-    model = MyModelWithInt()
-    date_created = model.date_created
-    date_modified = model.date_modified
-    model.my_int = 0
-    assert model.date_created == date_created
-    assert model.date_modified > date_modified
-
-
-def test_validate_updates():
-    """Test that date_modified updates correctly on validate"""
-    model = MyModelWithIntAndInstance(my_int=1)
-    date_created = model.date_created
-    date_modified = model.date_modified
-    model.my_model = MyModelWithInt()
-    model.my_model.my_int = 2
-    model.validate()
-    assert model.date_created == date_created
-    assert model.date_modified > date_modified
-    assert model.date_modified == model.my_model.date_modified
 
 
 @pytest.mark.parametrize('include_class', [True, False])
@@ -95,8 +144,6 @@ def test_uid_model_serialize(include_class, skip_validation, registry):
         assert model.uid in output
         expected_dict = {
             'uid': model.uid,
-            'date_created': properties.DateTime.to_json(model.date_created),
-            'date_modified': properties.DateTime.to_json(model.date_modified),
         }
         if isinstance(model, MyModelWithIntAndInstance):
             expected_dict.update({
@@ -123,20 +170,14 @@ def test_deserialize():
     """Test deserialize correctly builds UidModel from registry"""
     uid_a = str(uuid.uuid4())
     uid_b = str(uuid.uuid4())
-    dates = [datetime.datetime(2019, 1, i) for i in range(1, 5)]
-    string_dates = [properties.DateTime.to_json(d) for d in dates]
     input_dict = {
         uid_a: {
-            'date_created': string_dates[0],
-            'date_modified': string_dates[1],
             'my_int': 0,
             'my_model': uid_b,
             'uid': uid_a,
             '_type': 'my.model.with.int.and.instance',
         },
         uid_b: {
-            'date_created': string_dates[2],
-            'date_modified': string_dates[3],
             'my_int': 1,
             'uid': uid_b,
             '_type': 'my.model.with.int',
@@ -147,12 +188,8 @@ def test_deserialize():
     assert isinstance(model_a, MyModelWithIntAndInstance)
     #pylint: disable=no-member
     assert str(model_a.uid) == uid_a
-    assert model_a.date_created == dates[0]
-    assert model_a.date_modified == dates[1]
     assert model_a.my_int == 0
     assert isinstance(model_a.my_model, MyModelWithInt)
-    assert model_a.my_model.date_created == dates[2]
-    assert model_a.my_model.date_modified == dates[3]
     assert model_a.my_model.my_int == 1
     input_dict['__root__'] = uid_b
     properties.extras.HasUID._INSTANCES = {}                                   #pylint: disable=protected-access
