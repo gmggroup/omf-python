@@ -13,7 +13,7 @@ from .data import Int2Array, Vector3Array
 
 class LineSetElement(ProjectElement):
     """Contains line set spatial information and attributes"""
-    class_type = 'omf.element.lineset'
+    class_type = 'org.omf.v2.element.lineset'
 
     vertices = properties.Instance(
         'Spatial coordinates of line vertices relative to line set origin',

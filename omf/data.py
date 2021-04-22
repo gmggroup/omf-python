@@ -13,7 +13,7 @@ from .serializers import array_serializer, array_deserializer
 
 class ScalarArray(UidModel):
     """Class with unique ID and data array"""
-    class_type = 'omf.array.scalar'
+    class_type = 'org.omf.v2.array.scalar'
 
     array = properties.Array(
         'Shared Scalar Array',
@@ -35,7 +35,7 @@ class ScalarArray(UidModel):
 
 class Vector2Array(ScalarArray):
     """Shared array of 2D vectors"""
-    class_type = 'omf.array.vector2'
+    class_type = 'org.omf.v2.array.vector2'
 
     array = properties.Vector2Array(
         'Shared Vector2 Array',
@@ -46,7 +46,7 @@ class Vector2Array(ScalarArray):
 
 class Vector3Array(ScalarArray):
     """Shared array of 3D vectors"""
-    class_type = 'omf.array.vector3'
+    class_type = 'org.omf.v2.array.vector3'
 
     array = properties.Vector3Array(
         'Shared Vector3 Array',
@@ -57,7 +57,7 @@ class Vector3Array(ScalarArray):
 
 class Int2Array(ScalarArray):
     """Shared n x 2 array of integers"""
-    class_type = 'omf.array.int2'
+    class_type = 'org.omf.v2.array.int2'
 
     array = properties.Array(
         'Shared n x 2 Int Array',
@@ -70,7 +70,7 @@ class Int2Array(ScalarArray):
 
 class Int3Array(ScalarArray):
     """Shared n x 3 array of integers"""
-    class_type = 'omf.array.int3'
+    class_type = 'org.omf.v2.array.int3'
 
     array = properties.Array(
         'Shared n x 3 Int Array',
@@ -83,7 +83,7 @@ class Int3Array(ScalarArray):
 
 class StringArray(ScalarArray):
     """Shared array of text strings"""
-    class_type = 'omf.array.string'
+    class_type = 'org.omf.v2.array.string'
 
     array = properties.List(
         'Shared array of text strings',
@@ -94,7 +94,7 @@ class StringArray(ScalarArray):
 
 class DateTimeArray(ScalarArray):
     """Shared array of DateTimes"""
-    class_type = 'omf.array.datetime'
+    class_type = 'org.omf.v2.array.datetime'
 
     array = properties.List(
         'Shared array of DateTimes',
@@ -105,7 +105,7 @@ class DateTimeArray(ScalarArray):
 
 class ColorArray(ScalarArray):
     """Shared array of Colors"""
-    class_type = 'omf.array.color'
+    class_type = 'org.omf.v2.array.color'
 
     array = properties.List(
         'Shared array of Colors',
@@ -116,7 +116,7 @@ class ColorArray(ScalarArray):
 
 class ScalarColormap(ContentModel):
     """Length-128 color gradient with min/max values, used with ScalarData"""
-    class_type = 'omf.colormap.scalar'
+    class_type = 'org.omf.v2.colormap.scalar'
 
     gradient = properties.Instance(
         'length-128 ColorArray defining the gradient',
@@ -150,7 +150,7 @@ class ScalarColormap(ContentModel):
 
 class DateTimeColormap(ScalarColormap):
     """Length-128 color gradient with min/max values, used with DateTimeData"""
-    class_type = 'omf.colormap.datetime'
+    class_type = 'org.omf.v2.colormap.datetime'
 
     limits = properties.List(
         'Data range associated with the gradient',
@@ -163,7 +163,7 @@ class DateTimeColormap(ScalarColormap):
 
 class ScalarData(ProjectElementData):
     """Data array with scalar values"""
-    class_type = 'omf.data.scalar'
+    class_type = 'org.omf.v2.data.scalar'
 
     array = properties.Instance(
         'scalar values at locations on a mesh (see location parameter)',
@@ -178,7 +178,7 @@ class ScalarData(ProjectElementData):
 
 class Vector3Data(ProjectElementData):
     """Data array with 3D vectors"""
-    class_type = 'omf.data.vector3'
+    class_type = 'org.omf.v2.data.vector3'
 
     array = properties.Instance(
         '3D vectors at locations on a mesh (see location parameter)',
@@ -188,7 +188,7 @@ class Vector3Data(ProjectElementData):
 
 class Vector2Data(ProjectElementData):
     """Data array with 2D vectors"""
-    class_type = 'omf.data.vector2'
+    class_type = 'org.omf.v2.data.vector2'
 
     array = properties.Instance(
         '2D vectors at locations on a mesh (see location parameter)',
@@ -207,7 +207,7 @@ class ColorData(ProjectElementData):
     Other color formats may be used (ie String or Hex colors). However,
     for large arrays, validation of these types will be slow.
     """
-    class_type = 'omf.data.color'
+    class_type = 'org.omf.v2.data.color'
 
     array = properties.Union(
         'RGB color values at locations on a mesh (see location parameter)',
@@ -226,7 +226,7 @@ class ColorData(ProjectElementData):
 
 class StringData(ProjectElementData):
     """Data array with text entries"""
-    class_type = 'omf.data.string'
+    class_type = 'org.omf.v2.data.string'
 
     array = properties.Instance(
         'text at locations on a mesh (see location parameter)',
@@ -236,7 +236,7 @@ class StringData(ProjectElementData):
 
 class DateTimeData(ProjectElementData):
     """Data array with DateTime entries"""
-    class_type = 'omf.data.datetime'
+    class_type = 'org.omf.v2.data.datetime'
 
     array = properties.Instance(
         'datetimes at locations on a mesh (see location parameter)',
@@ -251,7 +251,7 @@ class DateTimeData(ProjectElementData):
 
 class Legend(ContentModel):
     """Legends to be used with DataMap indices"""
-    class_type = 'omf.legend'
+    class_type = 'org.omf.v2.legend'
 
     values = properties.Union(
         'values for mapping indexed data',
@@ -266,7 +266,7 @@ class Legend(ContentModel):
 
 class MappedData(ProjectElementData):
     """Data array of indices linked to legend values or -1 for no data"""
-    class_type = 'omf.data.mapped'
+    class_type = 'org.omf.v2.data.mapped'
 
     array = properties.Instance(
         'indices into 1 or more legends for locations on a mesh',
