@@ -1,4 +1,5 @@
 """Test the example in the docs"""
+import datetime
 import os
 
 import numpy as np
@@ -52,7 +53,9 @@ def test_doc_ex():
                 axis_v=[0, 0, 1],
             ),
         ],
-        color='green',
+        metadata={
+            'color': 'green',
+        },
     )
     lin = omf.LineSetElement(
         name='Random Line',
@@ -70,7 +73,9 @@ def test_doc_ex():
                 location='segments',
             ),
         ],
-        color='#0000FF',
+        metadata={
+            'color': '#0000FF',
+        },
     )
     surf = omf.SurfaceElement(
         name='trisurf',
@@ -88,7 +93,9 @@ def test_doc_ex():
                 location='faces',
             ),
         ],
-        color=[100, 200, 200],
+        metadata={
+            'color': [100, 200, 200],
+        },
     )
     grid = omf.SurfaceGridElement(
         name='gridsurf',
@@ -135,6 +142,12 @@ def test_doc_ex():
         ],
     )
     proj.elements = [pts, lin, surf, grid, vol]
+    proj.metadata = {
+        'coordinate_reference_system': 'epsg 3857',
+        'date_created': datetime.datetime.utcnow(),
+        'version': 'v1.3',
+        'revision': '10',
+    }
     assert proj.validate()
     serialfile = os.path.sep.join([dirname, 'out.omf'])
     omf.OMFWriter(proj, serialfile)
