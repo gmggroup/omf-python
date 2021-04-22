@@ -19,6 +19,8 @@ Element
 
 .. autoclass:: omf.blockmodel.RegularBlockModel
 
+.. autoclass:: omf.blockmodel.RegularSubBlockModel
+
 Data
 ----
 
