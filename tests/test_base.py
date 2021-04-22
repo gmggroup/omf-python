@@ -106,7 +106,7 @@ def test_uid_model_serialize(include_class, skip_validation, registry):
         elif not skip_validation:
             expected_dict.update({'my_int': model.my_int})
         if include_class:
-            expected_dict.update({'type': model.class_type})
+            expected_dict.update({'_type': model.class_type})
         assert output[str(model.uid)] == expected_dict
 
 
@@ -132,14 +132,14 @@ def test_deserialize():
             'my_int': 0,
             'my_model': uid_b,
             'uid': uid_a,
-            'type': 'my.model.with.int.and.instance',
+            '_type': 'my.model.with.int.and.instance',
         },
         uid_b: {
             'date_created': string_dates[2],
             'date_modified': string_dates[3],
             'my_int': 1,
             'uid': uid_b,
-            'type': 'my.model.with.int',
+            '_type': 'my.model.with.int',
         },
         '__root__': uid_a,
     }
