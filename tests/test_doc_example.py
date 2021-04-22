@@ -38,14 +38,14 @@ def test_doc_ex():
             ),
         ],
         textures=[
-            omf.ImageTexture(
+            omf.ProjectedTexture(
                 name='test image',
                 image=pngfile,
                 origin=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 1, 0],
             ),
-            omf.ImageTexture(
+            omf.ProjectedTexture(
                 name='test image',
                 image=pngfile,
                 origin=[0, 0, 0],
@@ -118,7 +118,7 @@ def test_doc_ex():
             ),
         ],
         textures=[
-            omf.ImageTexture(
+            omf.ProjectedTexture(
                 name='test image',
                 image=pngfile,
                 origin=[2., 2., 2.],

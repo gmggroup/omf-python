@@ -30,10 +30,10 @@ the `Global Mining Guidelines Group <https://gmggroup.org>`_.
 .. warning::
     **Pre-Release Notice**
 
-    This is a Beta release of the Open Mining Format (OMF) and the associated
-    Python API. The storage format and libraries might be changed in
-    backward-incompatible ways and are not subject to any SLA or deprecation
-    policy.
+    Version 2 of the Open Mining Format (OMF) and the associated Python API
+    is under active development, and subject to backwards-incompatible changes
+    at any time. The latest stable release of Version 1 is
+    `available on PyPI <https://pypi.org/project/omf/1.0.1/>`_.
 
 Why?
 ----

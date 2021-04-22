@@ -210,7 +210,7 @@ class ProjectElementData(ContentModel):
 
     location = properties.StringChoice(
         'Location of the data on mesh',
-        choices=('vertices', 'segments', 'faces', 'cells'),
+        choices=('vertices', 'segments', 'faces', 'cells', 'elements'),
     )
     metadata = ArbitraryMetadataDict(
         'Attribute metadata',
@@ -255,7 +255,7 @@ class ProjectElement(ContentModel):
         assert self._valid_locations, 'ProjectElement needs _valid_locations'
         for i, dat in enumerate(self.data):
             if dat.location not in self._valid_locations:                      #pylint: disable=protected-access
-                raise ValueError(
+                raise properties.ValidationError(
                     'Invalid location {loc} - valid values: {locs}'.format(
                         loc=dat.location,
                         locs=', '.join(self._valid_locations)                  #pylint: disable=protected-access
@@ -263,7 +263,7 @@ class ProjectElement(ContentModel):
                 )
             valid_length = self.location_length(dat.location)
             if len(dat.array) != valid_length:
-                raise ValueError(
+                raise properties.ValidationError(
                     'data[{index}] length {datalen} does not match '
                     '{loc} length {meshlen}'.format(
                         index=i,
