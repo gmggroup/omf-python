@@ -5,13 +5,13 @@ Volume
 
 Transferring a block model from Resource Estimation software into Mine planning software.
 
-.. image:: /images/VolumeGrid.png
+.. image:: /docs/images/VolumeGrid.png
     :scale: 80%
 
 Element
 -------
 
-.. image:: /images/VolumeGridGeometry.png
+.. image:: /docs/images/VolumeGridGeometry.png
     :width: 80%
     :align: center
 

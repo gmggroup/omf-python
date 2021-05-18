@@ -5,17 +5,17 @@ Surface
 
 Transfer geological domains from 3D modelling software to Resource Estimation software.
 
-.. image:: /images/Surface.png
+.. image:: /docs/images/Surface.png
 
 Elements
 --------
 
-.. image:: /images/SurfaceGeometry.png
+.. image:: /docs/images/SurfaceGeometry.png
     :align: center
 
 .. autoclass:: omf.surface.SurfaceElement
 
-.. image:: /images/SurfaceGridGeometry.png
+.. image:: /docs/images/SurfaceGridGeometry.png
     :align: center
 
 .. autoclass:: omf.surface.SurfaceGridElement

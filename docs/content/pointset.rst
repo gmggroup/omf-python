@@ -5,13 +5,13 @@ PointSet
 
 Transfering LIDAR point-cloud data from surveying software into 3D modelling software packages.
 
-.. image:: /images/PointSet.png
+.. image:: /docs/images/PointSet.png
     :scale: 80%
 
 Element
 -------
 
-.. image:: /images/PointSetGeometry.png
+.. image:: /docs/images/PointSetGeometry.png
     :width: 80%
     :align: center
 
