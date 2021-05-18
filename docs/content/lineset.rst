@@ -5,13 +5,13 @@ LineSet
 
 Transfer mapped geological contacts from a GIS software package into a 3D modelling software package to help construct a 3D model.
 
-.. image:: /images/LineSet.png
+.. image:: /docs/images/LineSet.png
     :scale: 80%
 
 Element
 -------
 
-.. image:: /images/LineSetGeometry.png
+.. image:: /docs/images/LineSetGeometry.png
     :width: 80%
     :align: center
 
