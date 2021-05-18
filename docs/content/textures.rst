@@ -9,7 +9,7 @@ nodes or cell centers. This image shows how textures are mapped to a surface.
 Their position is defined by an origin and axis vectors then they
 are mapped laterally to the element position.
 
-.. image:: /images/ImageTexture.png
+.. image:: /docs/images/ImageTexture.png
 
 Like data, multiple textures can be applied to a element; simply provide a
 list of textures. Each of these textures provides an origin point and two
