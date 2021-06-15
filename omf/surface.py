@@ -8,7 +8,7 @@ import numpy as np
 import properties
 
 from .base import ProjectElement
-from .data import Int3Array, ScalarArray, Vector3Array
+from .data import ArrayInstanceProperty
 from .texture import HasTexturesMixin
 
 
@@ -41,13 +41,15 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
 
 class SurfaceElement(BaseSurfaceElement):                                      #pylint: disable=too-many-ancestors
     """Contains triangulated surface spatial information and attributes"""
-    vertices = properties.Instance(
+    vertices = ArrayInstanceProperty(
         'Spatial coordinates of vertices relative to surface origin',
-        Vector3Array,
+        shape=('*', 3),
+        dtype=float,
     )
-    triangles = properties.Instance(
+    triangles = ArrayInstanceProperty(
         'Vertex indices of surface triangles',
-        Int3Array,
+        shape=('*', 3),
+        dtype=int,
     )
 
     @property
@@ -71,15 +73,15 @@ class SurfaceElement(BaseSurfaceElement):                                      #
 
 class SurfaceGridElement(BaseSurfaceElement):                                  #pylint: disable=too-many-ancestors
     """Contains 2D grid spatial information and attributes"""
-    tensor_u = properties.Array(
+    tensor_u = properties.List(
         'Grid cell widths, u-direction',
-        shape=('*',),
-        dtype=float,
+        properties.Float('', min=0.),
+        coerce=True,
     )
-    tensor_v = properties.Array(
+    tensor_v = properties.List(
         'Grid cell widths, v-direction',
-        shape=('*',),
-        dtype=float,
+        properties.Float('', min=0.),
+        coerce=True,
     )
     axis_u = properties.Vector3(
         'Vector orientation of u-direction',
@@ -91,9 +93,10 @@ class SurfaceGridElement(BaseSurfaceElement):                                  #
         default='Y',
         length=1,
     )
-    offset_w = properties.Instance(
+    offset_w = ArrayInstanceProperty(
         'Node offset',
-        ScalarArray,
+        shape=('*',),
+        dtype=float,
         required=False,
     )
     origin = properties.Vector3(

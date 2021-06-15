@@ -12,20 +12,20 @@ from .base import ProjectElement
 
 class VolumeGridElement(ProjectElement):
     """Contains 3D grid volume spatial information and attributes"""
-    tensor_u = properties.Array(
+    tensor_u = properties.List(
         'Tensor cell widths, u-direction',
-        shape=('*',),
-        dtype=float,
+        properties.Float('', min=0.),
+        coerce=True,
     )
-    tensor_v = properties.Array(
+    tensor_v = properties.List(
         'Tensor cell widths, v-direction',
-        shape=('*',),
-        dtype=float,
+        properties.Float('', min=0.),
+        coerce=True,
     )
-    tensor_w = properties.Array(
+    tensor_w = properties.List(
         'Tensor cell widths, w-direction',
-        shape=('*',),
-        dtype=float,
+        properties.Float('', min=0.),
+        coerce=True,
     )
     axis_u = properties.Vector3(
         'Vector orientation of u-direction',

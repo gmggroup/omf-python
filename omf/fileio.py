@@ -106,7 +106,7 @@ class OMFReader(object):
 
     def __init__(self, fopen):
         if isinstance(fopen, string_types):
-            fopen = open(fopen, 'rb')
+            fopen = open(fopen, 'rb')                                          #pylint: disable=consider-using-with
         self._fopen = fopen
         fopen.seek(0, 0)
         self._uid, self._json_start = self.read_header()
