@@ -1,5 +1,8 @@
 """Tests for data object validation"""
 import datetime
+
+import numpy as np
+import properties
 import pytest
 
 import omf
@@ -7,18 +10,76 @@ import omf
 
 def test_scalar_array():
     """Test array init and access works correctly"""
-    arr = omf.data.ScalarArray([1, 2, 3])
-    assert arr.array.dtype.kind == 'i'
-    assert len(arr) == len(arr.array)
-    for i in range(3):
-        assert arr[i] == arr.array[i]
+    arr = omf.data.Array(np.array([1, 2, 3], dtype='uint8'))
+    assert arr.array.dtype.kind == 'u'
+    assert np.array_equal(arr.array, [1, 2, 3])
+    assert arr.datatype == 'Uint8Array'
+    assert arr.shape == [3]
+    assert arr.size == 24
 
+
+def test_boolean_array():
+    """Test boolean array bits"""
+    arr = omf.data.Array(np.array([[1, 1], [0, 0]], dtype='bool'))
+    assert arr.array.dtype.kind == 'b'
+    assert arr.datatype == 'BooleanArray'
+    assert arr.shape == [2, 2]
+    assert arr.size == 4
+
+
+def test_datetime_list():
+    """Test string list gives datetime datatype"""
+    arr = omf.data.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
+    assert arr.datatype == 'DateTimeArray'
+    assert arr.shape == [2]
+
+
+def test_string_list():
+    """Test string list gives string datatype"""
+    arr = omf.data.StringList(['a', 'b', 'c'])
+    assert arr.datatype == 'StringArray'
+    assert arr.shape == [3]
+    assert arr.size == 120
+
+
+def test_array_instance_prop():
+    """Test ArrayInstanceProperty validates correctly"""
+
+    class HasArray(properties.HasProperties):
+        """Test class for ArrayInstanceProperty"""
+        arr = omf.data.ArrayInstanceProperty(
+            'Array instance',
+            shape=('*', 3),
+            dtype=float,
+        )
+
+    harr = HasArray()
+    harr.arr = np.array([[1., 2, 3], [4, 5, 6]])
+    assert harr.validate()
+    assert np.array_equal(harr.arr.array, [[1., 2, 3], [4, 5, 6]])
+    assert harr.arr.datatype == 'Float64Array'
+    assert harr.arr.shape == [2, 3]
+    assert harr.arr.size == 64*6
+
+    with pytest.raises(properties.ValidationError):
+        harr.arr = np.array([1., 2, 3])
+    with pytest.raises(properties.ValidationError):
+        harr.arr = np.array([[1, 2, 3], [4, 5, 6]])
+
+def test_vector_data_dimensionality():
+    """Test only 2D and 3D arrays are valid for vector data"""
+    vdata = omf.data.VectorData(array=[[1, 1], [2, 2], [3, 3]])
+    assert vdata.array.shape == [3, 2]
+    vdata = omf.data.VectorData(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    assert vdata.array.shape == [3, 3]
+    with pytest.raises(properties.ValidationError):
+        omf.data.VectorData(array=[1, 2, 3])
+    with pytest.raises(properties.ValidationError):
+        omf.data.VectorData(array=[[1, 2, 3, 4]])
 
 def test_colormap():
     """Test colormap validation"""
-    cmap = omf.data.ScalarColormap()
-    with pytest.raises(ValueError):
-        cmap.gradient = [[0, 0, 0], [1, 1, 1]]
+    cmap = omf.data.Colormap()
     with pytest.raises(ValueError):
         cmap.limits = [1., 0.]
     cmap.gradient = [[0, 0, 0]]*128
@@ -26,15 +87,6 @@ def test_colormap():
     cmap.limits[0] = 2.
     with pytest.raises(ValueError):
         cmap.validate()
-
-
-def test_color_data_clip():
-    """Test color data clipping"""
-    cdata = omf.data.ColorData()
-    cdata.array = [[1000, 1000, -100]]
-    assert cdata.array.array[0, 0] == 255
-    assert cdata.array.array[0, 1] == 255
-    assert cdata.array.array[0, 2] == 0
 
 
 def test_mapped_data():

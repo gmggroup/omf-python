@@ -210,7 +210,7 @@ class ArbitraryMetadataDict(properties.Dictionary):
         try:
             json.dumps(new_value)
         except TypeError:
-            raise properties.ValidationError(
+            raise properties.ValidationError(                                  #pylint: disable=raise-missing-from
                 'Metadata is not JSON compatible',
                 reason='invalid',
                 prop=self.name,

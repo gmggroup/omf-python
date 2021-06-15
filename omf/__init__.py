@@ -7,14 +7,9 @@ from __future__ import unicode_literals
 from .base import Project
 from .blockmodel import RegularBlockModel
 from .composite import CompositeElement
-from .data import (ColorArray, ColorData,
-                   DateTimeArray, DateTimeColormap, DateTimeData,
-                   Int2Array, Int3Array,
-                   Legend, MappedData,
-                   ScalarArray, ScalarColormap, ScalarData,
-                   StringArray, StringData,
-                   Vector2Array, Vector2Data,
-                   Vector3Array, Vector3Data)
+from .data import (
+    Array, Colormap, Legend, MappedData, NumericData, StringData, VectorData
+)
 from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
