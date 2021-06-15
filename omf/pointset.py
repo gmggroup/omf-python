@@ -8,21 +8,15 @@ import properties
 
 from .base import ProjectElement
 from .data import ArrayInstanceProperty
-from .texture import ImageTexture
+from .texture import HasTexturesMixin
 
 
-class PointSetElement(ProjectElement):
+class PointSetElement(ProjectElement, HasTexturesMixin):
     """Contains point set spatial information and attributes"""
     vertices = ArrayInstanceProperty(
         'Spatial coordinates of points relative to point set origin',
         shape=('*', 3),
         dtype=float,
-    )
-    textures = properties.List(
-        'Images mapped on the element',
-        prop=ImageTexture,
-        required=False,
-        default=list,
     )
     subtype = properties.StringChoice(
         'Category of PointSet',
