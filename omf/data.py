@@ -147,6 +147,17 @@ class StringList(UidModel):
         )
     )
 
+    def __init__(self, array=None, **kwargs):
+        super(StringList, self).__init__(**kwargs)
+        if array is not None:
+            self.array = array
+
+    def __len__(self):
+        return self.array.__len__()
+
+    def __getitem__(self, i):
+        return self.array.__getitem__(i)
+
     @properties.StringChoice(
         'List data type string', choices=['DateTimeArray', 'StringArray']
     )

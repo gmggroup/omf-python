@@ -27,6 +27,19 @@ def test_boolean_array():
     assert arr.size == 4
 
 
+def test_datetime_list():
+    arr = omf.data.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
+    assert arr.datatype == 'DateTimeArray'
+    assert arr.shape == [2]
+
+
+def test_string_list():
+    arr = omf.data.StringList(['a', 'b', 'c'])
+    assert arr.datatype == 'StringArray'
+    assert arr.shape == [3]
+    assert arr.size == 120
+
+
 def test_array_instance_prop():
     """Test ArrayInstanceProperty validates correctly"""
 
@@ -50,6 +63,16 @@ def test_array_instance_prop():
         harr.arr = np.array([1., 2, 3])
     with pytest.raises(properties.ValidationError):
         harr.arr = np.array([[1, 2, 3], [4, 5, 6]])
+
+def test_vector_data_dimensionality():
+    vdata = omf.data.VectorData(array=[[1, 1], [2, 2], [3, 3]])
+    assert vdata.array.shape == [3, 2]
+    vdata = omf.data.VectorData(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    assert vdata.array.shape == [3, 3]
+    with pytest.raises(properties.ValidationError):
+        omf.data.VectorData(array=[1, 2, 3])
+    with pytest.raises(properties.ValidationError):
+        omf.data.VectorData(array=[[1, 2, 3, 4]])
 
 def test_colormap():
     """Test colormap validation"""

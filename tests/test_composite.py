@@ -16,7 +16,7 @@ def test_composite():
     assert elem.validate()
     assert elem.location_length('elements') == 2
     elem.data = [
-        omf.ScalarData(array=[1., 2.], location='elements'),
+        omf.NumericData(array=[1., 2.], location='elements'),
     ]
     assert elem.validate()
     elem.data[0].array = [1., 2., 3.]
