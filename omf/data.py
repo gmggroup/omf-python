@@ -4,6 +4,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+
 import numpy as np
 import properties
 
@@ -136,6 +138,44 @@ class ArrayInstanceProperty(properties.Instance):
         return value
 
 
+class StringList(UidModel):
+
+    array = properties.Union('List of datetimes or strings',
+        props=(
+            properties.List('', properties.DateTime('')),
+            properties.List('', properties.String('')),
+        )
+    )
+
+    @properties.StringChoice(
+        'List data type string', choices=['DateTimeArray', 'StringArray']
+    )
+    def datatype(self):
+        """Array type descriptor, determined directly from the array"""
+        if self.array is None:
+            return None
+        try:
+            properties.List('', properties.DateTime('')).validate(self, self.array)
+        except properties.ValidationError:
+            return 'StringArray'
+        return 'DateTimeArray'
+
+    @properties.List(
+        'Shape of the string list', properties.Integer(''),
+    )
+    def shape(self):
+        """Array shape, determined directly from the array"""
+        if self.array is None:
+            return None
+        return [len(self.array)]
+
+    @properties.Integer('Size of string list dumped to JSON in bits')
+    def size(self):
+        """Total size of the string list in bits"""
+        if self.array is None:
+            return None
+        return len(json.dumps(self.array))*8
+
 
 class Colormap(ContentModel):
     """Length-128 color gradient with min/max values, used with ScalarData"""
@@ -189,6 +229,15 @@ class NumericData(ProjectElementData):
         'colormap associated with the data',
         Colormap,
         required=False,
+    )
+
+class StringData(ProjectElementData):
+    """Data consisting of a list of strings or datetimes"""
+    array = properties.Instance(
+        'String values at locations on a mesh (see '
+        'location parameter); these values may be DateTimes or '
+        'arbitrary strings',
+        StringList,
     )
 
 
