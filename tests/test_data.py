@@ -28,12 +28,14 @@ def test_boolean_array():
 
 
 def test_datetime_list():
+    """Test string list gives datetime datatype"""
     arr = omf.data.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
     assert arr.datatype == 'DateTimeArray'
     assert arr.shape == [2]
 
 
 def test_string_list():
+    """Test string list gives string datatype"""
     arr = omf.data.StringList(['a', 'b', 'c'])
     assert arr.datatype == 'StringArray'
     assert arr.shape == [3]
@@ -65,6 +67,7 @@ def test_array_instance_prop():
         harr.arr = np.array([[1, 2, 3], [4, 5, 6]])
 
 def test_vector_data_dimensionality():
+    """Test only 2D and 3D arrays are valid for vector data"""
     vdata = omf.data.VectorData(array=[[1, 1], [2, 2], [3, 3]])
     assert vdata.array.shape == [3, 2]
     vdata = omf.data.VectorData(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])

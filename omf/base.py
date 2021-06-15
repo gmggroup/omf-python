@@ -164,13 +164,13 @@ class ArbitraryMetadataDict(properties.Dictionary):
             )
         try:
             json.dumps(new_value)
-        except TypeError:
+        except TypeError as err:
             raise properties.ValidationError(
                 'Metadata is not JSON compatible',
                 reason='invalid',
                 prop=self.name,
                 instance=instance,
-            )
+            ) from err
         if not self.equal(value, new_value):
             setattr(instance, self.name, new_value)
         return value

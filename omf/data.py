@@ -139,6 +139,7 @@ class ArrayInstanceProperty(properties.Instance):
 
 
 class StringList(UidModel):
+    """Array-like class with unique ID and string-list array"""
 
     array = properties.Union('List of datetimes or strings',
         props=(
