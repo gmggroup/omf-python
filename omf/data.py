@@ -165,12 +165,25 @@ class Colormap(ContentModel):
         self._check_limits_on_change({'value': self.limits})
 
 
+class VectorData(ProjectElementData):
+    """Data array with vector values
+
+    This data type cannot have a colormap, since you cannot map colormaps
+    to vectors.
+    """
+    array = ArrayInstanceProperty(
+        'Numeric vectors at locations on a mesh (see location parameter); '
+        'these vectors may be 2D or 3D',
+        shape={('*', 2), ('*', 3)},
+    )
+
+
 class NumericData(ProjectElementData):
     """Data array with scalar values"""
     array = ArrayInstanceProperty(
         'Numeric values at locations on a mesh (see location parameter); '
-        'these values may be scalars, 2D vectors, or 3D vectors',
-        shape={('*',), ('*', 2), ('*', 3)},
+        'these values must be scalars',
+        shape=('*',),
     )
     colormap = properties.Instance(
         'colormap associated with the data',
@@ -180,7 +193,7 @@ class NumericData(ProjectElementData):
 
 
 class Legend(ContentModel):
-    """Legends to be used with DataMap indices"""
+    """Legends to be used with MappedData indices"""
     values = properties.Union(
         'values for mapping indexed data',
         props=(
