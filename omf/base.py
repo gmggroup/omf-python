@@ -45,6 +45,51 @@ class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
         return True
 
 
+    def serialize(self, include_class=True, save_dynamic=False, **kwargs):
+        output = super(UidModel, self).serialize(
+            include_class,
+            save_dynamic,
+            **kwargs
+        )
+        dict_to_mutate = None
+        if isinstance(output, dict):
+            dict_to_mutate = output
+        elif kwargs.get('registry', None):
+            dict_to_mutate = kwargs.get('registry')
+        if dict_to_mutate:
+            for entry in dict_to_mutate.values():
+                if not isinstance(entry, dict) or '__class__' not in entry:
+                    continue
+                entry.update(
+                    {'schema_type': self._REGISTRY[entry.pop('__class__')].schema_type}
+                )
+        return output
+
+
+    @classmethod
+    def deserialize(cls, value, trusted=False, strict=False,
+                    assert_valid=False, **kwargs):
+        if kwargs.get('registry', None) is None:
+            if not isinstance(value, dict):
+                raise ValueError('UidModel must deserialize from dictionary')
+            value = value.copy()
+            for entry in value.values():
+                if not isinstance(entry, dict) or 'schema_type' not in entry:
+                    continue
+                schema_type = entry.pop('schema_type')
+                for class_name, class_value in cls._REGISTRY.items():
+                    if getattr(class_value, 'schema_type', '') == schema_type:
+                        entry['__class__'] = class_name
+                        break
+                else:
+                    raise ValueError(
+                        'Unrecognized class type: {}'.format(schema_type)
+                    )
+        return super(UidModel, cls).deserialize(
+            value, trusted, strict, assert_valid, **kwargs
+        )
+
+
 class StringDateTime(properties.DateTime):
     """DateTime property validated to be a string"""
 
@@ -277,6 +322,7 @@ class ProjectElement(ContentModel):
 
 class Project(ContentModel):
     """OMF Project for serializing to .omf file"""
+    schema_type = 'org.omf.v2.project'
 
     elements = properties.List(
         'Project Elements',

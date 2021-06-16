@@ -13,6 +13,8 @@ from .serializers import png_serializer, png_deserializer
 
 class ProjectedTexture(ContentModel):
     """Contains an image that can be projected onto a point set or surface"""
+    schema_type = 'org.omf.v2.texture.projected'
+
     origin = properties.Vector3(
         'Origin point of the texture',
         default=[0., 0., 0.],
