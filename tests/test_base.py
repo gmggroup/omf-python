@@ -101,13 +101,13 @@ def test_metadata_property():
 
 class MyModelWithInt(omf.base.UidModel):
     """Test class with one integer property"""
-    class_type = 'my.model.with.int'
+    schema_type = 'my.model.with.int'
     my_int = properties.Integer('')
 
 
 class MyModelWithIntAndInstance(MyModelWithInt):
     """Test class with an integer property and an instance property"""
-    class_type = 'my.model.with.int.and.instance'
+    schema_type = 'my.model.with.int.and.instance'
     my_model = properties.Instance('', omf.base.UidModel)
 
 
@@ -153,7 +153,7 @@ def test_uid_model_serialize(include_class, skip_validation, registry):
         elif not skip_validation:
             expected_dict.update({'my_int': model.my_int})
         if include_class:
-            expected_dict.update({'_type': model.class_type})
+            expected_dict.update({'schema_type': model.schema_type})
         assert output[str(model.uid)] == expected_dict
 
 
@@ -175,12 +175,12 @@ def test_deserialize():
             'my_int': 0,
             'my_model': uid_b,
             'uid': uid_a,
-            '_type': 'my.model.with.int.and.instance',
+            'schema_type': 'my.model.with.int.and.instance',
         },
         uid_b: {
             'my_int': 1,
             'uid': uid_b,
-            '_type': 'my.model.with.int',
+            'schema_type': 'my.model.with.int',
         },
         '__root__': uid_a,
     }

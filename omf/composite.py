@@ -11,6 +11,7 @@ from .volume import VolumeGridElement
 
 class CompositeElement(ProjectElement):
     """Element constructed from other primitive elements"""
+    schema_type = 'org.omf.v2.composite'
 
     elements = properties.List(
         'Elements grouped into one composite element',

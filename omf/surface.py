@@ -41,7 +41,7 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
 
 class SurfaceElement(BaseSurfaceElement):                                      #pylint: disable=too-many-ancestors
     """Contains triangulated surface spatial information and attributes"""
-    class_type = 'org.omf.v2.element.surface'
+    schema_type = 'org.omf.v2.element.surface'
 
     vertices = ArrayInstanceProperty(
         'Spatial coordinates of vertices relative to surface origin',
@@ -75,7 +75,7 @@ class SurfaceElement(BaseSurfaceElement):                                      #
 
 class SurfaceGridElement(BaseSurfaceElement):                                  #pylint: disable=too-many-ancestors
     """Contains 2D grid spatial information and attributes"""
-    class_type = 'org.omf.v2.element.surfacegrid'
+    schema_type = 'org.omf.v2.element.surfacegrid'
 
     tensor_u = properties.List(
         'Grid cell widths, u-direction',

@@ -33,7 +33,7 @@ DATA_TYPE_LOOKUP_TO_STRING = {
 
 class Array(UidModel):
     """Class with unique ID and data array"""
-    class_type = 'org.omf.v2.array.numeric'
+    schema_type = 'org.omf.v2.array.numeric'
 
     array = properties.Array(
         'Shared Scalar Array',
@@ -141,6 +141,7 @@ class ArrayInstanceProperty(properties.Instance):
 
 class StringList(UidModel):
     """Array-like class with unique ID and string-list array"""
+    schema_type = 'org.omf.v2.array.string'
 
     array = properties.Union('List of datetimes or strings',
         props=(
@@ -192,7 +193,7 @@ class StringList(UidModel):
 
 class Colormap(ContentModel):
     """Length-128 color gradient with min/max values, used with ScalarData"""
-    class_type = 'org.omf.v2.colormap.scalar'
+    schema_type = 'org.omf.v2.colormap.scalar'
 
     gradient = ArrayInstanceProperty(
         'N x 3 Array of RGB values between 0 and 255 which defines '
@@ -226,6 +227,8 @@ class VectorData(ProjectElementData):
     This data type cannot have a colormap, since you cannot map colormaps
     to vectors.
     """
+    schema_type = 'org.omf.v2.data.vector'
+
     array = ArrayInstanceProperty(
         'Numeric vectors at locations on a mesh (see location parameter); '
         'these vectors may be 2D or 3D',
@@ -235,7 +238,7 @@ class VectorData(ProjectElementData):
 
 class NumericData(ProjectElementData):
     """Data array with scalar values"""
-    class_type = 'org.omf.v2.data.numeric'
+    schema_type = 'org.omf.v2.data.numeric'
 
     array = ArrayInstanceProperty(
         'Numeric values at locations on a mesh (see location parameter); '
@@ -250,7 +253,7 @@ class NumericData(ProjectElementData):
 
 class StringData(ProjectElementData):
     """Data consisting of a list of strings or datetimes"""
-    class_type = 'org.omf.v2.data.string'
+    schema_type = 'org.omf.v2.data.string'
 
     array = properties.Instance(
         'String values at locations on a mesh (see '
@@ -262,7 +265,7 @@ class StringData(ProjectElementData):
 
 class Legend(ContentModel):
     """Legends to be used with MappedData indices"""
-    class_type = 'org.omf.v2.legend'
+    schema_type = 'org.omf.v2.legend'
 
     values = properties.Union(
         'values for mapping indexed data',
@@ -277,7 +280,7 @@ class Legend(ContentModel):
 
 class MappedData(ProjectElementData):
     """Data array of indices linked to legend values or -1 for no data"""
-    class_type = 'org.omf.v2.data.mapped'
+    schema_type = 'org.omf.v2.data.mapped'
 
     array = ArrayInstanceProperty(
         'indices into 1 or more legends for locations on a mesh',

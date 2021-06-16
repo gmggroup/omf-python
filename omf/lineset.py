@@ -13,7 +13,7 @@ from .data import ArrayInstanceProperty
 
 class LineSetElement(ProjectElement):
     """Contains line set spatial information and attributes"""
-    class_type = 'org.omf.v2.element.lineset'
+    schema_type = 'org.omf.v2.element.lineset'
 
     vertices = ArrayInstanceProperty(
         'Spatial coordinates of line vertices relative to line set origin',

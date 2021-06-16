@@ -61,7 +61,7 @@ class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
                 if not isinstance(entry, dict) or '__class__' not in entry:
                     continue
                 entry.update(
-                    {'_type': self._REGISTRY[entry.pop('__class__')].class_type}
+                    {'schema_type': self._REGISTRY[entry.pop('__class__')].schema_type}
                 )
         return output
 
@@ -74,16 +74,16 @@ class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
                 raise ValueError('UidModel must deserialize from dictionary')
             value = value.copy()
             for entry in value.values():
-                if not isinstance(entry, dict) or '_type' not in entry:
+                if not isinstance(entry, dict) or 'schema_type' not in entry:
                     continue
-                class_type = entry.pop('_type')
+                schema_type = entry.pop('schema_type')
                 for class_name, class_value in cls._REGISTRY.items():
-                    if getattr(class_value, 'class_type', '') == class_type:
+                    if getattr(class_value, 'schema_type', '') == schema_type:
                         entry['__class__'] = class_name
                         break
                 else:
                     raise ValueError(
-                        'Unrecognized class type: {}'.format(class_type)
+                        'Unrecognized class type: {}'.format(schema_type)
                     )
         return super(UidModel, cls).deserialize(
             value, trusted, strict, assert_valid, **kwargs
@@ -322,7 +322,7 @@ class ProjectElement(ContentModel):
 
 class Project(ContentModel):
     """OMF Project for serializing to .omf file"""
-    class_type = 'org.omf.v2.project'
+    schema_type = 'org.omf.v2.project'
 
     elements = properties.List(
         'Project Elements',
