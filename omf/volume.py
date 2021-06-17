@@ -12,6 +12,8 @@ from .base import ProjectElement
 
 class VolumeGridElement(ProjectElement):
     """Contains 3D grid volume spatial information and attributes"""
+    schema_type = 'org.omf.v2.element.blockmodel.tensor'
+
     tensor_u = properties.List(
         'Tensor cell widths, u-direction',
         properties.Float('', min=0.),

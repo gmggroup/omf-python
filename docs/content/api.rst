@@ -15,6 +15,7 @@ These different elements may have :ref:`data` or image :ref:`textures`.
     lineset
     surface
     volume
+    composite
     data
     textures
     arrays

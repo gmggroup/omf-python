@@ -6,13 +6,14 @@ from __future__ import unicode_literals
 
 from .base import Project
 from .blockmodel import RegularBlockModel
+from .composite import CompositeElement
 from .data import (
-    Array, Legend, CategoryData, Colormap, NumericData,
+    Array, CategoryData, Colormap, Legend, NumericData, StringData, VectorData
 )
 from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
-from .texture import ImageTexture
+from .texture import ProjectedTexture, UVMappedTexture
 from .volume import VolumeGridElement
 
 from .fileio import OMFReader, OMFWriter

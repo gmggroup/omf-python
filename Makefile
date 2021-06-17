@@ -26,7 +26,7 @@ docker-build-27:
 
 docker-tests: docker-build
 	mkdir -p cover
-	docker run -it --rm \
+	docker run --rm \
 		--name=$(APP)-tests \
 		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
 		-v $(shell pwd)/tests:/usr/src/app/tests \
@@ -36,7 +36,7 @@ docker-tests: docker-build
 	mv -f cover/.coverage ./
 
 docker-tests-27: docker-build-27
-	docker run -it --rm \
+	docker run --rm \
 		--name=$(APP)-tests \
 		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
 		-v $(shell pwd)/tests:/usr/src/app/tests \
@@ -44,7 +44,7 @@ docker-tests-27: docker-build-27
 		bash -c "pytest tests/"
 
 docker-lint: docker-build
-	docker run -it --rm \
+	docker run --rm \
 		--name=$(APP)-tests \
 		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
 		-v $(shell pwd)/tests:/usr/src/app/tests \
@@ -53,7 +53,7 @@ docker-lint: docker-build
 		pylint --rcfile=.pylintrc $(APP) tests
 
 docker-docs: docker-build
-	docker run -it --rm \
+	docker run --rm \
 		--name=$(APP)-tests \
 		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
 		-v $(shell pwd)/docs:/usr/src/app/docs \
@@ -62,7 +62,7 @@ docker-docs: docker-build
 
 publish: docker-build
 	mkdir -p dist
-	docker run -it --rm \
+	docker run --rm \
 		--name=$(APP)-publish \
 		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
 		-v $(shell pwd)/dist:/usr/src/app/dist \

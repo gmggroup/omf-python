@@ -13,6 +13,8 @@ from .base import ProjectElement
 class RegularBlockModel(ProjectElement):
     """Block model with constant spacing in each dimension"""
 
+    schema_type = 'org.omf.v2.elements.regularblockmodel'
+
     num_blocks = properties.List(
         'Number of blocks along u, v, and w axes',
         properties.Integer('', min=1),

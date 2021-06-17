@@ -4,6 +4,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+
 import numpy as np
 import properties
 
@@ -31,6 +33,8 @@ DATA_TYPE_LOOKUP_TO_STRING = {
 
 class Array(UidModel):
     """Class with unique ID and data array"""
+    schema_type = 'org.omf.v2.array.numeric'
+
     array = properties.Array(
         'Shared Scalar Array',
         shape={('*',), ('*', '*')},
@@ -61,7 +65,6 @@ class Array(UidModel):
                 )
             )
         return True
-
     @properties.StringChoice(
         'Array data type string', choices=list(DATA_TYPE_LOOKUP_TO_NUMPY)
     )
@@ -136,9 +139,62 @@ class ArrayInstanceProperty(properties.Instance):
         return value
 
 
+class StringList(UidModel):
+    """Array-like class with unique ID and string-list array"""
+    schema_type = 'org.omf.v2.array.string'
+
+    array = properties.Union('List of datetimes or strings',
+        props=(
+            properties.List('', properties.DateTime('')),
+            properties.List('', properties.String('')),
+        )
+    )
+
+    def __init__(self, array=None, **kwargs):
+        super(StringList, self).__init__(**kwargs)
+        if array is not None:
+            self.array = array
+
+    def __len__(self):
+        return self.array.__len__()
+
+    def __getitem__(self, i):
+        return self.array.__getitem__(i)
+
+    @properties.StringChoice(
+        'List data type string', choices=['DateTimeArray', 'StringArray']
+    )
+    def datatype(self):
+        """Array type descriptor, determined directly from the array"""
+        if self.array is None:
+            return None
+        try:
+            properties.List('', properties.DateTime('')).validate(self, self.array)
+        except properties.ValidationError:
+            return 'StringArray'
+        return 'DateTimeArray'
+
+    @properties.List(
+        'Shape of the string list', properties.Integer(''),
+    )
+    def shape(self):
+        """Array shape, determined directly from the array"""
+        if self.array is None:
+            return None
+        return [len(self.array)]
+
+    @properties.Integer('Size of string list dumped to JSON in bits')
+    def size(self):
+        """Total size of the string list in bits"""
+        if self.array is None:
+            return None
+        return len(json.dumps(self.array))*8
+
 
 class Colormap(ContentModel):
     """Color gradient with min/max values, used with NumericData"""
+    schema_type = 'org.omf.v2.colormap.scalar'
+
     gradient = ArrayInstanceProperty(
         'N x 3 Array of RGB values between 0 and 255 which defines '
         'the color gradient',
@@ -175,12 +231,29 @@ class Colormap(ContentModel):
             )
 
 
+class VectorData(ProjectElementData):
+    """Data array with vector values
+
+    This data type cannot have a colormap, since you cannot map colormaps
+    to vectors.
+    """
+    schema_type = 'org.omf.v2.data.vector'
+
+    array = ArrayInstanceProperty(
+        'Numeric vectors at locations on a mesh (see location parameter); '
+        'these vectors may be 2D or 3D',
+        shape={('*', 2), ('*', 3)},
+    )
+
+
 class NumericData(ProjectElementData):
     """Data array with scalar values"""
+    schema_type = 'org.omf.v2.data.numeric'
+
     array = ArrayInstanceProperty(
         'Numeric values at locations on a mesh (see location parameter); '
-        'these values may be scalars, 2D vectors, or 3D vectors',
-        shape={('*',), ('*', 2), ('*', 3)},
+        'these values must be scalars',
+        shape=('*',),
     )
     colormap = properties.Instance(
         'colormap associated with the data',
@@ -188,9 +261,22 @@ class NumericData(ProjectElementData):
         required=False,
     )
 
+class StringData(ProjectElementData):
+    """Data consisting of a list of strings or datetimes"""
+    schema_type = 'org.omf.v2.data.string'
+
+    array = properties.Instance(
+        'String values at locations on a mesh (see '
+        'location parameter); these values may be DateTimes or '
+        'arbitrary strings',
+        StringList,
+    )
+
 
 class Legend(ContentModel):
     """Legends to be used with CategoryData indices"""
+    schema_type = 'org.omf.v2.legend'
+
     values = properties.List(
         'values for mapping indexed data',
         properties.String(''),
@@ -216,6 +302,8 @@ class CategoryData(ProjectElementData):
     For no data, indices should correspond to a value outside the
     range of the categories.
     """
+    schema_type = 'org.omf.v2.data.category'
+
     array = ArrayInstanceProperty(
         'indices into the category values for locations on a mesh',
         shape=('*',),
