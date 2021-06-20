@@ -5,7 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from .base import Project
-from .blockmodel import RegularBlockModel
+from .blockmodel import TensorBlockModel, RegularBlockModel, RegularSubBlockModel
 from .composite import CompositeElement
 from .data import (
     Array, CategoryData, CategoryColormap, ContinuousColormap,
@@ -15,7 +15,6 @@ from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
 from .texture import ProjectedTexture, UVMappedTexture
-from .volume import VolumeGridElement
 
 from .fileio import OMFReader, OMFWriter
 

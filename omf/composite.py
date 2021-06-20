@@ -2,11 +2,10 @@
 import properties
 
 from .base import ProjectElement
-from .blockmodel import RegularBlockModel
+from .blockmodel import RegularBlockModel, RegularSubBlockModel, TensorBlockModel
 from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
-from .volume import VolumeGridElement
 
 
 class CompositeElement(ProjectElement):
@@ -17,11 +16,12 @@ class CompositeElement(ProjectElement):
         'Elements grouped into one composite element',
         prop=properties.Union('', (
             RegularBlockModel,
+            RegularSubBlockModel,
+            TensorBlockModel,
             LineSetElement,
             PointSetElement,
             SurfaceElement,
             SurfaceGridElement,
-            VolumeGridElement,
         )),
         default=list,
     )
