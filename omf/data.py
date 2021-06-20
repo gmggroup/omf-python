@@ -191,8 +191,8 @@ class StringList(UidModel):
         return len(json.dumps(self.array))*8
 
 
-class Colormap(ContentModel):
-    """Length-128 color gradient with min/max values, used with ScalarData"""
+class ContinuousColormap(ContentModel):
+    """Color gradient with min/max values, used with NumericData"""
     schema_type = 'org.omf.v2.colormap.scalar'
 
     gradient = ArrayInstanceProperty(
@@ -209,16 +209,86 @@ class Colormap(ContentModel):
         default=properties.undefined,
     )
 
+    @properties.validator('gradient')
+    def _check_gradient_values(self, change):                                  #pylint: disable=no-self-use
+        """Ensure gradient values are all between 0 and 255"""
+        arr = change['value'].array
+        if arr is None:
+            return
+        arr_uint8 = arr.astype('uint8')
+        if not np.array_equal(arr, arr_uint8):
+            raise properties.ValidationError(
+                'Gradient must be an array of RGB values between 0 and 255'
+            )
+        change['value'].array = arr_uint8
+
     @properties.validator('limits')
     def _check_limits_on_change(self, change):                                 #pylint: disable=no-self-use
         """Ensure limits are valid"""
         if change['value'][0] > change['value'][1]:
-            raise ValueError('Colormap limits[0] must be <= limits[1]')
+            raise properties.ValidationError(
+                'Colormap limits[0] must be <= limits[1]'
+            )
+
+class DiscreteColormap(ContentModel):
+    """Colormap for grouping discrete intervals of NumericData"""
+
+    schema_type = 'org.omf.v2.colormap.discrete'
+
+    end_points = properties.List(
+        'Data values associated with edge of color intervals',
+        prop=properties.Float(''),
+        default=properties.undefined,
+    )
+    end_inclusive = properties.List(
+        'True if corresponding end_point is included in lower interval; '
+        'False if end_point is in upper interval',
+        prop=properties.Boolean(''),
+        default=properties.undefined,
+    )
+    colors = properties.List(
+        'Colors for each interval',
+        prop=properties.Color(''),
+        min_length=1,
+        default=properties.undefined,
+    )
 
     @properties.validator
-    def _check_limits_on_validate(self):
-        """Ensure limits are valid"""
-        self._check_limits_on_change({'value': self.limits})
+    def _validate_lengths(self):
+        if len(self.end_points) != len(self.end_inclusive):
+            pass
+        elif len(self.colors) == len(self.end_points) + 1:
+            return True
+        raise properties.ValidationError(
+            'Discrete colormap colors length must be one greater than '
+            'end_points and end_inclusive values'
+        )
+
+    @properties.validator('end_points')
+    def _validate_end_points_monotonic(self, change):                          #pylint: disable=no-self-use
+        for i in range(len(change['value']) - 1):
+            diff = change['value'][i+1] - change['value'][i]
+            if diff < 0:
+                raise properties.ValidationError(
+                    'end_points must be monotonically increasing'
+                )
+
+
+
+class NumericData(ProjectElementData):
+    """Data array with scalar values"""
+    schema_type = 'org.omf.v2.data.numeric'
+
+    array = ArrayInstanceProperty(
+        'Numeric values at locations on a mesh (see location parameter); '
+        'these values must be scalars',
+        shape=('*',),
+    )
+    colormap = properties.Union(
+        'colormap associated with the data',
+        [ContinuousColormap, DiscreteColormap],
+        required=False,
+    )
 
 
 class VectorData(ProjectElementData):
@@ -235,22 +305,6 @@ class VectorData(ProjectElementData):
         shape={('*', 2), ('*', 3)},
     )
 
-
-class NumericData(ProjectElementData):
-    """Data array with scalar values"""
-    schema_type = 'org.omf.v2.data.numeric'
-
-    array = ArrayInstanceProperty(
-        'Numeric values at locations on a mesh (see location parameter); '
-        'these values must be scalars',
-        shape=('*',),
-    )
-    colormap = properties.Instance(
-        'colormap associated with the data',
-        Colormap,
-        required=False,
-    )
-
 class StringData(ProjectElementData):
     """Data consisting of a list of strings or datetimes"""
     schema_type = 'org.omf.v2.data.string'
@@ -263,76 +317,50 @@ class StringData(ProjectElementData):
     )
 
 
-class Legend(ContentModel):
-    """Legends to be used with MappedData indices"""
-    schema_type = 'org.omf.v2.legend'
+class CategoryColormap(ContentModel):
+    """Legends to be used with CategoryData indices"""
+    schema_type = 'org.omf.v2.colormap.category'
 
-    values = properties.Union(
+    indices = properties.List(
+        'indices corresponding to CateogryData array values',
+        properties.Integer(''),
+    )
+    values = properties.List(
         'values for mapping indexed data',
-        props=(
-            properties.List('', properties.Color('')),
-            properties.List('', properties.String('')),
-            properties.List('', properties.Integer('')),
-            properties.List('', properties.Float('')),
-        )
+        properties.String(''),
+    )
+    colors = properties.List(
+        'colors corresponding to values',
+        properties.Color(''),
+        required=False,
     )
 
+    @properties.validator
+    def _validate_lengths(self):
+        if len(self.indices) != len(self.values):
+            pass
+        elif self.colors is None or len(self.colors) == len(self.values):
+            return True
+        raise properties.ValidationError(
+            'Legend colors and values must be the same length'
+        )
 
-class MappedData(ProjectElementData):
-    """Data array of indices linked to legend values or -1 for no data"""
-    schema_type = 'org.omf.v2.data.mapped'
+
+class CategoryData(ProjectElementData):
+    """Data array of indices linked to category values
+
+    For no data, indices should correspond to a value outside the
+    range of the categories.
+    """
+    schema_type = 'org.omf.v2.data.category'
 
     array = ArrayInstanceProperty(
-        'indices into 1 or more legends for locations on a mesh',
+        'indices into the category values for locations on a mesh',
         shape=('*',),
         dtype=int,
 
     )
-    legends = properties.List(
-        'legends into which the indices map',
-        Legend,
-        default=list,
+    categories = properties.Instance(
+        'categories into which the indices map',
+        CategoryColormap,
     )
-
-    @property
-    def indices(self):
-        """Allows getting/setting array with more intuitive term indices"""
-        return self.array
-
-    @indices.setter
-    def indices(self, value):
-        self.array = value
-
-    def value_dict(self, i):
-        """Return a dictionary of legend entries based on index"""
-        if self.indices[i] == -1:
-            return None
-        entry = {legend.name: legend.values[self.indices[i]]                    #pylint: disable=unsubscriptable-object
-                 for legend in self.legends}                                    #pylint: disable=not-an-iterable
-        return entry
-
-    @properties.validator('array')
-    def _validate_min_ind(self, change):                                       #pylint: disable=no-self-use
-        """This validation call fires immediately when indices is set"""
-        if change['value'].array.dtype.kind != 'i':
-            raise ValueError('DataMap indices must be integers')
-        if np.min(change['value'].array) < -1:
-            raise ValueError('DataMap indices must be >= -1')
-
-    @properties.validator
-    def _validate_indices(self):
-        """This validation call fires on validate() after everything is set"""
-        if np.min(self.indices.array) < -1:                                    #pylint: disable=no-member
-            raise ValueError(
-                'Indices of DataMap {} must be >= -1'.format(self.name)
-            )
-        for legend in self.legends:                                            #pylint: disable=not-an-iterable
-            if np.max(self.indices.array) >= len(legend.values):               #pylint: disable=no-member
-                raise ValueError(
-                    'Indices of DataMap {dm} exceed number of available '
-                    'entries in Legend {leg}'.format(
-                        dm=self.name,
-                        leg=legend.name
-                    )
-                )
-        return True
