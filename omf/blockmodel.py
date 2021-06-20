@@ -82,6 +82,8 @@ class BaseBlockModel(ProjectElement):
 
 class TensorBlockModel(BaseBlockModel):
     """Block model with variable spacing in each dimension"""
+    schema_type = 'org.omf.v2.element.blockmodel.tensor'
+
     tensor_u = properties.Array(
         'Tensor cell widths, u-direction',
         shape=('*',),
@@ -108,7 +110,7 @@ class TensorBlockModel(BaseBlockModel):
 
     def _tensors_defined(self):
         tensors = [self.tensor_u, self.tensor_v, self.tensor_w]
-        return all([tensor is not None for tensor in tensors])
+        return all((tensor is not None for tensor in tensors))
 
     @property
     def num_nodes(self):
@@ -140,6 +142,8 @@ class TensorBlockModel(BaseBlockModel):
 
 class RegularBlockModel(BaseBlockModel):
     """Block model with constant spacing in each dimension"""
+
+    schema_type = 'org.omf.v2.elements.blockmodel.regular'
 
     num_blocks = properties.List(
         'Number of blocks along u, v, and w axes',
@@ -250,6 +254,8 @@ class RegularBlockModel(BaseBlockModel):
 
 class RegularSubBlockModel(BaseBlockModel):
     """Regular block model with an additional level of sub-blocks"""
+
+    schema_type = 'org.omf.v2.elements.blockmodel.sub'
 
     num_parent_blocks = properties.List(
         'Number of parent blocks along u, v, and w axes',
