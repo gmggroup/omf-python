@@ -7,15 +7,18 @@ from __future__ import unicode_literals
 import properties
 
 from .base import ProjectElement
-from .data import Vector3Array
+from .data import ArrayInstanceProperty
 from .texture import HasTexturesMixin
 
 
 class PointSetElement(ProjectElement, HasTexturesMixin):
     """Contains point set spatial information and attributes"""
-    vertices = properties.Instance(
+    schema_type = 'org.omf.v2.element.pointset'
+
+    vertices = ArrayInstanceProperty(
         'Spatial coordinates of points relative to point set origin',
-        Vector3Array,
+        shape=('*', 3),
+        dtype=float,
     )
     subtype = properties.StringChoice(
         'Category of PointSet',

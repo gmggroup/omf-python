@@ -41,37 +41,17 @@ def array_serializer(arr, open_file, **kwargs):                                #
     arr_buffer = memoryview(arr.astype(dtype))
     open_file.write(zlib.compress(arr_buffer))
     index['length'] = open_file.tell() - index['start']
+    index['shape'] = arr.shape
     return index
 
-class array_deserializer(object):                                              #pylint: disable=invalid-name, too-few-public-methods
+def array_deserializer(index, open_file, **kwargs):                            #pylint: disable=unused-argument
     """Convert binary to numpy array based on input shape"""
-
-    def __init__(self, shape):
-        if sum([dim == '*' for dim in shape]) > 1:
-            raise TypeError('array_deserializer shape may only have one '
-                            'unknown dimension')
-        self.shape = shape
-
-    def __call__(self, index, open_file, **kwargs):                            #pylint: disable=unused-argument
-        assert index['dtype'] in ('<i8', '<f8'), 'invalid dtype'
-        open_file.seek(index['start'], 0)
-        arr_buffer = zlib.decompress(open_file.read(index['length']))
-        arr = np.frombuffer(arr_buffer, index['dtype'])
-        unknown_dim = len(arr)
-        for dim in self.shape:
-            if dim == '*':
-                continue
-            unknown_dim /= dim
-        if '*' in self.shape:
-            assert abs(unknown_dim - int(unknown_dim)) < 1e-9, 'bad shape'
-            shape = tuple(
-                (int(unknown_dim) if dim == '*' else dim for dim in self.shape)
-            )
-        else:
-            assert abs(unknown_dim - 1) < 1e-9, 'bad shape'
-            shape = self.shape
-        arr = arr.reshape(shape)
-        return arr
+    assert index['dtype'] in ('<i8', '<f8'), 'invalid dtype'
+    open_file.seek(index['start'], 0)
+    arr_buffer = zlib.decompress(open_file.read(index['length']))
+    arr = np.frombuffer(arr_buffer, index['dtype'])
+    arr = arr.reshape(index['shape'])
+    return arr
 
 def png_serializer(img, open_file, **kwargs):                                  #pylint: disable=unused-argument
     """Serialize PNG in bytes to file"""

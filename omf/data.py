@@ -4,6 +4,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+
 import numpy as np
 import properties
 
@@ -11,16 +13,38 @@ from .base import UidModel, ContentModel, ProjectElementData
 from .serializers import array_serializer, array_deserializer
 
 
-class ScalarArray(UidModel):
+DATA_TYPE_LOOKUP_TO_NUMPY = {
+    'Int8Array': np.dtype('int8'),
+    'Uint8Array': np.dtype('uint8'),
+    'Int16Array': np.dtype('int16'),
+    'Uint16Array': np.dtype('uint16'),
+    'Int32Array': np.dtype('int32'),
+    'Uint32Array': np.dtype('uint32'),
+    'Int64Array': np.dtype('int64'),
+    'Uint64Array': np.dtype('uint64'),
+    'Float32Array': np.dtype('float32'),
+    'Float64Array': np.dtype('float64'),
+    'BooleanArray': np.dtype('bool'),
+}
+DATA_TYPE_LOOKUP_TO_STRING = {
+    value: key for key, value in DATA_TYPE_LOOKUP_TO_NUMPY.items()
+}
+
+
+class Array(UidModel):
     """Class with unique ID and data array"""
+    schema_type = 'org.omf.v2.array.numeric'
+
     array = properties.Array(
         'Shared Scalar Array',
+        shape={('*',), ('*', '*')},
+        dtype=(int, float, bool),
         serializer=array_serializer,
-        deserializer=array_deserializer(('*',)),
+        deserializer=array_deserializer,
     )
 
     def __init__(self, array=None, **kwargs):
-        super(ScalarArray, self).__init__(**kwargs)
+        super(Array, self).__init__(**kwargs)
         if array is not None:
             self.array = array
 
@@ -30,79 +54,152 @@ class ScalarArray(UidModel):
     def __getitem__(self, i):
         return self.array.__getitem__(i)
 
+    @properties.validator
+    def _validate_datatype(self):
+        if self.array.dtype not in DATA_TYPE_LOOKUP_TO_STRING:
+            raise properties.ValidationError(
+                'bad dtype: {} - Array must have dtype in {}'.format(
+                    self.array.dtype, ', '.join(
+                        [dtype.name for dtype in DATA_TYPE_LOOKUP_TO_STRING]
+                    )
+                )
+            )
+        return True
+    @properties.StringChoice(
+        'Array data type string', choices=list(DATA_TYPE_LOOKUP_TO_NUMPY)
+    )
+    def datatype(self):
+        """Array type descriptor, determined directly from the array"""
+        if self.array is None:
+            return None
+        return DATA_TYPE_LOOKUP_TO_STRING.get(self.array.dtype, None)
 
-class Vector2Array(ScalarArray):
-    """Shared array of 2D vectors"""
-    array = properties.Vector2Array(
-        'Shared Vector2 Array',
-        serializer=array_serializer,
-        deserializer=array_deserializer(('*', 2)),
+    @properties.List(
+        'Shape of the array', properties.Integer(''),
+    )
+    def shape(self):
+        """Array shape, determined directly from the array"""
+        if self.array is None:
+            return None
+        return list(self.array.shape)
+
+    @properties.Integer('Size of array in bits')
+    def size(self):
+        """Total size of the array in bits"""
+        if self.array is None:
+            return None
+        bit_multiplier = 1 if self.datatype == 'BooleanArray' else 8           #pylint: disable=comparison-with-callable
+        return self.array.size * self.array.itemsize * bit_multiplier
+
+
+class ArrayInstanceProperty(properties.Instance):
+    """Instance property for OMF Array objects
+
+    This adds additional shape and dtype validation.
+    """
+
+    def __init__(self, doc, **kwargs):
+        if 'instance_class' in kwargs:
+            raise AttributeError(
+                'ArrayInstanceProperty does not allow custom instance_class'
+            )
+        self.validator_prop = properties.Array(
+            '',
+            shape={('*',), ('*', '*')},
+            dtype=(int, float, bool),
+        )
+        super(ArrayInstanceProperty, self).__init__(
+            doc, instance_class=Array, **kwargs
+        )
+
+    @property
+    def shape(self):
+        """Required shape of the Array instance's array property"""
+        return self.validator_prop.shape
+
+    @shape.setter
+    def shape(self, value):
+        self.validator_prop.shape = value
+
+    @property
+    def dtype(self):
+        """Required dtype of the Array instance's array property"""
+        return self.validator_prop.dtype
+
+    @dtype.setter
+    def dtype(self, value):
+        self.validator_prop.dtype = value
+
+
+    def validate(self, instance, value):
+        self.validator_prop.name = self.name
+        value = super(ArrayInstanceProperty, self).validate(instance, value)
+        if value.array is not None:
+            value.array = self.validator_prop.validate(instance, value.array)
+        return value
+
+
+class StringList(UidModel):
+    """Array-like class with unique ID and string-list array"""
+    schema_type = 'org.omf.v2.array.string'
+
+    array = properties.Union('List of datetimes or strings',
+        props=(
+            properties.List('', properties.DateTime('')),
+            properties.List('', properties.String('')),
+        )
     )
 
+    def __init__(self, array=None, **kwargs):
+        super(StringList, self).__init__(**kwargs)
+        if array is not None:
+            self.array = array
 
-class Vector3Array(ScalarArray):
-    """Shared array of 3D vectors"""
-    array = properties.Vector3Array(
-        'Shared Vector3 Array',
-        serializer=array_serializer,
-        deserializer=array_deserializer(('*', 3)),
+    def __len__(self):
+        return self.array.__len__()
+
+    def __getitem__(self, i):
+        return self.array.__getitem__(i)
+
+    @properties.StringChoice(
+        'List data type string', choices=['DateTimeArray', 'StringArray']
     )
+    def datatype(self):
+        """Array type descriptor, determined directly from the array"""
+        if self.array is None:
+            return None
+        try:
+            properties.List('', properties.DateTime('')).validate(self, self.array)
+        except properties.ValidationError:
+            return 'StringArray'
+        return 'DateTimeArray'
 
-
-class Int2Array(ScalarArray):
-    """Shared n x 2 array of integers"""
-    array = properties.Array(
-        'Shared n x 2 Int Array',
-        dtype=int,
-        shape=('*', 2),
-        serializer=array_serializer,
-        deserializer=array_deserializer(('*', 2)),
+    @properties.List(
+        'Shape of the string list', properties.Integer(''),
     )
+    def shape(self):
+        """Array shape, determined directly from the array"""
+        if self.array is None:
+            return None
+        return [len(self.array)]
+
+    @properties.Integer('Size of string list dumped to JSON in bits')
+    def size(self):
+        """Total size of the string list in bits"""
+        if self.array is None:
+            return None
+        return len(json.dumps(self.array))*8
 
 
-class Int3Array(ScalarArray):
-    """Shared n x 3 array of integers"""
-    array = properties.Array(
-        'Shared n x 3 Int Array',
-        dtype=int,
+class ContinuousColormap(ContentModel):
+    """Color gradient with min/max values, used with NumericData"""
+    schema_type = 'org.omf.v2.colormap.scalar'
+
+    gradient = ArrayInstanceProperty(
+        'N x 3 Array of RGB values between 0 and 255 which defines '
+        'the color gradient',
         shape=('*', 3),
-        serializer=array_serializer,
-        deserializer=array_deserializer(('*', 3)),
-    )
-
-
-class StringArray(ScalarArray):
-    """Shared array of text strings"""
-    array = properties.List(
-        'Shared array of text strings',
-        prop=properties.String(''),
-        default=list,
-    )
-
-
-class DateTimeArray(ScalarArray):
-    """Shared array of DateTimes"""
-    array = properties.List(
-        'Shared array of DateTimes',
-        prop=properties.DateTime(''),
-        default=list,
-    )
-
-
-class ColorArray(ScalarArray):
-    """Shared array of Colors"""
-    array = properties.List(
-        'Shared array of Colors',
-        prop=properties.Color(''),
-        default=list,
-    )
-
-
-class ScalarColormap(ContentModel):
-    """Length-128 color gradient with min/max values, used with ScalarData"""
-    gradient = properties.Instance(
-        'length-128 ColorArray defining the gradient',
-        ColorArray,
+        dtype=int,
     )
     limits = properties.List(
         'Data range associated with the gradient',
@@ -113,174 +210,157 @@ class ScalarColormap(ContentModel):
     )
 
     @properties.validator('gradient')
-    def _check_gradient_length(self, change):                                  #pylint: disable=no-self-use
-        """Ensure gradient is length-128"""
-        if len(change['value']) != 128:
-            raise ValueError('Colormap gradient must be length 128')
+    def _check_gradient_values(self, change):                                  #pylint: disable=no-self-use
+        """Ensure gradient values are all between 0 and 255"""
+        arr = change['value'].array
+        if arr is None:
+            return
+        arr_uint8 = arr.astype('uint8')
+        if not np.array_equal(arr, arr_uint8):
+            raise properties.ValidationError(
+                'Gradient must be an array of RGB values between 0 and 255'
+            )
+        change['value'].array = arr_uint8
 
     @properties.validator('limits')
     def _check_limits_on_change(self, change):                                 #pylint: disable=no-self-use
         """Ensure limits are valid"""
         if change['value'][0] > change['value'][1]:
-            raise ValueError('Colormap limits[0] must be <= limits[1]')
+            raise properties.ValidationError(
+                'Colormap limits[0] must be <= limits[1]'
+            )
 
-    @properties.validator
-    def _check_limits_on_validate(self):
-        """Ensure limits are valid"""
-        self._check_limits_on_change({'value': self.limits})
+class DiscreteColormap(ContentModel):
+    """Colormap for grouping discrete intervals of NumericData"""
 
+    schema_type = 'org.omf.v2.colormap.discrete'
 
-class DateTimeColormap(ScalarColormap):
-    """Length-128 color gradient with min/max values, used with DateTimeData"""
-    limits = properties.List(
-        'Data range associated with the gradient',
-        prop=properties.DateTime(''),
-        min_length=2,
-        max_length=2,
+    end_points = properties.List(
+        'Data values associated with edge of color intervals',
+        prop=properties.Float(''),
+        default=properties.undefined,
+    )
+    end_inclusive = properties.List(
+        'True if corresponding end_point is included in lower interval; '
+        'False if end_point is in upper interval',
+        prop=properties.Boolean(''),
+        default=properties.undefined,
+    )
+    colors = properties.List(
+        'Colors for each interval',
+        prop=properties.Color(''),
+        min_length=1,
         default=properties.undefined,
     )
 
+    @properties.validator
+    def _validate_lengths(self):
+        if len(self.end_points) != len(self.end_inclusive):
+            pass
+        elif len(self.colors) == len(self.end_points) + 1:
+            return True
+        raise properties.ValidationError(
+            'Discrete colormap colors length must be one greater than '
+            'end_points and end_inclusive values'
+        )
 
-class ScalarData(ProjectElementData):
+    @properties.validator('end_points')
+    def _validate_end_points_monotonic(self, change):                          #pylint: disable=no-self-use
+        for i in range(len(change['value']) - 1):
+            diff = change['value'][i+1] - change['value'][i]
+            if diff < 0:
+                raise properties.ValidationError(
+                    'end_points must be monotonically increasing'
+                )
+
+
+
+class NumericData(ProjectElementData):
     """Data array with scalar values"""
-    array = properties.Instance(
-        'scalar values at locations on a mesh (see location parameter)',
-        ScalarArray,
+    schema_type = 'org.omf.v2.data.numeric'
+
+    array = ArrayInstanceProperty(
+        'Numeric values at locations on a mesh (see location parameter); '
+        'these values must be scalars',
+        shape=('*',),
     )
-    colormap = properties.Instance(
+    colormap = properties.Union(
         'colormap associated with the data',
-        ScalarColormap,
+        [ContinuousColormap, DiscreteColormap],
         required=False,
     )
 
 
-class Vector3Data(ProjectElementData):
-    """Data array with 3D vectors"""
-    array = properties.Instance(
-        '3D vectors at locations on a mesh (see location parameter)',
-        Vector3Array,
-    )
+class VectorData(ProjectElementData):
+    """Data array with vector values
 
-
-class Vector2Data(ProjectElementData):
-    """Data array with 2D vectors"""
-    array = properties.Instance(
-        '2D vectors at locations on a mesh (see location parameter)',
-        Vector2Array,
-    )
-
-
-class ColorData(ProjectElementData):
-    """Data array of RGB colors specified as three integers 0-255 or color
-
-    If n x 3 integers is provided, these will simply be clipped to values
-    between 0 and 255 inclusive; invalid colors will not error. This
-    allows fast array validation rather than slow element-by-element list
-    validation.
-
-    Other color formats may be used (ie String or Hex colors). However,
-    for large arrays, validation of these types will be slow.
+    This data type cannot have a colormap, since you cannot map colormaps
+    to vectors.
     """
-    array = properties.Union(
-        'RGB color values at locations on a mesh (see location parameter)',
-        props=(
-            Int3Array,
-            ColorArray,
-        )
+    schema_type = 'org.omf.v2.data.vector'
+
+    array = ArrayInstanceProperty(
+        'Numeric vectors at locations on a mesh (see location parameter); '
+        'these vectors may be 2D or 3D',
+        shape={('*', 2), ('*', 3)},
     )
-
-    @properties.validator('array')
-    def _clip_colors(self, change):                                            #pylint: disable=no-self-use
-        """This validation call fires immediately when array is set"""
-        if isinstance(change['value'], Int3Array):
-            change['value'].array = np.clip(change['value'].array, 0, 255)
-
 
 class StringData(ProjectElementData):
-    """Data array with text entries"""
+    """Data consisting of a list of strings or datetimes"""
+    schema_type = 'org.omf.v2.data.string'
+
     array = properties.Instance(
-        'text at locations on a mesh (see location parameter)',
-        StringArray,
+        'String values at locations on a mesh (see '
+        'location parameter); these values may be DateTimes or '
+        'arbitrary strings',
+        StringList,
     )
 
 
-class DateTimeData(ProjectElementData):
-    """Data array with DateTime entries"""
-    array = properties.Instance(
-        'datetimes at locations on a mesh (see location parameter)',
-        DateTimeArray,
+class CategoryColormap(ContentModel):
+    """Legends to be used with CategoryData indices"""
+    schema_type = 'org.omf.v2.colormap.category'
+
+    indices = properties.List(
+        'indices corresponding to CateogryData array values',
+        properties.Integer(''),
     )
-    colormap = properties.Instance(
-        'colormap associated with the data',
-        DateTimeColormap,
+    values = properties.List(
+        'values for mapping indexed data',
+        properties.String(''),
+    )
+    colors = properties.List(
+        'colors corresponding to values',
+        properties.Color(''),
         required=False,
     )
 
-
-class Legend(ContentModel):
-    """Legends to be used with DataMap indices"""
-    values = properties.Union(
-        'values for mapping indexed data',
-        props=(
-            ColorArray,
-            DateTimeArray,
-            StringArray,
-            ScalarArray,
-        )
-    )
-
-
-class MappedData(ProjectElementData):
-    """Data array of indices linked to legend values or -1 for no data"""
-    array = properties.Instance(
-        'indices into 1 or more legends for locations on a mesh',
-        ScalarArray,
-    )
-    legends = properties.List(
-        'legends into which the indices map',
-        Legend,
-        default=list,
-    )
-
-    @property
-    def indices(self):
-        """Allows getting/setting array with more intuitive term indices"""
-        return self.array
-
-    @indices.setter
-    def indices(self, value):
-        self.array = value
-
-    def value_dict(self, i):
-        """Return a dictionary of legend entries based on index"""
-        if self.indices[i] == -1:
-            return None
-        entry = {legend.name: legend.values[self.indices[i]]                    #pylint: disable=unsubscriptable-object
-                 for legend in self.legends}                                    #pylint: disable=not-an-iterable
-        return entry
-
-    @properties.validator('array')
-    def _validate_min_ind(self, change):                                       #pylint: disable=no-self-use
-        """This validation call fires immediately when indices is set"""
-        if change['value'].array.dtype.kind != 'i':
-            raise ValueError('DataMap indices must be integers')
-        if np.min(change['value'].array) < -1:
-            raise ValueError('DataMap indices must be >= -1')
-
     @properties.validator
-    def _validate_indices(self):
-        """This validation call fires on validate() after everything is set"""
-        if np.min(self.indices.array) < -1:                                    #pylint: disable=no-member
-            raise ValueError(
-                'Indices of DataMap {} must be >= -1'.format(self.name)
-            )
-        for legend in self.legends:                                            #pylint: disable=not-an-iterable
-            if np.max(self.indices.array) >= len(legend.values):               #pylint: disable=no-member
-                raise ValueError(
-                    'Indices of DataMap {dm} exceed number of available '
-                    'entries in Legend {leg}'.format(
-                        dm=self.name,
-                        leg=legend.name
-                    )
-                )
-        return True
+    def _validate_lengths(self):
+        if len(self.indices) != len(self.values):
+            pass
+        elif self.colors is None or len(self.colors) == len(self.values):
+            return True
+        raise properties.ValidationError(
+            'Legend colors and values must be the same length'
+        )
+
+
+class CategoryData(ProjectElementData):
+    """Data array of indices linked to category values
+
+    For no data, indices should correspond to a value outside the
+    range of the categories.
+    """
+    schema_type = 'org.omf.v2.data.category'
+
+    array = ArrayInstanceProperty(
+        'indices into the category values for locations on a mesh',
+        shape=('*',),
+        dtype=int,
+
+    )
+    categories = properties.Instance(
+        'categories into which the indices map',
+        CategoryColormap,
+    )

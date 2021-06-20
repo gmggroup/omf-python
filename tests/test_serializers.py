@@ -57,8 +57,9 @@ def test_array_serializer_none():
 
 def test_bad_shape():
     """Test bad shape for array deserializer"""
+    open_file = mock.MagicMock()
     with pytest.raises(TypeError):
-        omf.serializers.array_deserializer(['*', '*'])
+        omf.serializers.array_deserializer(['*', '*'], open_file)
 
 
 @mock.patch('omf.serializers.np.frombuffer')
@@ -73,14 +74,14 @@ def test_bad_deserialize(mock_decompress, mock_frombuffer, dtype, shape):
     """Test expected errors during deserialization"""
     mock_decompress.return_value = None
     mock_frombuffer.return_value = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
-    deserializer = omf.serializers.array_deserializer(shape)
     index = {
         'dtype': dtype,
         'start': 0,
         'length': 0,
+        'shape': shape,
     }
-    with pytest.raises(AssertionError):
-        deserializer(index, io.BytesIO())
+    with pytest.raises((TypeError, ValueError, AssertionError)):
+        omf.serializers.array_deserializer(index, io.BytesIO())
 
 
 @pytest.mark.parametrize('arr', [
@@ -103,8 +104,7 @@ def test_array_serialize_round_trip(arr):
         if i > 0:
             input_shape[i-1] = '*'
         index = omf.serializers.array_serializer(arr, mock_file)
-        deserializer = omf.serializers.array_deserializer(input_shape)
-        output = deserializer(index, mock_file)
+        output = omf.serializers.array_deserializer(index, mock_file)
         assert output.shape == arr.shape
         assert output.dtype == arr.dtype
         assert np.allclose(output, arr, equal_nan=True)

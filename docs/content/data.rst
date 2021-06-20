@@ -43,52 +43,37 @@ the surface contains a mesh with 9 vertices and 4 faces (ie a 2x2 square grid).
            my_node_data
        ]
 
-ScalarData
+NumericData
+-----------
+
+.. autoclass:: omf.data.NumericData
+
+VectorData
 ----------
 
-.. autoclass:: omf.data.ScalarData
-
-Vector3Data
------------
-
-.. autoclass:: omf.data.Vector3Data
-
-Vector2Data
------------
-
-.. autoclass:: omf.data.Vector2Data
-
-ColorData
----------
-
-.. autoclass:: omf.data.ColorData
+.. autoclass:: omf.data.VectorData
 
 StringData
 ----------
 
 .. autoclass:: omf.data.StringData
 
-DateTimeData
+CategoryData
 ------------
 
-.. autoclass:: omf.data.DateTimeData
+.. autoclass:: omf.data.CategoryData
 
-MappedData
-----------
+ContinuousColormap
+------------------
 
-.. autoclass:: omf.data.MappedData
+.. autoclass:: omf.data.ContinuousColormap
 
-Legend
-------
-
-.. autoclass:: omf.data.Legend
-
-ScalarColormap
---------------
-
-.. autoclass:: omf.data.ScalarColormap
-
-DateTimeColormap
+DiscreteColormap
 ----------------
 
-.. autoclass:: omf.data.DateTimeColormap
+.. autoclass:: omf.data.DiscreteColormap
+
+CategoryColormap
+------------------
+
+.. autoclass:: omf.data.CategoryColormap

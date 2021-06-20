@@ -1,4 +1,5 @@
 """Test the example in the docs"""
+import datetime
 import os
 
 import numpy as np
@@ -25,12 +26,12 @@ def test_doc_ex():
         description='Just random points',
         vertices=np.random.rand(100, 3),
         data=[
-            omf.ScalarData(
+            omf.NumericData(
                 name='rand data',
                 array=np.random.rand(100),
                 location='vertices',
             ),
-            omf.ScalarData(
+            omf.NumericData(
                 name='More rand data',
                 array=np.random.rand(100),
                 location='vertices',
@@ -52,43 +53,49 @@ def test_doc_ex():
                 axis_v=[0, 0, 1],
             ),
         ],
-        color='green',
+        metadata={
+            'color': 'green',
+        },
     )
     lin = omf.LineSetElement(
         name='Random Line',
         vertices=np.random.rand(100, 3),
         segments=np.floor(np.random.rand(50, 2)*100).astype(int),
         data=[
-            omf.ScalarData(
+            omf.NumericData(
                 name='rand vert data',
                 array=np.random.rand(100),
                 location='vertices',
             ),
-            omf.ScalarData(
+            omf.NumericData(
                 name='rand segment data',
                 array=np.random.rand(50),
                 location='segments',
             ),
         ],
-        color='#0000FF',
+        metadata={
+            'color': '#0000FF',
+        },
     )
     surf = omf.SurfaceElement(
         name='trisurf',
         vertices=np.random.rand(100, 3),
         triangles=np.floor(np.random.rand(50, 3)*100).astype(int),
         data=[
-            omf.ScalarData(
+            omf.NumericData(
                 name='rand vert data',
                 array=np.random.rand(100),
                 location='vertices',
             ),
-            omf.ScalarData(
+            omf.NumericData(
                 name='rand face data',
                 array=np.random.rand(50),
                 location='faces',
             ),
         ],
-        color=[100, 200, 200],
+        metadata={
+            'color': [100, 200, 200],
+        },
     )
     grid = omf.SurfaceGridElement(
         name='gridsurf',
@@ -99,12 +106,12 @@ def test_doc_ex():
         axis_v=[0, 0, 1.],
         offset_w=np.random.rand(11*16),
         data=[
-            omf.ScalarData(
+            omf.NumericData(
                 name='rand vert data',
                 array=np.random.rand(11*16),
                 location='vertices',
             ),
-            omf.ScalarData(
+            omf.NumericData(
                 name='rand face data',
                 array=np.random.rand(10*15),
                 location='faces',
@@ -127,7 +134,7 @@ def test_doc_ex():
         tensor_w=np.ones(20).astype(float),
         corner=[10., 10., -10],
         data=[
-            omf.ScalarData(
+            omf.NumericData(
                 name='Random Data',
                 location='cells',
                 array=np.random.rand(10*15*20)
@@ -135,6 +142,12 @@ def test_doc_ex():
         ],
     )
     proj.elements = [pts, lin, surf, grid, vol]
+    proj.metadata = {
+        'coordinate_reference_system': 'epsg 3857',
+        'date_created': datetime.datetime.utcnow(),
+        'version': 'v1.3',
+        'revision': '10',
+    }
     assert proj.validate()
     serialfile = os.path.sep.join([dirname, 'out.omf'])
     omf.OMFWriter(proj, serialfile)

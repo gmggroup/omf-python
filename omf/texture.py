@@ -7,12 +7,14 @@ from __future__ import unicode_literals
 import properties
 
 from .base import ContentModel
-from .data import Vector2Array
+from .data import ArrayInstanceProperty
 from .serializers import png_serializer, png_deserializer
 
 
 class ProjectedTexture(ContentModel):
     """Contains an image that can be projected onto a point set or surface"""
+    schema_type = 'org.omf.v2.texture.projected'
+
     origin = properties.Vector3(
         'Origin point of the texture',
         default=[0., 0., 0.],
@@ -40,11 +42,12 @@ class UVMappedTexture(ContentModel):
         serializer=png_serializer,
         deserializer=png_deserializer,
     )
-    uv_coordinates = properties.Instance(
+    uv_coordinates = ArrayInstanceProperty(
         'Normalized UV coordinates mapping the image to element vertices; '
         'for values outside 0-1 the texture repeats at every integer level, '
         'and NaN indicates no texture at a vertex',
-        Vector2Array,
+        shape=('*', 2),
+        dtype=float,
     )
 
 

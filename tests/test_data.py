@@ -1,4 +1,8 @@
 """Tests for data object validation"""
+import datetime
+
+import numpy as np
+import properties
 import pytest
 
 import omf
@@ -6,70 +10,178 @@ import omf
 
 def test_scalar_array():
     """Test array init and access works correctly"""
-    arr = omf.data.ScalarArray([1, 2, 3])
-    assert arr.array.dtype.kind == 'i'
-    assert len(arr) == len(arr.array)
-    for i in range(3):
-        assert arr[i] == arr.array[i]
+    arr = omf.data.Array(np.array([1, 2, 3], dtype='uint8'))
+    assert arr.array.dtype.kind == 'u'
+    assert np.array_equal(arr.array, [1, 2, 3])
+    assert arr.datatype == 'Uint8Array'
+    assert arr.shape == [3]
+    assert arr.size == 24
 
 
-def test_colormap():
-    """Test colormap validation"""
-    cmap = omf.data.ScalarColormap()
-    with pytest.raises(ValueError):
-        cmap.gradient = [[0, 0, 0], [1, 1, 1]]
-    with pytest.raises(ValueError):
+def test_boolean_array():
+    """Test boolean array bits"""
+    arr = omf.data.Array(np.array([[1, 1], [0, 0]], dtype='bool'))
+    assert arr.array.dtype.kind == 'b'
+    assert arr.datatype == 'BooleanArray'
+    assert arr.shape == [2, 2]
+    assert arr.size == 4
+
+
+def test_datetime_list():
+    """Test string list gives datetime datatype"""
+    arr = omf.data.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
+    assert arr.datatype == 'DateTimeArray'
+    assert arr.shape == [2]
+
+
+def test_string_list():
+    """Test string list gives string datatype"""
+    arr = omf.data.StringList(['a', 'b', 'c'])
+    assert arr.datatype == 'StringArray'
+    assert arr.shape == [3]
+    assert arr.size == 120
+
+
+def test_array_instance_prop():
+    """Test ArrayInstanceProperty validates correctly"""
+
+    class HasArray(properties.HasProperties):
+        """Test class for ArrayInstanceProperty"""
+        arr = omf.data.ArrayInstanceProperty(
+            'Array instance',
+            shape=('*', 3),
+            dtype=float,
+        )
+
+    harr = HasArray()
+    harr.arr = np.array([[1., 2, 3], [4, 5, 6]])
+    assert harr.validate()
+    assert np.array_equal(harr.arr.array, [[1., 2, 3], [4, 5, 6]])
+    assert harr.arr.datatype == 'Float64Array'
+    assert harr.arr.shape == [2, 3]
+    assert harr.arr.size == 64*6
+
+    with pytest.raises(properties.ValidationError):
+        harr.arr = np.array([1., 2, 3])
+    with pytest.raises(properties.ValidationError):
+        harr.arr = np.array([[1, 2, 3], [4, 5, 6]])
+
+def test_vector_data_dimensionality():
+    """Test only 2D and 3D arrays are valid for vector data"""
+    vdata = omf.data.VectorData(array=[[1, 1], [2, 2], [3, 3]])
+    assert vdata.array.shape == [3, 2]
+    vdata = omf.data.VectorData(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    assert vdata.array.shape == [3, 3]
+    with pytest.raises(properties.ValidationError):
+        omf.data.VectorData(array=[1, 2, 3])
+    with pytest.raises(properties.ValidationError):
+        omf.data.VectorData(array=[[1, 2, 3, 4]])
+
+def test_contiuous_colormap():
+    """Test continuous colormap validation"""
+    cmap = omf.data.ContinuousColormap()
+    with pytest.raises(properties.ValidationError):
         cmap.limits = [1., 0.]
-    cmap.gradient = [[0, 0, 0]]*128
+    cmap.gradient = [[0, 0, 0]]*100
     cmap.limits = [0., 1.]
     cmap.limits[0] = 2.
-    with pytest.raises(ValueError):
+    with pytest.raises(properties.ValidationError):
         cmap.validate()
+    cmap.limits[0] = 0.
+    cmap.validate()
+    with pytest.raises(properties.ValidationError):
+        cmap.gradient = np.array([[0, 0, -1]])
+    with pytest.raises(properties.ValidationError):
+        cmap.gradient = np.array([[0, 0, 256]])
+
+def test_discrete_colormap():
+    """Test discrete colormap validation"""
+    cmap = omf.data.DiscreteColormap()
+    cmap.end_points = [0.5]
+    cmap.end_inclusive = [True]
+    cmap.colors = [[0, 100, 0], [100, 0, 0]]
+    assert cmap.validate()
+    cmap.end_points = [-0.5, 0.5]
+    with pytest.raises(properties.ValidationError):
+        cmap.validate()
+    cmap.end_points = [0.5]
+    cmap.end_inclusive = [True, False]
+    with pytest.raises(properties.ValidationError):
+        cmap.validate()
+    cmap.end_inclusive = [True]
+    cmap.colors = [[0, 100, 0]]
+    with pytest.raises(properties.ValidationError):
+        cmap.validate()
+    cmap.colors = [[0, 100, 0], [100, 0, 0], [0, 0, 100]]
+    with pytest.raises(properties.ValidationError):
+        cmap.validate()
+    cmap.end_points = [0.5, 1, 1]
+    cmap.end_inclusive = [True, False, True]
+    cmap.colors = [[0, 100, 0], [100, 0, 0], [0, 0, 100], [100, 100, 100]]
+    assert cmap.validate()
+    with pytest.raises(properties.ValidationError):
+        cmap.end_points = [0.5, 1, 0.5]
+    with pytest.raises(properties.ValidationError):
+        cmap.end_points = [1.5, 1, 0.5]
 
 
-def test_color_data_clip():
-    """Test color data clipping"""
-    cdata = omf.data.ColorData()
-    cdata.array = [[1000, 1000, -100]]
-    assert cdata.array.array[0, 0] == 255
-    assert cdata.array.array[0, 1] == 255
-    assert cdata.array.array[0, 2] == 0
+def test_category_colormap():
+    """Test legend validation"""
+    legend = omf.data.CategoryColormap(
+        name='test',
+        indices=[0, 1, 2],
+        values=['x', 'y', 'z'],
+    )
+    assert legend.validate()
+    legend.colors = [[0, 0, 0], [0, 0, 255], [255, 0, 0]]
+    assert legend.validate()
+    legend = omf.data.CategoryColormap(
+        name='test',
+        indices=[0, 1, 2],
+        values=['x', 'y'],
+    )
+    with pytest.raises(properties.ValidationError):
+        legend.validate()
+    legend = omf.data.CategoryColormap(
+        name='test',
+        indices=[0, 1, 2],
+        values=['x', 'y', 'z'],
+        colors=[[0, 0, 0], [0, 0, 255], [255, 0, 0], [255, 255, 255]],
+    )
+    with pytest.raises(properties.ValidationError):
+        legend.validate()
 
 
-def test_mapped_data():
+
+def test_category_data():
     """Test mapped data validation"""
-    mdata = omf.data.MappedData()
-    mdata.indices = [0, 2, 1, -1]
-    mdata.legends = [
-        omf.data.Legend(
-            name='color',
-            values=[[0, 0, 0], [1, 1, 1], [255, 255, 255]],
-        ),
-        omf.data.Legend(
-            name='letter',
-            values=['x', 'y', 'z'],
-        ),
-    ]
+    mdata = omf.data.CategoryData()
+    mdata.array = [0, 2, 1, -1]
+    mdata.categories = omf.data.CategoryColormap(
+        name='letter',
+        indices=[0, 1, 2],
+        values=['x', 'y', 'z'],
+    )
     mdata.location = 'vertices'
     assert mdata.validate()
-    assert mdata.indices is mdata.array
-    assert mdata.value_dict(0) == {'color': (0, 0, 0), 'letter': 'x'}
-    assert mdata.value_dict(1) == {'color': (255, 255, 255), 'letter': 'z'}
-    assert mdata.value_dict(2) == {'color': (1, 1, 1), 'letter': 'y'}
-    assert mdata.value_dict(3) is None
-    with pytest.raises(ValueError):
+    with pytest.raises(properties.ValidationError):
         mdata.array = [0.5, 1.5, 2.5]
-    with pytest.raises(ValueError):
-        mdata.array = [-10, 0, 1]
-    mdata.array.array[0] = -10
-    with pytest.raises(ValueError):
-        mdata.validate()
+    mdata.array = [-10, 0, 1]
+    assert mdata.validate()
     mdata.array.array[0] = 0
-    mdata.legends.append(
-        omf.data.Legend(
-            name='short',
-            values=[0.5, 0.6],
-        )
-    )
-    with pytest.raises(ValueError):
+    mdata.categories.colors = ['red', 'blue', 'green']
+    mdata.metadata = {
+        'units': 'm',
+        'date_created': datetime.datetime.utcnow(),
+        'version': 'v1.3',
+    }
+    assert mdata.validate()
+    mdata.categories.colors = ['red', 'blue']
+    with pytest.raises(properties.ValidationError):
         mdata.validate()
+    with pytest.raises(properties.ValidationError):
+        mdata.categories = omf.data.CategoryColormap(
+            name='numeric',
+            indices=[0, 1, 2],
+            values=[0.5, 0.6, 0.7],
+        )
