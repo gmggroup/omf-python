@@ -8,7 +8,8 @@ from .base import Project
 from .blockmodel import RegularBlockModel
 from .composite import CompositeElement
 from .data import (
-    Array, CategoryData, Colormap, Legend, NumericData, StringData, VectorData
+    Array, CategoryData, CategoryColormap, ContinuousColormap,
+    DiscreteColormap, NumericData, StringData, VectorData
 )
 from .lineset import LineSetElement
 from .pointset import PointSetElement

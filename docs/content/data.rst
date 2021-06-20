@@ -58,17 +58,22 @@ StringData
 
 .. autoclass:: omf.data.StringData
 
-MappedData
-----------
+CategoryData
+------------
 
-.. autoclass:: omf.data.MappedData
+.. autoclass:: omf.data.CategoryData
 
-Legend
-------
+ContinuousColormap
+------------------
 
-.. autoclass:: omf.data.Legend
+.. autoclass:: omf.data.ContinuousColormap
 
-Colormap
---------------
+DiscreteColormap
+----------------
 
-.. autoclass:: omf.data.Colormap
+.. autoclass:: omf.data.DiscreteColormap
+
+CategoryColormap
+------------------
+
+.. autoclass:: omf.data.CategoryColormap

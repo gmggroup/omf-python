@@ -191,7 +191,7 @@ class StringList(UidModel):
         return len(json.dumps(self.array))*8
 
 
-class Colormap(ContentModel):
+class ContinuousColormap(ContentModel):
     """Color gradient with min/max values, used with NumericData"""
     schema_type = 'org.omf.v2.colormap.scalar'
 
@@ -210,7 +210,7 @@ class Colormap(ContentModel):
     )
 
     @properties.validator('gradient')
-    def _check_gradient_values(self, change):
+    def _check_gradient_values(self, change):                                  #pylint: disable=no-self-use
         """Ensure gradient values are all between 0 and 255"""
         arr = change['value'].array
         if arr is None:
@@ -230,6 +230,66 @@ class Colormap(ContentModel):
                 'Colormap limits[0] must be <= limits[1]'
             )
 
+class DiscreteColormap(ContentModel):
+    """Colormap for grouping discrete intervals of NumericData"""
+
+    schema_type = 'org.omf.v2.colormap.discrete'
+
+    end_points = properties.List(
+        'Data values associated with edge of color intervals',
+        prop=properties.Float(''),
+        default=properties.undefined,
+    )
+    end_inclusive = properties.List(
+        'True if corresponding end_point is included in lower interval; '
+        'False if end_point is in upper interval',
+        prop=properties.Boolean(''),
+        default=properties.undefined,
+    )
+    colors = properties.List(
+        'Colors for each interval',
+        prop=properties.Color(''),
+        min_length=1,
+        default=properties.undefined,
+    )
+
+    @properties.validator
+    def _validate_lengths(self):
+        if len(self.end_points) != len(self.end_inclusive):
+            pass
+        elif len(self.colors) == len(self.end_points) + 1:
+            return True
+        raise properties.ValidationError(
+            'Discrete colormap colors length must be one greater than '
+            'end_points and end_inclusive values'
+        )
+
+    @properties.validator('end_points')
+    def _validate_end_points_monotonic(self, change):                          #pylint: disable=no-self-use
+        for i in range(len(change['value']) - 1):
+            diff = change['value'][i+1] - change['value'][i]
+            if diff < 0:
+                raise properties.ValidationError(
+                    'end_points must be monotonically increasing'
+                )
+
+
+
+class NumericData(ProjectElementData):
+    """Data array with scalar values"""
+    schema_type = 'org.omf.v2.data.numeric'
+
+    array = ArrayInstanceProperty(
+        'Numeric values at locations on a mesh (see location parameter); '
+        'these values must be scalars',
+        shape=('*',),
+    )
+    colormap = properties.Union(
+        'colormap associated with the data',
+        [ContinuousColormap, DiscreteColormap],
+        required=False,
+    )
+
 
 class VectorData(ProjectElementData):
     """Data array with vector values
@@ -245,22 +305,6 @@ class VectorData(ProjectElementData):
         shape={('*', 2), ('*', 3)},
     )
 
-
-class NumericData(ProjectElementData):
-    """Data array with scalar values"""
-    schema_type = 'org.omf.v2.data.numeric'
-
-    array = ArrayInstanceProperty(
-        'Numeric values at locations on a mesh (see location parameter); '
-        'these values must be scalars',
-        shape=('*',),
-    )
-    colormap = properties.Instance(
-        'colormap associated with the data',
-        Colormap,
-        required=False,
-    )
-
 class StringData(ProjectElementData):
     """Data consisting of a list of strings or datetimes"""
     schema_type = 'org.omf.v2.data.string'
@@ -273,10 +317,14 @@ class StringData(ProjectElementData):
     )
 
 
-class Legend(ContentModel):
+class CategoryColormap(ContentModel):
     """Legends to be used with CategoryData indices"""
-    schema_type = 'org.omf.v2.legend'
+    schema_type = 'org.omf.v2.colormap.category'
 
+    indices = properties.List(
+        'indices corresponding to CateogryData array values',
+        properties.Integer(''),
+    )
     values = properties.List(
         'values for mapping indexed data',
         properties.String(''),
@@ -289,7 +337,9 @@ class Legend(ContentModel):
 
     @properties.validator
     def _validate_lengths(self):
-        if self.colors is None or len(self.colors) == len(self.values):
+        if len(self.indices) != len(self.values):
+            pass
+        elif self.colors is None or len(self.colors) == len(self.values):
             return True
         raise properties.ValidationError(
             'Legend colors and values must be the same length'
@@ -312,14 +362,5 @@ class CategoryData(ProjectElementData):
     )
     categories = properties.Instance(
         'categories into which the indices map',
-        Legend,
+        CategoryColormap,
     )
-
-    @property
-    def indices(self):
-        """Allows getting/setting array with more intuitive term indices"""
-        return self.array
-
-    @indices.setter
-    def indices(self, value):
-        self.array = value
