@@ -402,6 +402,8 @@ class RegularSubBlockModel(BaseBlockModel):
 class OctreeSubBlockModel(BaseBlockModel):
     """Block model where sub-blocks follow an octree pattern"""
 
+    schema_type = 'org.omf.v2.elements.blockmodel.octree'
+
     max_level = 8  # Maximum times blocks can be subdivided
     level_bits = 4  # Enough for 0 to 8 refinements
 
