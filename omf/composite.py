@@ -3,8 +3,11 @@ import properties
 
 from .base import ProjectElement
 from .blockmodel import (
-    OctreeSubBlockModel, RegularBlockModel, RegularSubBlockModel,
-    TensorBlockModel
+    ArbitrarySubBlockModel,
+    OctreeSubBlockModel,
+    RegularBlockModel,
+    RegularSubBlockModel,
+    TensorBlockModel,
 )
 from .lineset import LineSetElement
 from .pointset import PointSetElement
@@ -22,6 +25,7 @@ class CompositeElement(ProjectElement):
             RegularSubBlockModel,
             OctreeSubBlockModel,
             TensorBlockModel,
+            ArbitrarySubBlockModel,
             LineSetElement,
             PointSetElement,
             SurfaceElement,
