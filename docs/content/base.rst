@@ -27,3 +27,18 @@ Uid Model
 UidModel gives all content a name, description, and unique uid.
 
 .. autoclass:: omf.base.UidModel
+
+Metadata Classes
+----------------
+
+.. autoclass:: omf.base.ProjectMetadata
+
+.. autoclass:: omf.base.ElementMetadata
+
+.. autoclass:: omf.base.AttributeMetadata
+
+.. autoclass:: omf.base.BaseMetadata
+
+.. autoclass:: omf.base.ArbitraryMetadataDict
+
+.. autoclass:: omf.base.StringDateTime

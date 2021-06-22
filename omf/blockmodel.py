@@ -112,6 +112,8 @@ class BaseBlockModel(ProjectElement):
 
 class TensorBlockModel(BaseBlockModel):
     """Block model with variable spacing in each dimension"""
+    schema_type = 'org.omf.v2.element.blockmodel.tensor'
+
     tensor_u = properties.Array(
         'Tensor cell widths, u-direction',
         shape=('*',),
@@ -138,7 +140,7 @@ class TensorBlockModel(BaseBlockModel):
 
     def _tensors_defined(self):
         tensors = [self.tensor_u, self.tensor_v, self.tensor_w]
-        return all([tensor is not None for tensor in tensors])
+        return all((tensor is not None for tensor in tensors))
 
     @property
     def num_nodes(self):
@@ -170,6 +172,8 @@ class TensorBlockModel(BaseBlockModel):
 
 class RegularBlockModel(BaseBlockModel):
     """Block model with constant spacing in each dimension"""
+
+    schema_type = 'org.omf.v2.elements.blockmodel.regular'
 
     num_blocks = properties.List(
         'Number of blocks along u, v, and w axes',
@@ -256,18 +260,19 @@ class RegularBlockModel(BaseBlockModel):
         if self.cbc is None:
             return None
         # Recalculating the sum on the fly is faster than checking md5
-        cbi = np.r_[
+        cbi = np.concatenate([
             np.array([0], dtype=np.uint32),
             np.cumsum(self.cbc, dtype=np.uint32),
-        ]
+        ])
         return cbi
 
     @property
     def num_cells(self):
         """Number of cells from last value in the compressed block index"""
-        if self.cbi is None:
+        cbi = self.cbi
+        if cbi is None:
             return None
-        return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
+        return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
         """Return correct data length based on location"""
@@ -280,6 +285,8 @@ class RegularBlockModel(BaseBlockModel):
 
 class RegularSubBlockModel(BaseBlockModel):
     """Regular block model with an additional level of sub-blocks"""
+
+    schema_type = 'org.omf.v2.elements.blockmodel.sub'
 
     num_parent_blocks = properties.List(
         'Number of parent blocks along u, v, and w axes',
@@ -390,18 +397,19 @@ class RegularSubBlockModel(BaseBlockModel):
         """Compressed block index"""
         if self.cbc is None:
             return None
-        cbi = np.r_[
+        cbi = np.concatenate([
             np.array([0], dtype=np.uint64),
             np.cumsum(self.cbc, dtype=np.uint64),
-        ]
+        ])
         return cbi
 
     @property
     def num_cells(self):
         """Number of cells from last value in the compressed block index"""
-        if self.cbi is None:
+        cbi = self.cbi
+        if cbi is None:
             return None
-        return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
+        return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
         """Return correct data length based on location"""
@@ -425,6 +433,8 @@ class RegularSubBlockModel(BaseBlockModel):
 
 class OctreeSubBlockModel(BaseBlockModel):
     """Block model where sub-blocks follow an octree pattern"""
+
+    schema_type = 'org.omf.v2.elements.blockmodel.octree'
 
     max_level = 8  # Maximum times blocks can be subdivided
     level_bits = 4  # Enough for 0 to 8 refinements
@@ -507,10 +517,10 @@ class OctreeSubBlockModel(BaseBlockModel):
         """Compressed block index"""
         if self.cbc is None:
             return None
-        cbi = np.r_[
+        cbi = np.concatenate([
             np.array([0], dtype=np.uint64),
             np.cumsum(self.cbc, dtype=np.uint64),
-        ]
+        ])
         return cbi
 
     @properties.Array(
@@ -521,6 +531,7 @@ class OctreeSubBlockModel(BaseBlockModel):
         coerce=False,
     )
     def zoc(self):
+        """Z-order curve for sub block location pointer and level"""
         zoc_cache = getattr(self, '_zoc', None)
         if not self.num_parent_blocks:
             return zoc_cache
@@ -565,9 +576,10 @@ class OctreeSubBlockModel(BaseBlockModel):
     @property
     def num_cells(self):
         """Number of cells from last value in the compressed block index"""
-        if self.cbi is None:
+        cbi = self.cbi
+        if cbi is None:
             return None
-        return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
+        return cbi[-1]                                                         # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
         """Return correct data length based on location"""
@@ -576,77 +588,82 @@ class OctreeSubBlockModel(BaseBlockModel):
         return self.num_cells
 
     @staticmethod
-    def bitrange(x, width, start, end):
+    def bitrange(index, width, start, end):
         """Extract a bit range as an integer
 
         [start, end) is inclusive lower bound, exclusive upper bound.
         """
-        return x >> (width - end) & ((2 ** (end - start)) - 1)
+        return index >> (width - end) & ((2 ** (end - start)) - 1)
 
     @classmethod
-    def get_curve_value(self, pointer, level):
+    def get_curve_value(cls, pointer, level):
         """Get Z-order curve value from pointer and level
 
         Values range from 0 (pointer=[0, 0, 0], level=0) to
         268435448 (pointer=[255, 255, 255], level=8).
         """
         idx = 0
-        iwidth = self.max_level * 3
+        iwidth = cls.max_level * 3
         for i in range(iwidth):
-            bitoff = self.max_level - (i // 3) - 1
+            bitoff = cls.max_level - (i // 3) - 1
             poff = 3 - (i % 3) - 1
-            b = self.bitrange(
-                x=pointer[3 - 1 - poff],
-                width=self.max_level,
+            bitrange = cls.bitrange(
+                index=pointer[3 - 1 - poff],
+                width=cls.max_level,
                 start=bitoff,
                 end=bitoff + 1,
             ) << i
-            idx |= b
-        return (idx << self.level_bits) + level
+            idx |= bitrange
+        return (idx << cls.level_bits) + level
 
     @classmethod
-    def get_pointer(self, curve_value):
+    def get_pointer(cls, curve_value):
         """Get pointer value from Z-order curve value
 
         Pointer values are length-3 with values between 0 and 255
         """
-        index = curve_value >> self.level_bits
+        index = curve_value >> cls.level_bits
         pointer = [0] * 3
-        iwidth = self.max_level * 3
+        iwidth = cls.max_level * 3
         for i in range(iwidth):
-            b = self.bitrange(
-                x=index,
+            bitrange = cls.bitrange(
+                index=index,
                 width=iwidth,
                 start=i,
                 end=i + 1,
             ) << (iwidth - i - 1) // 3
-            pointer[i % 3] |= b
+            pointer[i % 3] |= bitrange
         pointer.reverse()
         return pointer
 
     @classmethod
-    def get_level(self, curve_value):
+    def get_level(cls, curve_value):
         """Get level value from Z-order curve value
 
         Level comes from the last 4 bits, with values between 0 and 8
         """
-        return curve_value & (2 ** self.level_bits - 1)
+        return curve_value & (2 ** cls.level_bits - 1)
 
     @classmethod
-    def level_width(self, level):
+    def level_width(cls, level):
         """Width of a level, in bits
 
         Max level of 8 has level width of 1; min level of 0 has level
         width of 256.
         """
-        if not 0 <= level <= self.max_level:
+        if not 0 <= level <= cls.max_level:
             raise ValueError(
-                'level must be between 0 and {}'.format(max_level)
+                'level must be between 0 and {}'.format(cls.max_level)
             )
-        return 2 ** (self.max_level - level)
+        return 2 ** (cls.max_level - level)
 
     def refine(self, index, ijk=None, refinements=1):
         """Subdivide at the given index
+
+        .. note::
+           This method is for demonstration only.
+           It is impractical and not intended to build an octree blockmodel
+           using this method alone.
 
         If ijk is provided, index is relative to ijk parent block.
         Otherwise, index is relative to the entire block model.
@@ -656,9 +673,10 @@ class OctreeSubBlockModel(BaseBlockModel):
         specified, where the final number of sub-blocks equals
         (2**refinements)**3.
         """
+        cbi = self.cbi
         if ijk is not None:
-            index += int(self.cbi[self.ijk_to_index(ijk)])
-        parent_index = np.sum(index >= self.cbi) - 1
+            index += int(cbi[self.ijk_to_index(ijk)])
+        parent_index = np.sum(index >= cbi) - 1                                #pylint: disable=comparison-with-callable
         if not 0 <= index < len(self.zoc):
             raise ValueError(
                 'index must be between 0 and {}'.format(len(self.zoc))
@@ -687,11 +705,11 @@ class OctreeSubBlockModel(BaseBlockModel):
         ])
 
         self.cbc[parent_index] += len(new_curve_values) - 1
-        self.zoc = np.r_[
+        self.zoc = np.concatenate([
             self.zoc[:index],
             new_curve_values,
             self.zoc[index+1:],
-        ]
+        ])
 
 
 class ArbitrarySubBlockModel(BaseBlockModel):
