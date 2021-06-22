@@ -21,6 +21,8 @@ Element
 
 .. autoclass:: omf.blockmodel.RegularSubBlockModel
 
+.. autoclass:: omf.blockmodel.OctreeSubBlockModel
+
 Data
 ----
 

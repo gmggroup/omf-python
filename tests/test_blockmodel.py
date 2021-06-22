@@ -249,6 +249,7 @@ class TestRegularSubBlockModel(object):
 
 
 class TestOctreeSubBlockModel(object):
+    """Test class for octree sub block model"""
 
     bm_class = omf.OctreeSubBlockModel
 
@@ -331,6 +332,7 @@ class TestOctreeSubBlockModel(object):
 
 
     def test_zoc(self):
+        """Test z-order curves"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
@@ -354,12 +356,14 @@ class TestOctreeSubBlockModel(object):
         ]
     )
     def test_curve_values(self, pointer, level, curve_value):
+        """Test curve value functions"""
         assert self.bm_class.get_curve_value(pointer, level) == curve_value
         assert self.bm_class.get_level(curve_value) == level
         assert self.bm_class.get_pointer(curve_value) == pointer
 
 
     def test_refinement(self):
+        """Test refinement method"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[5., 5., 5.],
