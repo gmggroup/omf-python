@@ -842,6 +842,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         coerce=False,
     )
     def sub_block_corners(self):
+        """Block corners normalized 0-1 relative to parent block"""
         return getattr(self, '_sub_block_corners', None)
 
     @sub_block_corners.setter
@@ -869,6 +870,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         coerce=False,
     )
     def sub_block_sizes(self):
+        """Block widths normalized 0-1 relative to parent block"""
         return getattr(self, '_sub_block_sizes', None)
 
     @sub_block_sizes.setter
@@ -881,6 +883,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
 
     @properties.validator
     def _validate_sub_blocks(self):
+        """Validate sub block corners, sizes, and attributes"""
         for prop in ('sub_block_corners', 'sub_block_sizes'):
             if getattr(self, prop, None) is None:
                 raise properties.ValidationError(
@@ -906,6 +909,10 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         coerce=False,
     )
     def sub_block_centroids(self):
+        """Block centroids normalized 0-1 relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
         if self.sub_block_corners is None or self.sub_block_sizes is None:
             return None
         return self.sub_block_corners + self.sub_block_sizes / 2
@@ -917,6 +924,10 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         coerce=False,
     )
     def sub_block_corners_absolute(self):
+        """Block corners relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
         if self.sub_block_corners is None or self.size_parent_blocks is None:
             return None
         cbc = self.cbc
@@ -933,6 +944,10 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         coerce=False,
     )
     def sub_block_centroids_absolute(self):
+        """Block centroids relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
         if self.sub_block_centroids is None or self.size_parent_blocks is None:
             return None
         cbc = self.cbc
@@ -949,6 +964,10 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         coerce=False,
     )
     def sub_block_sizes_absolute(self):
+        """Block widths relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
         if self.sub_block_sizes is None or self.size_parent_blocks is None:
             return None
         return self.sub_block_sizes * self.size_parent_blocks

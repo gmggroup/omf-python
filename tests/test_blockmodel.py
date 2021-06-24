@@ -445,6 +445,7 @@ class TestOctreeSubBlockModel(object):
 
 
 class TestArbitrarySubBlockModel(object):
+    """Test class for ArbitrarySubBlockModel"""
 
     bm_class = omf.ArbitrarySubBlockModel
 
@@ -539,7 +540,8 @@ class TestArbitrarySubBlockModel(object):
                                                np.array(range(8), dtype=np.uint64)])
 
 
-    def test_validate_sub_block_attributes(self):
+    def test_validate_sub_block_attrs(self):
+        """Test sub block attribute validation"""
         block_model = self.bm_class()
         value = [1, 2, 3]
         assert block_model.validate_sub_block_attributes(value, '') is value
@@ -550,6 +552,7 @@ class TestArbitrarySubBlockModel(object):
 
 
     def test_validate_sub_block_sizes(self):
+        """Test sub block size validation"""
         block_model = self.bm_class()
         value = [1, 2, 3]
         assert block_model.validate_sub_block_sizes(value) is value
@@ -558,6 +561,7 @@ class TestArbitrarySubBlockModel(object):
 
 
     def test_sub_block_attributes(self):
+        """Test sub block attributes"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
@@ -611,6 +615,3 @@ class TestArbitrarySubBlockModel(object):
             np.array([[-0.25, 4.5, 3]])
         )
         assert block_model.validate()
-
-
-
