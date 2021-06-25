@@ -23,6 +23,8 @@ Element
 
 .. autoclass:: omf.blockmodel.OctreeSubBlockModel
 
+.. autoclass:: omf.blockmodel.ArbitrarySubBlockModel
+
 Data
 ----
 

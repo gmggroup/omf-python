@@ -67,17 +67,47 @@ class BaseBlockModel(ProjectElement):
         if len(ijk_array.shape) != 2 or ijk_array.shape[1] != 3:
             raise ValueError('ijk_array must be n x 3 array')
         if not np.array_equal(ijk_array, ijk_array.astype(np.uint32)):
-            raise ValueError('ijk values must be integers')
-        if np.any(np.min(ijk_array, axis=0) >= self.num_parent_blocks):
+            raise ValueError('ijk values must be non-negative integers')
+        if np.any(np.max(ijk_array, axis=0) >= blocks):
             raise ValueError(
                 'ijk must be less than num_parent_blocks in each dimension'
             )
         index = np.ravel_multi_index(
             multi_index=ijk_array.T,
-            dims=self.num_parent_blocks,
+            dims=blocks,
             order='F',
         )
         return index
+
+    def index_to_ijk(self, index):
+        """Return ijk triple for single index"""
+        return self.indices_to_ijk_array([index])[0]
+
+    def indices_to_ijk_array(self, indices):
+        """Return an array of ijk triples for an array of indices"""
+        blocks = self.num_parent_blocks
+        if not blocks:
+            raise AttributeError(
+                'num_parent_blocks is required to calculate ijk values'
+            )
+        if not isinstance(indices, (list, tuple, np.ndarray)):
+            raise ValueError('indices must be a list of index values')
+        indices = np.array(indices)
+        if len(indices.shape) != 1:
+            raise ValueError('indices must be 1D array')
+        if not np.array_equal(indices, indices.astype(np.uint64)):
+            raise ValueError('indices values must be non-negative integers')
+        if np.max(indices) >= np.prod(blocks):
+            raise ValueError(
+                'indices must be less than total number of parent blocks'
+            )
+        ijk = np.unravel_index(
+            indices=indices,
+            shape=blocks,
+            order='F',
+        )
+        ijk_array = np.c_[ijk[0], ijk[1], ijk[2]]
+        return ijk_array
 
 
 class TensorBlockModel(BaseBlockModel):
@@ -680,3 +710,264 @@ class OctreeSubBlockModel(BaseBlockModel):
             new_curve_values,
             self.zoc[index+1:],
         ])
+
+
+class ArbitrarySubBlockModel(BaseBlockModel):
+    """Block model with arbitrary, variable sub-blocks"""
+
+    num_parent_blocks = properties.List(
+        'Number of parent blocks along u, v, and w axes',
+        properties.Integer('', min=1),
+        min_length=3,
+        max_length=3,
+    )
+    size_parent_blocks = properties.List(
+        'Size of parent blocks in the u, v, and w dimensions',
+        properties.Float('', min=0),
+        min_length=3,
+        max_length=3,
+    )
+
+    _valid_locations = ('parent_blocks', 'sub_blocks')
+
+    @properties.validator('size_parent_blocks')
+    def _validate_size_is_not_zero(self, change):
+        if 0 in change['value']:
+            raise properties.ValidationError(
+                'Block size cannot be 0',
+                prop='size_blocks',
+                instance=self,
+                reason='invalid',
+            )
+
+    @properties.Array(
+        'Compressed block count - for arbitrary sub block models this must '
+        'have length equal to the product of num_parent_blocks and each '
+        'value must be equal to the number of sub blocks within the '
+        'corresponding parent block, 1 (if attributes exist on the parent '
+        'block) or 0; the default is an array of 1s',
+        shape=('*',),
+        dtype=(int, bool),
+        coerce=False,
+    )
+    def cbc(self):
+        """Compressed block count"""
+        cbc_cache = getattr(self, '_cbc', None)
+        if not self.num_parent_blocks:
+            return cbc_cache
+        cbc_len = np.prod(self.num_parent_blocks)
+        if cbc_cache is None or len(cbc_cache) != cbc_len:
+            self._cbc = np.ones(cbc_len, dtype=np.uint32)                      # pylint: disable=attribute-defined-outside-init
+        return self._cbc
+
+    @cbc.setter
+    def cbc(self, value):
+        self._cbc = self.validate_cbc(value)                                   # pylint: disable=attribute-defined-outside-init
+
+    def validate_cbc(self, value):
+        """Ensure cbc is correct size and values"""
+        if not self.num_parent_blocks:
+            pass
+        elif len(value) != np.prod(self.num_parent_blocks):
+            raise properties.ValidationError(
+                'cbc must have length equal to the product '
+                'of num_parent_blocks',
+                prop='cbc',
+                instance=self,
+                reason='invalid',
+            )
+        if np.min(value) < 0:
+            raise properties.ValidationError(
+                'cbc values must be non-negative',
+                prop='cbc',
+                instance=self,
+                reason='invalid',
+            )
+        return value
+
+    @properties.validator
+    def _validate_cbc(self):
+        self.validate_cbc(self.cbc)
+
+    @properties.Array(
+        'Compressed block index - used for indexing attributes '
+        'into the sub block model; must have length equal to the '
+        'product of num_parent_blocks plus 1 and monotonically increasing',
+        shape=('*',),
+        dtype=int,
+        coerce=False,
+    )
+    def cbi(self):
+        """Compressed block index"""
+        if self.cbc is None:
+            return None
+        cbi = np.r_[
+            np.array([0], dtype=np.uint64),
+            np.cumsum(self.cbc, dtype=np.uint64),
+        ]
+        return cbi
+
+    @property
+    def num_cells(self):
+        """Number of cells from last value in the compressed block index"""
+        if self.cbi is None:
+            return None
+        return self.cbi[-1]                                                    # pylint: disable=unsubscriptable-object
+
+    def location_length(self, location):
+        """Return correct data length based on location"""
+        if location == 'parent_blocks':
+            return np.sum(self.cbc.astype(np.bool))                            # pylint: disable=no-member
+        return self.num_cells
+
+    def validate_sub_block_attributes(self, value, prop_name):
+        """Ensure cbc is correct size and values"""
+        cbi = self.cbi
+        if cbi is None:
+            return value
+        if len(value) != cbi[-1]:
+            raise properties.ValidationError(
+                '{} attributes must have length equal to '
+                'total number of sub blocks'.format(prop_name),
+                prop=prop_name,
+                instance=self,
+                reason='invalid',
+            )
+        return value
+
+    @properties.Array(
+        'Block corners normalized 0-1 relative to parent block',
+        shape=('*', 3),
+        dtype=float,
+        coerce=False,
+    )
+    def sub_block_corners(self):
+        """Block corners normalized 0-1 relative to parent block"""
+        return getattr(self, '_sub_block_corners', None)
+
+    @sub_block_corners.setter
+    def sub_block_corners(self, value):
+        self._sub_block_corners = self.validate_sub_block_attributes(
+            value,
+            'sub_block_corners'
+        )
+
+    def validate_sub_block_sizes(self, value):
+        """Ensure sub block sizes are positive"""
+        if np.min(value) <= 0:
+            raise properties.ValidationError(
+                'sub block sizes must be positive',
+                prop='sub_block_sizes',
+                instance=self,
+                reason='invalid',
+            )
+        return value
+
+    @properties.Array(
+        'Block widths normalized 0-1 relative to parent block',
+        shape=('*', 3),
+        dtype=float,
+        coerce=False,
+    )
+    def sub_block_sizes(self):
+        """Block widths normalized 0-1 relative to parent block"""
+        return getattr(self, '_sub_block_sizes', None)
+
+    @sub_block_sizes.setter
+    def sub_block_sizes(self, value):
+        value = self.validate_sub_block_attributes(
+            value,
+            'sub_block_sizes'
+        )
+        self._sub_block_sizes = self.validate_sub_block_sizes(value)
+
+    @properties.validator
+    def _validate_sub_blocks(self):
+        """Validate sub block corners, sizes, and attributes"""
+        for prop in ('sub_block_corners', 'sub_block_sizes'):
+            if getattr(self, prop, None) is None:
+                raise properties.ValidationError(
+                    '{} must be set'.format(prop),
+                    prop=prop,
+                    instance=self,
+                    reason='missing',
+                )
+        self.validate_sub_block_attributes(
+            self.sub_block_corners,
+            'sub_block_corners'
+        )
+        self.validate_sub_block_attributes(
+            self.sub_block_sizes,
+            'sub_block_sizes'
+        )
+        self.validate_sub_block_sizes(self.sub_block_sizes)
+
+    @properties.Array(
+        'Block centroids normalized 0-1 relative to parent block',
+        shape=('*', 3),
+        dtype=float,
+        coerce=False,
+    )
+    def sub_block_centroids(self):
+        """Block centroids normalized 0-1 relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
+        if self.sub_block_corners is None or self.sub_block_sizes is None:
+            return None
+        return self.sub_block_corners + self.sub_block_sizes / 2
+
+    @properties.Array(
+        'Block corners relative to parent block',
+        shape=('*', 3),
+        dtype=float,
+        coerce=False,
+    )
+    def sub_block_corners_absolute(self):
+        """Block corners relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
+        if self.sub_block_corners is None or self.size_parent_blocks is None:
+            return None
+        cbc = self.cbc
+        all_indices = np.array(range(len(cbc)), dtype=np.uint64)
+        unique_parent_ijks = self.indices_to_ijk_array(all_indices)
+        parent_ijks = np.repeat(unique_parent_ijks, cbc, axis=0)
+        corners = parent_ijks + self.sub_block_corners
+        return corners * self.size_parent_blocks
+
+    @properties.Array(
+        'Block centroids relative to parent block',
+        shape=('*', 3),
+        dtype=float,
+        coerce=False,
+    )
+    def sub_block_centroids_absolute(self):
+        """Block centroids relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
+        if self.sub_block_centroids is None or self.size_parent_blocks is None:
+            return None
+        cbc = self.cbc
+        all_indices = np.array(range(len(cbc)), dtype=np.uint64)
+        unique_parent_ijks = self.indices_to_ijk_array(all_indices)
+        parent_ijks = np.repeat(unique_parent_ijks, cbc, axis=0)
+        centroids = parent_ijks + self.sub_block_centroids
+        return centroids * self.size_parent_blocks
+
+    @properties.Array(
+        'Block widths relative to parent block',
+        shape=('*', 3),
+        dtype=float,
+        coerce=False,
+    )
+    def sub_block_sizes_absolute(self):
+        """Block widths relative to parent block
+
+        Computed from sub_block_corners and sub_block_sizes
+        """
+        if self.sub_block_sizes is None or self.size_parent_blocks is None:
+            return None
+        return self.sub_block_sizes * self.size_parent_blocks
