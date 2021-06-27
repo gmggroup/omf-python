@@ -5,20 +5,22 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from .base import Project
-from .blockmodel import RegularBlockModel
-from .data import (ColorArray, ColorData,
-                   DateTimeArray, DateTimeColormap, DateTimeData,
-                   Int2Array, Int3Array,
-                   Legend, MappedData,
-                   ScalarArray, ScalarColormap, ScalarData,
-                   StringArray, StringData,
-                   Vector2Array, Vector2Data,
-                   Vector3Array, Vector3Data)
+from .blockmodel import (
+    ArbitrarySubBlockModel,
+    OctreeSubBlockModel,
+    RegularBlockModel,
+    RegularSubBlockModel,
+    TensorBlockModel,
+)
+from .composite import CompositeElement
+from .data import (
+    Array, CategoryData, CategoryColormap, ContinuousColormap,
+    DiscreteColormap, NumericData, StringData, VectorData
+)
 from .lineset import LineSetElement
 from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
-from .texture import ImageTexture
-from .volume import VolumeGridElement
+from .texture import ProjectedTexture, UVMappedTexture
 
 from .fileio import load_omf, save_as_omf, __version__
 

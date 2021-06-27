@@ -43,8 +43,9 @@ def test_array_serializer_none():
 
 def test_bad_shape():
     """Test bad shape for array deserializer"""
+    open_file = mock.MagicMock()
     with pytest.raises(TypeError):
-        omf.serializers.array_deserializer(['*', '*'])
+        omf.serializers.array_deserializer(['*', '*'], open_file)
 
 
 @mock.patch('omf.serializers.np.frombuffer')

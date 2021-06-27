@@ -16,7 +16,7 @@ possible level        |w 0  0  0  0  0  0  0  0       = 0
 import numpy as np
 
 dimension = 3 # Always in 3D
-level_bits = 3 # Enough for eight refinements
+level_bits = 4 # Enough for eight refinements
 max_bits = 8 # max necessary per integer, enough for UInt32
 total_bits = max_bits * dimension + level_bits
 

@@ -44,7 +44,7 @@ def array_serializer(arr, binary_dict=None, **kwargs):                          
         binary_dict[uid] = arr.astype(dtype).tobytes()
     return index
 
-class array_deserializer(object):                                              #pylint: disable=invalid-name, too-few-public-methods
+def array_deserializer(index, open_file, **kwargs):                            #pylint: disable=unused-argument
     """Convert binary to numpy array based on input shape"""
 
     def __init__(self, shape):

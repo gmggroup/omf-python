@@ -1,0 +1,26 @@
+name: Run OMF tests
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: unit tests
+        run: make docker-tests
+      - name: unit tests 2.7
+        run: make docker-tests-27
+      - name: pylint tests
+        run: make docker-lint
+      - name: docs tests
+        run: make docker-docs

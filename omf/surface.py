@@ -8,18 +8,12 @@ import numpy as np
 import properties
 
 from .base import ProjectElement
-from .data import Int3Array, ScalarArray, Vector3Array
-from .texture import ImageTexture
+from .data import ArrayInstanceProperty
+from .texture import HasTexturesMixin
 
 
-class BaseSurfaceElement(ProjectElement):
+class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
     """Base class for surface elements"""
-    textures = properties.List(
-        'Images mapped on the surface element',
-        prop=ImageTexture,
-        required=False,
-        default=list,
-    )
     subtype = properties.StringChoice(
         'Category of Surface',
         choices=('surface',),
@@ -45,15 +39,19 @@ class BaseSurfaceElement(ProjectElement):
         raise NotImplementedError()
 
 
-class SurfaceElement(BaseSurfaceElement):
+class SurfaceElement(BaseSurfaceElement):                                      #pylint: disable=too-many-ancestors
     """Contains triangulated surface spatial information and attributes"""
-    vertices = properties.Instance(
+    schema_type = 'org.omf.v2.element.surface'
+
+    vertices = ArrayInstanceProperty(
         'Spatial coordinates of vertices relative to surface origin',
-        Vector3Array,
+        shape=('*', 3),
+        dtype=float,
     )
-    triangles = properties.Instance(
+    triangles = ArrayInstanceProperty(
         'Vertex indices of surface triangles',
-        Int3Array,
+        shape=('*', 3),
+        dtype=int,
     )
 
     @property
@@ -69,23 +67,25 @@ class SurfaceElement(BaseSurfaceElement):
     @properties.validator
     def _validate_mesh(self):
         if np.min(self.triangles.array) < 0:
-            raise ValueError('Triangles may only have positive integers')
+            raise properties.ValidationError('Triangles may only have positive integers')
         if np.max(self.triangles.array) >= len(self.vertices.array):
-            raise ValueError('Triangles expects more vertices than provided')
+            raise properties.ValidationError('Triangles expects more vertices than provided')
         return True
 
 
-class SurfaceGridElement(BaseSurfaceElement):
+class SurfaceGridElement(BaseSurfaceElement):                                  #pylint: disable=too-many-ancestors
     """Contains 2D grid spatial information and attributes"""
-    tensor_u = properties.Array(
+    schema_type = 'org.omf.v2.element.surfacegrid'
+
+    tensor_u = properties.List(
         'Grid cell widths, u-direction',
-        shape=('*',),
-        dtype=float,
+        properties.Float('', min=0.),
+        coerce=True,
     )
-    tensor_v = properties.Array(
+    tensor_v = properties.List(
         'Grid cell widths, v-direction',
-        shape=('*',),
-        dtype=float,
+        properties.Float('', min=0.),
+        coerce=True,
     )
     axis_u = properties.Vector3(
         'Vector orientation of u-direction',
@@ -97,9 +97,10 @@ class SurfaceGridElement(BaseSurfaceElement):
         default='Y',
         length=1,
     )
-    offset_w = properties.Instance(
+    offset_w = ArrayInstanceProperty(
         'Node offset',
-        ScalarArray,
+        shape=('*',),
+        dtype=float,
         required=False,
     )
     origin = properties.Vector3(
@@ -121,11 +122,11 @@ class SurfaceGridElement(BaseSurfaceElement):
     def _validate_mesh(self):
         """Check if mesh content is built correctly"""
         if not np.abs(self.axis_u.dot(self.axis_v)) < 1e-6:                    #pylint: disable=no-member
-            raise ValueError('axis_u and axis_v must be orthogonal')
+            raise properties.ValidationError('axis_u and axis_v must be orthogonal')
         if self.offset_w is properties.undefined or self.offset_w is None:
             return True
         if len(self.offset_w.array) != self.num_nodes:
-            raise ValueError(
+            raise properties.ValidationError(
                 'Length of offset_w, {zlen}, must equal number of nodes, '
                 '{nnode}'.format(
                     zlen=len(self.offset_w),

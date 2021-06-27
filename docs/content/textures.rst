@@ -1,12 +1,12 @@
 .. _textures:
 
-Texture
-*******
+Projected Texture
+*****************
 
-Textures are images that exist in space and are mapped to their corresponding
-elements. Unlike data, they do not need to correspond to mesh nodes or
-cell centers. This image shows how textures are mapped to a surface. Their
-position is defined by an origin and axis vectors then they
+Projected textures are images that exist in space and are mapped to their
+corresponding elements. Unlike data, they do not need to correspond to mesh
+nodes or cell centers. This image shows how textures are mapped to a surface.
+Their position is defined by an origin and axis vectors then they
 are mapped laterally to the element position.
 
 .. image:: /images/ImageTexture.png
@@ -26,13 +26,13 @@ nothing requiring the image to actually align with the Surface.
     >> ...
     >> my_surface = omf.SurfaceElement(...)
     >> ...
-    >> my_tex_1 = omf.ImageTexture(
+    >> my_tex_1 = omf.ProjectedTexture(
            origin=[0.0, 0.0, 0.0],
            axis_u=[1.0, 0.0, 0.0],
            axis_v=[0.0, 1.0, 0.0],
            image='image1.png'
        )
-    >> my_tex_2 = omf.ImageTexture(
+    >> my_tex_2 = omf.ProjectedTexture(
            origin=[0.0, 0.0, 0.0],
            axis_u=[1.0, 0.0, 0.0],
            axis_v=[0.0, 0.0, 1.0],
@@ -43,4 +43,14 @@ nothing requiring the image to actually align with the Surface.
            my_tex_2
        ]
 
-.. autoclass:: omf.texture.ImageTexture
+.. autoclass:: omf.texture.ProjectedTexture
+
+
+UV Mapped Textures
+******************
+
+Rather than being projected onto points or a surface, UV Mapped Textures
+are given normalized UV coordinates which correspond to element
+vertices. This allows arbitrary mapping of images to surfaces.
+
+.. autoclass:: omf.texture.UVMappedTexture
