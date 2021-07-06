@@ -155,12 +155,10 @@ def test_doc_ex():
     }
     assert proj.validate()
     omf.save_as_omf(proj, serialfile)
-    omf.base.UidModel._INSTANCES = {}                                          #pylint: disable=protected-access
+    omf.base.BaseModel._INSTANCES = {}                                          #pylint: disable=protected-access
     omf.load_omf(serialfile, include_binary=False)
-    omf.base.UidModel._INSTANCES = {}                                          #pylint: disable=protected-access
+    omf.base.BaseModel._INSTANCES = {}                                          #pylint: disable=protected-access
     new_proj = omf.load_omf(serialfile)
     assert new_proj.validate()
-    assert str(new_proj.elements[3].textures[0].uid) == \
-        str(proj.elements[3].textures[0].uid)
     os.remove(pngfile)
     os.remove(serialfile)
