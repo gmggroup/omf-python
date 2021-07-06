@@ -260,12 +260,12 @@ class ProjectElement(ContentModel):
                     )
                 )
             valid_length = self.location_length(dat.location)
-            if len(dat.array) != valid_length:
+            if len(dat.array.array) != valid_length:
                 raise properties.ValidationError(
                     'data[{index}] length {datalen} does not match '
                     '{loc} length {meshlen}'.format(
                         index=i,
-                        datalen=len(dat.array),
+                        datalen=len(dat.array.array),
                         loc=dat.location,
                         meshlen=valid_length
                     )

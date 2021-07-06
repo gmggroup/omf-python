@@ -132,6 +132,7 @@ class TestRegularBlockModel(object):
             num_blocks=[2, 2, 2],
             size_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         assert block_model.num_cells == 8
         block_model.cbc = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         assert block_model.num_cells == 4
@@ -143,18 +144,19 @@ class TestRegularBlockModel(object):
             num_blocks=[2, 2, 2],
             size_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         assert block_model.validate()
         assert np.all(block_model.cbc == np.ones(8))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
             block_model.cbc = np.ones(7, dtype='int8')
         block_model.cbc = np.ones(8, dtype='uint8')
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = 2
+            block_model.cbc.array[0] = 2
             block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = -1
+            block_model.cbc.array[0] = -1
             block_model.validate()
 
 
@@ -164,8 +166,9 @@ class TestRegularBlockModel(object):
         assert block_model.cbi is None
         block_model.num_blocks = [2, 2, 2]
         block_model.size_blocks = [1., 2., 3.]
+        block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype='int8'))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         assert np.all(block_model.cbi == np.r_[np.array([0], dtype='int8'),
                                                np.array(range(8), dtype='int8')])
 
@@ -216,6 +219,7 @@ class TestRegularSubBlockModel(object):
             num_sub_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         assert block_model.num_cells == 8
         block_model.cbc = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         assert block_model.num_cells == 4
@@ -230,20 +234,21 @@ class TestRegularSubBlockModel(object):
             num_sub_blocks=[3, 4, 5],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         assert block_model.validate()
         assert np.all(block_model.cbc == np.ones(8))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         assert block_model.validate()
-        block_model.cbc[0] = 60
+        block_model.cbc.array[0] = 60
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
             block_model.cbc = np.ones(7, dtype='int8')
         block_model.cbc = np.ones(8, dtype='uint8')
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = 2
+            block_model.cbc.array[0] = 2
             block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = -1
+            block_model.cbc.array[0] = -1
             block_model.validate()
 
     def test_cbi(self):
@@ -253,8 +258,9 @@ class TestRegularSubBlockModel(object):
         block_model.num_parent_blocks = [2, 2, 2]
         block_model.num_sub_blocks = [3, 4, 5]
         block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype='int8'))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         assert np.all(
             block_model.cbi == np.r_[np.array([0], dtype='int8'),
                                      np.array(range(8), dtype='int8')]
@@ -272,6 +278,7 @@ class TestRegularSubBlockModel(object):
             num_sub_blocks=[3, 4, 5],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         assert block_model.location_length('parent_blocks') == 8
         assert block_model.location_length('sub_blocks') == 8
         block_model.refine([0, 0, 0])
@@ -322,6 +329,7 @@ class TestOctreeSubBlockModel(object):
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         assert block_model.num_cells == 8
         block_model.cbc = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         assert block_model.num_cells == 4
@@ -333,9 +341,11 @@ class TestOctreeSubBlockModel(object):
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
+        block_model.reset_zoc()
         assert block_model.validate()
         assert np.all(block_model.cbc == np.ones(8))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         block_model.zoc = block_model.zoc[1:]
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
@@ -343,10 +353,10 @@ class TestOctreeSubBlockModel(object):
         block_model.cbc = np.ones(8, dtype='uint8')
         block_model.zoc = np.zeros(8, dtype='uint8')
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = 2
+            block_model.cbc.array[0] = 2
             block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = -1
+            block_model.cbc.array[0] = -1
             block_model.validate()
 
 
@@ -356,8 +366,9 @@ class TestOctreeSubBlockModel(object):
         assert block_model.cbi is None
         block_model.num_parent_blocks = [2, 2, 2]
         block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype=np.uint64))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         assert np.all(block_model.cbi == np.r_[np.array([0], dtype=np.uint64),
                                                np.array(range(8), dtype=np.uint64)])
 
@@ -368,6 +379,8 @@ class TestOctreeSubBlockModel(object):
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
+        block_model.reset_zoc()
         assert np.all(block_model.zoc == np.zeros(8))
         with pytest.raises(properties.ValidationError):
             block_model.zoc = np.zeros(7, dtype=np.uint64)
@@ -399,6 +412,8 @@ class TestOctreeSubBlockModel(object):
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[5., 5., 5.],
         )
+        block_model.reset_cbc()
+        block_model.reset_zoc()
         assert len(block_model.zoc) == 8
         assert all(zoc == 0 for zoc in block_model.zoc)
         block_model.refine(0)
@@ -492,6 +507,7 @@ class TestArbitrarySubBlockModel(object):
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         assert block_model.num_cells == 8
         block_model.cbc = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         assert block_model.num_cells == 4
@@ -507,9 +523,10 @@ class TestArbitrarySubBlockModel(object):
             block_model.validate()
         block_model.sub_block_corners = np.zeros((8, 3))
         block_model.sub_block_sizes = np.ones((8, 3))
+        block_model.reset_cbc()
         assert block_model.validate()
         assert np.all(block_model.cbc == np.ones(8))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         with pytest.raises(properties.ValidationError):
             block_model.validate()
         block_model.sub_block_corners = np.zeros((7, 3))
@@ -521,10 +538,10 @@ class TestArbitrarySubBlockModel(object):
         block_model.sub_block_corners = np.zeros((8, 3))
         block_model.sub_block_sizes = np.ones((8, 3))
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = 2
+            block_model.cbc.array[0] = 2
             block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc[0] = -1
+            block_model.cbc.array[0] = -1
             block_model.validate()
 
 
@@ -534,8 +551,9 @@ class TestArbitrarySubBlockModel(object):
         assert block_model.cbi is None
         block_model.num_parent_blocks = [2, 2, 2]
         block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype=np.uint64))
-        block_model.cbc[0] = 0
+        block_model.cbc.array[0] = 0
         assert np.all(block_model.cbi == np.r_[np.array([0], dtype=np.uint64),
                                                np.array(range(8), dtype=np.uint64)])
 
@@ -547,6 +565,7 @@ class TestArbitrarySubBlockModel(object):
         assert block_model.validate_sub_block_attributes(value, '') is value
         block_model.num_parent_blocks = [2, 2, 2]
         block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.reset_cbc()
         with pytest.raises(properties.ValidationError):
             block_model.validate_sub_block_attributes(value, '')
 
@@ -554,10 +573,9 @@ class TestArbitrarySubBlockModel(object):
     def test_validate_sub_block_sizes(self):
         """Test sub block size validation"""
         block_model = self.bm_class()
-        value = [1, 2, 3]
-        assert block_model.validate_sub_block_sizes(value) is value
+        block_model.sub_block_sizes = [[1., 2, 3]]
         with pytest.raises(properties.ValidationError):
-            block_model.validate_sub_block_sizes([0, 1, 2])
+            block_model.sub_block_sizes = [[0., 1, 2]]
 
 
     def test_sub_block_attributes(self):
@@ -566,6 +584,7 @@ class TestArbitrarySubBlockModel(object):
             num_parent_blocks=[2, 2, 2],
             size_parent_blocks=[1., 2., 3.],
         )
+        block_model.reset_cbc()
         with pytest.raises(properties.ValidationError):
             block_model.sub_block_sizes = np.ones((3, 3))
         with pytest.raises(properties.ValidationError):
