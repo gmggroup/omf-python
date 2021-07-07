@@ -435,6 +435,7 @@ class TestOctreeSubBlockModel(object):
         assert self.bm_class.get_pointer(curve_value) == pointer
 
     def test_level_width(self):
+        """Test level width function"""
         with pytest.raises(ValueError):
             self.bm_class.level_width(9)
 
