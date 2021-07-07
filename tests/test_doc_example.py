@@ -154,11 +154,11 @@ def test_doc_ex():
         'revision': '10',
     }
     assert proj.validate()
-    omf.save_as_omf(proj, serialfile)
+    omf.save(proj, serialfile)
     omf.base.BaseModel._INSTANCES = {}                                          #pylint: disable=protected-access
-    omf.load_omf(serialfile, include_binary=False)
+    omf.load(serialfile, include_binary=False)
     omf.base.BaseModel._INSTANCES = {}                                          #pylint: disable=protected-access
-    new_proj = omf.load_omf(serialfile)
+    new_proj = omf.load(serialfile)
     assert new_proj.validate()
     os.remove(pngfile)
     os.remove(serialfile)

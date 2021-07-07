@@ -22,7 +22,7 @@ from .pointset import PointSetElement
 from .surface import SurfaceElement, SurfaceGridElement
 from .texture import ProjectedTexture, UVMappedTexture
 
-from .fileio import load_omf, save_as_omf, __version__
+from .fileio import load, save, __version__
 
 __author__ = 'Global Mining Guidelines Group'
 __license__ = 'MIT License'

@@ -15,8 +15,8 @@ __version__ = '1.0.1'
 OMF_VERSION = '2.0'
 
 
-def save_as_omf(project, filename, mode='x'):
-    """save_as_omf serializes a OMF project to a file
+def save(project, filename, mode='x'):
+    """save serializes a OMF project to a file
 
     The .omf file is a ZIP archive containing the project JSON
     with pointers to separate files for each binary array/image.
@@ -25,7 +25,7 @@ def save_as_omf(project, filename, mode='x'):
 
         proj = omf.project()
         ...
-        omf.save_as_omf(proj, 'outfile.omf')
+        omf.save(proj, 'outfile.omf')
     """
     time_tuple = datetime.datetime.utcnow().timetuple()[:6]
     if mode not in ('w', 'x'):
@@ -60,8 +60,8 @@ def save_as_omf(project, filename, mode='x'):
     return filename
 
 
-def load_omf(filename, include_binary=True, project_json=None):
-    """load_omf deserializes an OMF file into a project
+def load(filename, include_binary=True, project_json=None):
+    """load deserializes an OMF file into a project
 
     Optionally, :code:`include_binary=False` may be specified. This
     will only load the project JSON without loading the
