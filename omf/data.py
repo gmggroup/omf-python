@@ -95,11 +95,11 @@ class Array(BaseModel):
         output = super(Array, self).serialize(
             include_class=include_class, save_dynamic=True, **kwargs
         )
-        array_uid = str(uuid.uuid4())
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:
+            array_uid = str(uuid.uuid4())
             binary_dict.update({array_uid: self.array.tobytes()})
-        output.update({'array': array_uid})
+            output.update({'array': array_uid})
         return output
 
     @classmethod
@@ -171,11 +171,8 @@ class StringList(BaseModel):
     """Array-like class with unique ID and string-list array"""
     schema_type = 'org.omf.v2.array.string'
 
-    array = properties.Union('List of datetimes or strings',
-        props=(
-            properties.List('', properties.DateTime('')),
-            properties.List('', properties.String('')),
-        ),
+    array = properties.List('List of datetimes or strings',
+        properties.String(''),
         serializer=lambda *args, **kwargs: None,
         deserializer=lambda *args, **kwargs: None,
     )
@@ -226,13 +223,13 @@ class StringList(BaseModel):
         output = super(StringList, self).serialize(
             include_class=include_class, save_dynamic=True, **kwargs
         )
-        array_uid = str(uuid.uuid4())
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:
+            array_uid = str(uuid.uuid4())
             binary_dict.update(
                 {array_uid: bytes(json.dumps(self.array), 'utf8')}
             )
-        output.update({'array': array_uid})
+            output.update({'array': array_uid})
         return output
 
     @classmethod
@@ -244,7 +241,7 @@ class StringList(BaseModel):
         elif any(key not in value for key in ['shape', 'datatype', 'array']):
             pass
         elif value['array'] in binary_dict:
-            arr = binary_dict[value['array']].decode('utf8')
+            arr = json.loads(binary_dict[value['array']].decode('utf8'))
             return cls(arr)
         return cls()
 
