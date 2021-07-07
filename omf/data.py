@@ -92,7 +92,9 @@ class Array(BaseModel):
         return self.array.size * self.array.itemsize * bit_multiplier
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(Array, self).serialize(include_class=include_class, save_dynamic=True, **kwargs)
+        output = super(Array, self).serialize(
+            include_class=include_class, save_dynamic=True, **kwargs
+        )
         array_uid = str(uuid.uuid4())
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:
@@ -109,7 +111,12 @@ class Array(BaseModel):
         elif any(key not in value for key in ['shape', 'datatype', 'array']):
             pass
         elif value['array'] in binary_dict:
-            arr = np.frombuffer(binary_dict[value['array']], dtype=DATA_TYPE_LOOKUP_TO_NUMPY[value['datatype']]).reshape(value['shape'])
+            arr = np.frombuffer(
+                binary_dict[value['array']],
+                dtype=DATA_TYPE_LOOKUP_TO_NUMPY[value['datatype']]
+            ).reshape(
+                value['shape']
+            )
             return cls(arr)
         return cls()
 
@@ -192,7 +199,9 @@ class StringList(BaseModel):
         if self.array is None:
             return None
         try:
-            properties.List('', properties.DateTime('')).validate(self, self.array)
+            properties.List('', properties.DateTime('')).validate(
+                self, self.array
+            )
         except properties.ValidationError:
             return 'StringArray'
         return 'DateTimeArray'
@@ -214,11 +223,15 @@ class StringList(BaseModel):
         return len(json.dumps(self.array))*8
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(StringList, self).serialize(include_class=include_class, save_dynamic=True, **kwargs)
+        output = super(StringList, self).serialize(
+            include_class=include_class, save_dynamic=True, **kwargs
+        )
         array_uid = str(uuid.uuid4())
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:
-            binary_dict.update({array_uid: bytes(json.dumps(self.array), 'utf8')})
+            binary_dict.update(
+                {array_uid: bytes(json.dumps(self.array), 'utf8')}
+            )
         output.update({'array': array_uid})
         return output
 

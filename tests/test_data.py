@@ -8,6 +8,7 @@ import pytest
 import omf
 
 
+#pylint: disable=comparison-with-callable
 def test_scalar_array():
     """Test array init and access works correctly"""
     arr = omf.data.Array(np.array([1, 2, 3], dtype='uint8'))
@@ -40,6 +41,7 @@ def test_string_list():
     assert arr.datatype == 'StringArray'
     assert arr.shape == [3]
     assert arr.size == 120
+#pylint: enable=comparison-with-callable
 
 
 def test_array_instance_prop():
@@ -57,7 +59,7 @@ def test_array_instance_prop():
     harr.arr = np.array([[1., 2, 3], [4, 5, 6]])
     assert harr.validate()
     assert np.array_equal(harr.arr.array, [[1., 2, 3], [4, 5, 6]])
-    assert harr.arr.datatype == 'Float64Array'
+    assert harr.arr.datatype == 'Float64Array'                                 # pylint: disable=no-member
     assert harr.arr.shape == [2, 3]
     assert harr.arr.size == 64*6
 

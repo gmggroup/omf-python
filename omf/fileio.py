@@ -14,10 +14,6 @@ from .base import Project
 __version__ = '1.0.1'
 OMF_VERSION = '2.0'
 
-IGNORED_OVERVIEW_PROPS = (
-    'data', 'textures', 'vertices', 'segments', 'triangles', 'offset_w'
-)
-
 
 def save_as_omf(project, filename, mode='x'):
     """save_as_omf serializes a OMF project to a file
@@ -42,26 +38,25 @@ def save_as_omf(project, filename, mode='x'):
     binary_dict = {}
     serial_dict = project.serialize(binary_dict=binary_dict)
     serial_dict['version'] = OMF_VERSION
-    zip_file = zipfile.ZipFile(
+    with zipfile.ZipFile(
         file=filename,
         mode='w',
         compression=zipfile.ZIP_DEFLATED,
         allowZip64=True,
-    )
-    serial_info = zipfile.ZipInfo(
-        filename='project.json',
-        date_time=time_tuple,
-    )
-    serial_info.compress_type = zipfile.ZIP_DEFLATED
-    zip_file.writestr(serial_info, json.dumps(serial_dict).encode('utf-8'))
-    for key, value in binary_dict.items():
-        binary_info = zipfile.ZipInfo(
-            filename='{}'.format(key),
+    ) as zip_file:
+        serial_info = zipfile.ZipInfo(
+            filename='project.json',
             date_time=time_tuple,
         )
-        binary_info.compress_type = zipfile.ZIP_DEFLATED
-        zip_file.writestr(binary_info, value)
-    zip_file.close()
+        serial_info.compress_type = zipfile.ZIP_DEFLATED
+        zip_file.writestr(serial_info, json.dumps(serial_dict).encode('utf-8'))
+        for key, value in binary_dict.items():
+            binary_info = zipfile.ZipInfo(
+                filename='{}'.format(key),
+                date_time=time_tuple,
+            )
+            binary_info.compress_type = zipfile.ZIP_DEFLATED
+            zip_file.writestr(binary_info, value)
     return filename
 
 
@@ -72,20 +67,19 @@ def load_omf(filename, include_binary=True, project_json=None):
     will only load the project JSON without loading the
     binary data into memory.
     """
-    zip_file = zipfile.ZipFile(
+    with zipfile.ZipFile(
         file=filename,
         mode='r',
-    )
-    binary_dict = {}
-    for info in zip_file.infolist():
-        with zip_file.open(info, mode='r') as file:
-            if info.filename == 'project.json':
-                serial_dict = json.load(file)
-            elif include_binary:
-                binary_dict[info.filename] = file.read()
-    if project_json:
-        serial_dict = project_json
-    zip_file.close()
+    ) as zip_file:
+        binary_dict = {}
+        for info in zip_file.infolist():
+            with zip_file.open(info, mode='r') as file:
+                if info.filename == 'project.json':
+                    serial_dict = json.load(file)
+                elif include_binary:
+                    binary_dict[info.filename] = file.read()
+        if project_json:
+            serial_dict = project_json
     file_version = serial_dict.pop('version', None)
     if not check_omf_version(file_version):
         raise ValueError('Unsupported file version: {}'.format(file_version))

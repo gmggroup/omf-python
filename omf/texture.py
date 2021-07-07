@@ -30,7 +30,7 @@ class Image(BaseModel):
 
     @properties.StringChoice(
         'Image data type string', choices=['png']
-    )
+    )                                                                          #pylint: disable=no-self-use
     def datatype(self):
         """Image type descriptor, currently only PNGs are supported"""
         return 'png'
@@ -45,7 +45,9 @@ class Image(BaseModel):
         return size
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(Image, self).serialize(include_class=include_class, save_dynamic=True, **kwargs)
+        output = super(Image, self).serialize(
+            include_class=include_class, save_dynamic=True, **kwargs
+        )
         image_uid = str(uuid.uuid4())
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:

@@ -1,11 +1,6 @@
 """Tests for BaseModel class behaviors"""
 import datetime
 import json
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-import uuid
 
 import numpy as np
 import properties
@@ -133,8 +128,6 @@ def test_uid_model_serialize(include_class):
 
 def test_deserialize():
     """Test deserialize correctly builds BaseModel from registry"""
-    uid_a = str(uuid.uuid4())
-    uid_b = str(uuid.uuid4())
     input_dict = {
         'my_int': 0,
         'my_model': {
@@ -153,6 +146,7 @@ def test_deserialize():
 
 
 class MockArray(omf.base.BaseModel):
+    """Test array class"""
     array = np.array([1, 2, 3])
 
 class MockData(omf.base.ProjectElementData):

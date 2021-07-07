@@ -90,6 +90,7 @@ def test_tensorblockmodel():
     elem.axis_v = 'Y'
 
 
+#pylint: disable=comparison-with-callable
 class TestRegularBlockModel(object):
     """Test class for regular block model functionality"""
 
@@ -634,3 +635,4 @@ class TestArbitrarySubBlockModel(object):
             np.array([[-0.25, 4.5, 3]])
         )
         assert block_model.validate()
+#pylint: enable=comparison-with-callable
