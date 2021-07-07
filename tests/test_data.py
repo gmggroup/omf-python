@@ -16,7 +16,19 @@ def test_scalar_array():
     assert np.array_equal(arr.array, [1, 2, 3])
     assert arr.datatype == 'Uint8Array'
     assert arr.shape == [3]
-    assert arr.size == 24
+    assert arr.size == 3
+    binary_dict = {}
+    output = arr.serialize(include_class=False, binary_dict=binary_dict)
+    assert len(binary_dict) == 1
+    assert output == {
+        'schema_type': 'org.omf.v2.array.numeric',
+        'datatype': 'Uint8Array',
+        'shape': [3],
+        'size': 3,
+        'array': list(binary_dict.keys())[0],
+    }
+    new_arr = omf.data.Array.deserialize(output, binary_dict=binary_dict)
+    assert properties.equal(arr, new_arr)
 
 
 def test_invalid_array():
@@ -45,7 +57,19 @@ def test_boolean_array():
     assert arr.array.dtype.kind == 'b'
     assert arr.datatype == 'BooleanArray'
     assert arr.shape == [2, 2]
-    assert arr.size == 4
+    assert arr.size == 1
+    binary_dict = {}
+    output = arr.serialize(include_class=False, binary_dict=binary_dict)
+    assert len(binary_dict) == 1
+    assert output == {
+        'schema_type': 'org.omf.v2.array.numeric',
+        'datatype': 'BooleanArray',
+        'shape': [2, 2],
+        'size': 1,
+        'array': list(binary_dict.keys())[0],
+    }
+    new_arr = omf.data.Array.deserialize(output, binary_dict=binary_dict)
+    assert properties.equal(arr, new_arr)
 
 
 def test_datetime_list():
@@ -60,7 +84,7 @@ def test_datetime_list():
         'schema_type': 'org.omf.v2.array.string',
         'datatype': 'DateTimeArray',
         'shape': [2],
-        'size': 384,
+        'size': 48,
         'array': list(binary_dict.keys())[0],
     }
 
@@ -78,7 +102,7 @@ def test_string_list():
     )
     assert arr.datatype == 'StringArray'
     assert arr.shape == [3]
-    assert arr.size == 120
+    assert arr.size == 15
     assert len(arr) == 3
     assert arr[0] == 'a'
     assert arr[1] == 'b'
@@ -88,7 +112,7 @@ def test_string_list():
         'schema_type': 'org.omf.v2.array.string',
         'datatype': 'StringArray',
         'shape': [3],
-        'size': 120,
+        'size': 15,
     }
 #pylint: enable=comparison-with-callable
 
@@ -110,7 +134,7 @@ def test_array_instance_prop():
     assert np.array_equal(harr.arr.array, [[1., 2, 3], [4, 5, 6]])
     assert harr.arr.datatype == 'Float64Array'                                 # pylint: disable=no-member
     assert harr.arr.shape == [2, 3]
-    assert harr.arr.size == 64*6
+    assert harr.arr.size == 8*6
 
     with pytest.raises(properties.ValidationError):
         harr.arr = np.array([1., 2, 3])

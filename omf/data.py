@@ -83,13 +83,14 @@ class Array(BaseModel):
             return None
         return list(self.array.shape)
 
-    @properties.Integer('Size of array in bits')
+    @properties.Integer('Size of array in bytes')
     def size(self):
-        """Total size of the array in bits"""
+        """Total size of the array in bytes"""
         if self.array is None:
             return None
-        bit_multiplier = 1 if self.datatype == 'BooleanArray' else 8           #pylint: disable=comparison-with-callable
-        return self.array.size * self.array.itemsize * bit_multiplier
+        if self.datatype == 'BooleanArray':                                    #pylint: disable=comparison-with-callable
+            return int(np.ceil(self.array.size / 8))
+        return self.array.size * self.array.itemsize
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
         output = super(Array, self).serialize(
@@ -98,7 +99,11 @@ class Array(BaseModel):
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:
             array_uid = str(uuid.uuid4())
-            binary_dict.update({array_uid: self.array.tobytes()})
+            if self.datatype == 'BooleanArray':                                #pylint: disable=comparison-with-callable
+                array_binary = np.packbits(self.array, axis=None).tobytes()
+            else:
+                array_binary = self.array.tobytes()
+            binary_dict.update({array_uid: array_binary})
             output.update({'array': array_uid})
         return output
 
@@ -111,12 +116,15 @@ class Array(BaseModel):
         elif any(key not in value for key in ['shape', 'datatype', 'array']):
             pass
         elif value['array'] in binary_dict:
-            arr = np.frombuffer(
-                binary_dict[value['array']],
-                dtype=DATA_TYPE_LOOKUP_TO_NUMPY[value['datatype']]
-            ).reshape(
-                value['shape']
-            )
+            array_binary = binary_dict[value['array']]
+            array_dtype = DATA_TYPE_LOOKUP_TO_NUMPY[value['datatype']]
+            if value['datatype'] == 'BooleanArray':
+                int_arr = np.frombuffer(array_binary, dtype='uint8')
+                bit_arr = np.unpackbits(int_arr)[:np.product(value['shape'])]
+                arr = bit_arr.astype(array_dtype)
+            else:
+                arr = np.frombuffer(array_binary, dtype=array_dtype)
+            arr = arr.reshape(value['shape'])
             return cls(arr)
         return cls()
 
@@ -212,12 +220,12 @@ class StringList(BaseModel):
             return None
         return [len(self.array)]
 
-    @properties.Integer('Size of string list dumped to JSON in bits')
+    @properties.Integer('Size of string list dumped to JSON in bytes')
     def size(self):
-        """Total size of the string list in bits"""
+        """Total size of the string list in bytes"""
         if self.array is None:
             return None
-        return len(json.dumps(self.array))*8
+        return len(json.dumps(self.array))
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
         output = super(StringList, self).serialize(
