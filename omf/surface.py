@@ -57,12 +57,12 @@ class SurfaceElement(BaseSurfaceElement):                                      #
     @property
     def num_nodes(self):
         """get number of nodes"""
-        return len(self.vertices)
+        return len(self.vertices.array)
 
     @property
     def num_cells(self):
         """get number of cells"""
-        return len(self.triangles)
+        return len(self.triangles.array)
 
     @properties.validator
     def _validate_mesh(self):
@@ -129,7 +129,7 @@ class SurfaceGridElement(BaseSurfaceElement):                                  #
             raise properties.ValidationError(
                 'Length of offset_w, {zlen}, must equal number of nodes, '
                 '{nnode}'.format(
-                    zlen=len(self.offset_w),
+                    zlen=len(self.offset_w.array),
                     nnode=self.num_nodes
                 )
             )

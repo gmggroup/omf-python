@@ -1,27 +1,13 @@
-"""Tests for base UidModel class behaviors"""
+"""Tests for BaseModel class behaviors"""
 import datetime
 import json
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-import uuid
 
+import numpy as np
 import properties
 import properties.extras
 import pytest
 
 import omf
-
-
-@mock.patch('properties.extras.uid.uuid')
-def test_uid_model(mock_uuid):
-    """Test UidModel default behaviour"""
-    my_id = str(uuid.uuid4())
-    mock_uuid.UUID = uuid.UUID
-    mock_uuid.uuid4 = lambda: my_id
-    model = omf.base.UidModel()
-    assert model.uid == my_id
 
 
 class Metadata(properties.HasProperties):
@@ -99,7 +85,7 @@ def test_metadata_property():
     assert new_metadata.serialize(include_class=False) == serialized_has_meta
 
 
-class MyModelWithInt(omf.base.UidModel):
+class MyModelWithInt(omf.base.BaseModel):
     """Test class with one integer property"""
     schema_type = 'my.model.with.int'
     my_int = properties.Integer('')
@@ -108,14 +94,12 @@ class MyModelWithInt(omf.base.UidModel):
 class MyModelWithIntAndInstance(MyModelWithInt):
     """Test class with an integer property and an instance property"""
     schema_type = 'my.model.with.int.and.instance'
-    my_model = properties.Instance('', omf.base.UidModel)
+    my_model = properties.Instance('', omf.base.BaseModel)
 
 
 @pytest.mark.parametrize('include_class', [True, False])
-@pytest.mark.parametrize('skip_validation', [True, False])
-@pytest.mark.parametrize('registry', [None, {'key': 'value'}])
-def test_uid_model_serialize(include_class, skip_validation, registry):
-    """Test UidModel correctly serializes to flat dictionary"""
+def test_uid_model_serialize(include_class):
+    """Test BaseModel correctly serializes to flat dictionary"""
     model = MyModelWithIntAndInstance(
         my_int=0,
         my_model=MyModelWithIntAndInstance(
@@ -123,84 +107,51 @@ def test_uid_model_serialize(include_class, skip_validation, registry):
             my_model=MyModelWithInt(),
         ),
     )
-    if not skip_validation:
-        model.my_model.my_model.my_int = 2
-    output_registry = registry.copy() if registry else None
-    output = model.serialize(
-        include_class=include_class,
-        skip_validation=skip_validation,
-        registry=output_registry,
-    )
-    if registry:
-        assert output == str(model.uid)
-        assert 'key' in output_registry
-        assert output_registry['key'] == 'value'
-        output_registry.pop('key')
-        output = output_registry
-        assert len(output) == 3
-    else:
-        assert len(output) == 4
-    for model in [model, model.my_model, model.my_model.my_model]:
-        assert model.uid in output
-        expected_dict = {
-            'uid': model.uid,
+    expected = {
+        'schema_type': 'my.model.with.int.and.instance',
+        'my_int': 0,
+        'my_model': {
+            'schema_type': 'my.model.with.int.and.instance',
+            'my_int': 1,
+            'my_model': {
+                'schema_type': 'my.model.with.int',
+            }
+
         }
-        if isinstance(model, MyModelWithIntAndInstance):
-            expected_dict.update({
-                'my_int': model.my_int,
-                'my_model': str(model.my_model.uid),
-            })
-        elif not skip_validation:
-            expected_dict.update({'my_int': model.my_int})
-        if include_class:
-            expected_dict.update({'schema_type': model.schema_type})
-        assert output[str(model.uid)] == expected_dict
-
-
-@pytest.mark.parametrize('registry', [
-    {'__root__': 'my_int', 'my_model': 1}, None
-])
-def test_bad_deserialize(registry):
-    """Test deserialize fails with bad registry"""
-    with pytest.raises(ValueError):
-        omf.base.UidModel.deserialize(registry, trusted=True)
+    }
+    if include_class:
+        expected['__class__'] = 'MyModelWithIntAndInstance'
+        expected['my_model']['__class__'] = 'MyModelWithIntAndInstance'
+        expected['my_model']['my_model']['__class__'] = 'MyModelWithInt'
+    assert model.serialize(include_class=include_class) == expected
 
 
 def test_deserialize():
-    """Test deserialize correctly builds UidModel from registry"""
-    uid_a = str(uuid.uuid4())
-    uid_b = str(uuid.uuid4())
+    """Test deserialize correctly builds BaseModel from registry"""
     input_dict = {
-        uid_a: {
-            'my_int': 0,
-            'my_model': uid_b,
-            'uid': uid_a,
-            'schema_type': 'my.model.with.int.and.instance',
-        },
-        uid_b: {
+        'my_int': 0,
+        'my_model': {
             'my_int': 1,
-            'uid': uid_b,
             'schema_type': 'my.model.with.int',
         },
-        '__root__': uid_a,
+        'schema_type': 'my.model.with.int.and.instance',
     }
-    model_a = omf.base.UidModel.deserialize(input_dict, trusted=True)
+    model_a = omf.base.BaseModel.deserialize(input_dict, trusted=True)
     assert isinstance(model_a, MyModelWithIntAndInstance)
     #pylint: disable=no-member
-    assert str(model_a.uid) == uid_a
     assert model_a.my_int == 0
     assert isinstance(model_a.my_model, MyModelWithInt)
     assert model_a.my_model.my_int == 1
-    input_dict['__root__'] = uid_b
-    properties.extras.HasUID._INSTANCES = {}                                   #pylint: disable=protected-access
-    model_b = omf.base.UidModel.deserialize(input_dict, trusted=True)
-    assert properties.equal(model_b, model_a.my_model)
     #pylint: enable=no-member
 
 
+class MockArray(omf.base.BaseModel):
+    """Test array class"""
+    array = np.array([1, 2, 3])
+
 class MockData(omf.base.ProjectElementData):
     """Test data class"""
-    array = [1, 2, 3]
+    array = MockArray()
 
 
 def test_project_element():

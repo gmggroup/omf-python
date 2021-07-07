@@ -4,183 +4,95 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import datetime
 import json
-import struct
-import uuid
+import os
+import zipfile
 
-from six import string_types
+from .base import Project
 
-from .base import UidModel
-
-COMPATIBILITY_VERSION = b'OMF-v0.9.0'
-IGNORED_OVERVIEW_PROPS = (
-    'data', 'textures', 'vertices', 'segments', 'triangles', 'offset_w'
-)
+__version__ = '1.0.1'
+OMF_VERSION = '2.0'
 
 
+def save(project, filename, mode='x'):
+    """save serializes a OMF project to a file
 
-class OMFWriter(object):
-    """OMFWriter serializes a OMF project to a file
+    The .omf file is a ZIP archive containing the project JSON
+    with pointers to separate files for each binary array/image.
 
     .. code::
 
         proj = omf.project()
         ...
-        omf.OMFWriter(proj, 'outfile.omf')
-
-    The output file starts with a 60 byte header:
-
-    * 4 byte magic number: :code:`b'\\x81\\x82\\x83\\x84'`
-    * 32 byte version string: :code:`'OMF-v0.9.0'` (other bytes empty)
-    * 16 byte project uid (in little-endian bytes)
-    * 8 byte unsigned long long (little-endian): JSON start location in file
-
-    Following the header is a binary data blob.
-
-    Following the binary is a UTF-8 encoded JSON dictionary containing
-    all elements of the project keyed by UID string. Objects can reference
-    each other by UID, and arrays and images contain pointers to their data
-    in the binary blob.
+        omf.save(proj, 'outfile.omf')
     """
-
-    def __init__(self, project, fname):
-        """Project serialization is performed on OMFWriter init
-
-        Binary data is written during project serialization
-        """
-        if len(fname) < 4 or fname[-4:] != '.omf':
-            fname = fname + '.omf'
-        self.fname = fname
-        with open(fname, 'wb') as fopen:
-            self.initialize_header(fopen, project.uid)
-            self.project_json = project.serialize(open_file=fopen)
-            self.project_json.pop('__root__')
-            self.update_header(fopen)
-            fopen.write(json.dumps(self.project_json).encode('utf-8'))
-
-    @staticmethod
-    def initialize_header(fopen, uid):
-        """Write magic number, version string, project uid, and zero bytes
-
-        Total header length = 60 bytes
-
-        4 (magic number)
-        + 32 (version)
-        + 16 (uid in bytes)
-        + 8 (JSON start, written later)
-        """
-        fopen.seek(0, 0)
-        fopen.write(b'\x84\x83\x82\x81')
-        fopen.write(
-            struct.pack('<32s', COMPATIBILITY_VERSION.ljust(32, b'\x00'))
+    time_tuple = datetime.datetime.utcnow().timetuple()[:6]
+    if mode not in ('w', 'x'):
+        raise ValueError("File mode must be 'w' or 'x'")
+    if len(filename) < 4 or filename[-4:] != '.omf':
+        filename = filename + '.omf'
+    if mode == 'x' and os.path.exists(filename):
+        raise ValueError('File already exists: {}'.format(filename))
+    project.validate()
+    binary_dict = {}
+    serial_dict = project.serialize(binary_dict=binary_dict)
+    serial_dict['version'] = OMF_VERSION
+    with zipfile.ZipFile(
+        file=filename,
+        mode='w',
+        compression=zipfile.ZIP_DEFLATED,
+        allowZip64=True,
+    ) as zip_file:
+        serial_info = zipfile.ZipInfo(
+            filename='project.json',
+            date_time=time_tuple,
         )
-        fopen.write(struct.pack('<16s', uuid.UUID(uid).bytes))
-        fopen.seek(8, 1)
-
-    @staticmethod
-    def update_header(fopen):
-        """Return to header and write the correct JSON start location"""
-        json_start = fopen.tell()
-        fopen.seek(52, 0)
-        fopen.write(struct.pack('<Q', json_start))
-        fopen.seek(json_start)
-
-
-class OMFReader(object):
-    """OMFReader deserializes an OMF file.
-
-    .. code::
-
-        # Read all elements
-        reader = omf.OMFReader('infile.omf')
-        project = reader.get_project()
-
-        # Read all PointSets:
-        reader = omf.OMFReader('infile.omf')
-        project = reader.get_project_overview()
-        uids_to_import = [element.uid for element in project.elements
-                          if isinstance(element, omf.PointSetElement)]
-        filtered_project = reader.get_project(uids_to_import)
-
-    """
-
-    def __init__(self, fopen):
-        if isinstance(fopen, string_types):
-            fopen = open(fopen, 'rb')                                          #pylint: disable=consider-using-with
-        self._fopen = fopen
-        fopen.seek(0, 0)
-        self._uid, self._json_start = self.read_header()
-        self._project_json = self.read_json()
-
-    def __del__(self):
-        self._fopen.close()
-
-    def get_project(self, element_uids=None):
-        """Fully loads project elements.
-        Elements can be filtered by specifying their UUIDs.
-
-        :param element_uids: a list of element UUIDs to load, default: all
-        :return: a omf.base.Project containing the specified elements
-        """
-        project_json = self._project_json.copy()
-        if element_uids is not None:
-            project_elements = project_json[self._uid]
-            # update the root element list
-            filtered_elements = [uid for uid in project_elements['elements']
-                                 if uid in element_uids]
-            project_elements['elements'] = filtered_elements
-
-        project_json.update({'__root__': self._uid})
-        UidModel._INSTANCES = {}                                               #pylint: disable=protected-access
-        project = UidModel.deserialize(
-            value=project_json,
-            trusted=True,
-            open_file=self._fopen,
-        )
-        return project
-
-    def get_project_overview(self):
-        """Loads all project elements without loading their data.
-
-        :return: a omf.base.Project
-        """
-        project_elements = self._project_json[self._uid]
-        element_uids = project_elements['elements']
-        filtered_json = {self._uid: project_elements}
-        for uid in element_uids:
-            element = self._project_json[uid].copy()
-            for prop in IGNORED_OVERVIEW_PROPS:
-                if prop in element:
-                    del element[prop]
-            filtered_json[uid] = element
-        filtered_json.update({'__root__': self._uid})
-        UidModel._INSTANCES = {}                                               #pylint: disable=protected-access
-        project = UidModel.deserialize(
-            value=filtered_json,
-            trusted=True,
-            open_file=self._fopen,
-        )
-        return project
-
-    def read_header(self):
-        """Checks magic number and version; gets project uid and json start"""
-        if self._fopen.read(4) != b'\x84\x83\x82\x81':
-            raise ValueError('Invalid OMF file')
-        file_version = struct.unpack('<32s', self._fopen.read(32))[0]
-        file_version = file_version[0:len(COMPATIBILITY_VERSION)]
-        if file_version != COMPATIBILITY_VERSION:
-            raise ValueError(
-                'Version mismatch: file version {fv}, '
-                'reader version {rv}'.format(
-                    fv=file_version,
-                    rv=COMPATIBILITY_VERSION
-                )
+        serial_info.compress_type = zipfile.ZIP_DEFLATED
+        zip_file.writestr(serial_info, json.dumps(serial_dict).encode('utf-8'))
+        for key, value in binary_dict.items():
+            binary_info = zipfile.ZipInfo(
+                filename='{}'.format(key),
+                date_time=time_tuple,
             )
-        uid = uuid.UUID(bytes=struct.unpack('<16s', self._fopen.read(16))[0])
-        json_start = struct.unpack('<Q', self._fopen.read(8))[0]
-        return str(uid), json_start
+            binary_info.compress_type = zipfile.ZIP_DEFLATED
+            zip_file.writestr(binary_info, value)
+    return filename
 
-    def read_json(self):
-        """Gets json dictionary from project file"""
-        self._fopen.seek(self._json_start, 0)
-        return json.loads(self._fopen.read().decode('utf-8'))
+
+def load(filename, include_binary=True, project_json=None):
+    """load deserializes an OMF file into a project
+
+    Optionally, :code:`include_binary=False` may be specified. This
+    will only load the project JSON without loading the
+    binary data into memory.
+    """
+    with zipfile.ZipFile(
+        file=filename,
+        mode='r',
+    ) as zip_file:
+        binary_dict = {}
+        for info in zip_file.infolist():
+            with zip_file.open(info, mode='r') as file:
+                if info.filename == 'project.json':
+                    serial_dict = json.load(file)
+                elif include_binary:
+                    binary_dict[info.filename] = file.read()
+        if project_json:
+            serial_dict = project_json
+    file_version = serial_dict.pop('version', None)
+    if not check_omf_version(file_version):
+        raise ValueError('Unsupported file version: {}'.format(file_version))
+    project = Project.deserialize(
+        value=serial_dict,
+        binary_dict=binary_dict,
+        trusted=True,
+    )
+    return project
+
+
+def check_omf_version(file_version):
+    """Validate file version compatibility against the current OMF version"""
+    if file_version is None:
+        return True
+    return file_version == OMF_VERSION

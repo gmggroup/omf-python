@@ -5,12 +5,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import json
+import uuid
 
 import numpy as np
 import properties
 
-from .base import UidModel, ContentModel, ProjectElementData
-from .serializers import array_serializer, array_deserializer
+from .base import BaseModel, ContentModel, ProjectElementData
 
 
 DATA_TYPE_LOOKUP_TO_NUMPY = {
@@ -31,7 +31,7 @@ DATA_TYPE_LOOKUP_TO_STRING = {
 }
 
 
-class Array(UidModel):
+class Array(BaseModel):
     """Class with unique ID and data array"""
     schema_type = 'org.omf.v2.array.numeric'
 
@@ -39,8 +39,8 @@ class Array(UidModel):
         'Shared Scalar Array',
         shape={('*',), ('*', '*')},
         dtype=(int, float, bool),
-        serializer=array_serializer,
-        deserializer=array_deserializer,
+        serializer=lambda *args, **kwargs: None,
+        deserializer=lambda *args, **kwargs: None,
     )
 
     def __init__(self, array=None, **kwargs):
@@ -91,6 +91,34 @@ class Array(UidModel):
         bit_multiplier = 1 if self.datatype == 'BooleanArray' else 8           #pylint: disable=comparison-with-callable
         return self.array.size * self.array.itemsize * bit_multiplier
 
+    def serialize(self, include_class=True, save_dynamic=False, **kwargs):
+        output = super(Array, self).serialize(
+            include_class=include_class, save_dynamic=True, **kwargs
+        )
+        binary_dict = kwargs.get('binary_dict', None)
+        if binary_dict is not None:
+            array_uid = str(uuid.uuid4())
+            binary_dict.update({array_uid: self.array.tobytes()})
+            output.update({'array': array_uid})
+        return output
+
+    @classmethod
+    def deserialize(cls, value, trusted=False, strict=False,
+                    assert_valid=False, **kwargs):
+        binary_dict = kwargs.get('binary_dict', {})
+        if not isinstance(value, dict):
+            pass
+        elif any(key not in value for key in ['shape', 'datatype', 'array']):
+            pass
+        elif value['array'] in binary_dict:
+            arr = np.frombuffer(
+                binary_dict[value['array']],
+                dtype=DATA_TYPE_LOOKUP_TO_NUMPY[value['datatype']]
+            ).reshape(
+                value['shape']
+            )
+            return cls(arr)
+        return cls()
 
 class ArrayInstanceProperty(properties.Instance):
     """Instance property for OMF Array objects
@@ -139,15 +167,14 @@ class ArrayInstanceProperty(properties.Instance):
         return value
 
 
-class StringList(UidModel):
+class StringList(BaseModel):
     """Array-like class with unique ID and string-list array"""
     schema_type = 'org.omf.v2.array.string'
 
-    array = properties.Union('List of datetimes or strings',
-        props=(
-            properties.List('', properties.DateTime('')),
-            properties.List('', properties.String('')),
-        )
+    array = properties.List('List of datetimes or strings',
+        properties.String(''),
+        serializer=lambda *args, **kwargs: None,
+        deserializer=lambda *args, **kwargs: None,
     )
 
     def __init__(self, array=None, **kwargs):
@@ -169,7 +196,9 @@ class StringList(UidModel):
         if self.array is None:
             return None
         try:
-            properties.List('', properties.DateTime('')).validate(self, self.array)
+            properties.List('', properties.DateTime('')).validate(
+                self, self.array
+            )
         except properties.ValidationError:
             return 'StringArray'
         return 'DateTimeArray'
@@ -189,6 +218,32 @@ class StringList(UidModel):
         if self.array is None:
             return None
         return len(json.dumps(self.array))*8
+
+    def serialize(self, include_class=True, save_dynamic=False, **kwargs):
+        output = super(StringList, self).serialize(
+            include_class=include_class, save_dynamic=True, **kwargs
+        )
+        binary_dict = kwargs.get('binary_dict', None)
+        if binary_dict is not None:
+            array_uid = str(uuid.uuid4())
+            binary_dict.update(
+                {array_uid: bytes(json.dumps(self.array), 'utf8')}
+            )
+            output.update({'array': array_uid})
+        return output
+
+    @classmethod
+    def deserialize(cls, value, trusted=False, strict=False,
+                    assert_valid=False, **kwargs):
+        binary_dict = kwargs.get('binary_dict', {})
+        if not isinstance(value, dict):
+            pass
+        elif any(key not in value for key in ['shape', 'datatype', 'array']):
+            pass
+        elif value['array'] in binary_dict:
+            arr = json.loads(binary_dict[value['array']].decode('utf8'))
+            return cls(arr)
+        return cls()
 
 
 class ContinuousColormap(ContentModel):

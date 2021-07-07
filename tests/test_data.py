@@ -8,6 +8,7 @@ import pytest
 import omf
 
 
+#pylint: disable=comparison-with-callable
 def test_scalar_array():
     """Test array init and access works correctly"""
     arr = omf.data.Array(np.array([1, 2, 3], dtype='uint8'))
@@ -16,6 +17,26 @@ def test_scalar_array():
     assert arr.datatype == 'Uint8Array'
     assert arr.shape == [3]
     assert arr.size == 24
+
+
+def test_invalid_array():
+    """Test Array class without valid array"""
+    arr = omf.data.Array()
+    assert arr.datatype is None
+    assert arr.shape is None
+    assert arr.size is None
+    assert isinstance(omf.data.Array.deserialize(''), omf.data.Array)
+    assert isinstance(omf.data.Array.deserialize({}), omf.data.Array)
+
+
+def test_invalid_string_list():
+    """Test StringList class without valid array"""
+    arr = omf.data.StringList()
+    assert arr.datatype is None
+    assert arr.shape is None
+    assert arr.size is None
+    assert isinstance(omf.data.StringList.deserialize(''), omf.data.StringList)
+    assert isinstance(omf.data.StringList.deserialize({}), omf.data.StringList)
 
 
 def test_boolean_array():
@@ -32,14 +53,44 @@ def test_datetime_list():
     arr = omf.data.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
     assert arr.datatype == 'DateTimeArray'
     assert arr.shape == [2]
+    binary_dict = {}
+    output = arr.serialize(include_class=False, binary_dict=binary_dict)
+    assert len(binary_dict) == 1
+    assert output == {
+        'schema_type': 'org.omf.v2.array.string',
+        'datatype': 'DateTimeArray',
+        'shape': [2],
+        'size': 384,
+        'array': list(binary_dict.keys())[0],
+    }
 
 
 def test_string_list():
     """Test string list gives string datatype"""
-    arr = omf.data.StringList(['a', 'b', 'c'])
+    arr = omf.data.StringList.deserialize(
+        {
+            'shape': '',
+            'datatype': '',
+            'size': '',
+            'array': 'a',
+        },
+        binary_dict={'a': b'["a", "b", "c"]'}
+    )
     assert arr.datatype == 'StringArray'
     assert arr.shape == [3]
     assert arr.size == 120
+    assert len(arr) == 3
+    assert arr[0] == 'a'
+    assert arr[1] == 'b'
+    assert arr[2] == 'c'
+    output = arr.serialize(include_class=False)
+    assert output == {
+        'schema_type': 'org.omf.v2.array.string',
+        'datatype': 'StringArray',
+        'shape': [3],
+        'size': 120,
+    }
+#pylint: enable=comparison-with-callable
 
 
 def test_array_instance_prop():
@@ -57,7 +108,7 @@ def test_array_instance_prop():
     harr.arr = np.array([[1., 2, 3], [4, 5, 6]])
     assert harr.validate()
     assert np.array_equal(harr.arr.array, [[1., 2, 3], [4, 5, 6]])
-    assert harr.arr.datatype == 'Float64Array'
+    assert harr.arr.datatype == 'Float64Array'                                 # pylint: disable=no-member
     assert harr.arr.shape == [2, 3]
     assert harr.arr.size == 64*6
 

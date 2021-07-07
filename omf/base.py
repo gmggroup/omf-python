@@ -4,88 +4,38 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from collections import OrderedDict
 import json
-import uuid
 
 import properties
 import properties.extras
-import six
 
 
-class UIDMetaclass(properties.base.PropertyMetaclass):
-    """Metaclass to access value from an instance registry by uid"""
+class BaseModel(properties.HasProperties):
+    """BaseModel is a HasProperties object with schema_type"""
 
-    def __call__(cls, *args, **kwargs):
-        """Look up an instance by uid in the registry, or make a new one"""
-        if (
-                len(args) == 1 and not kwargs and
-                isinstance(args[0], six.string_types) and
-                args[0] in cls._INSTANCES
-        ):
-            return cls._INSTANCES[args[0]]
-        return super(UIDMetaclass, cls).__call__(*args, **kwargs)
-
-
-class UidModel(six.with_metaclass(UIDMetaclass, properties.extras.HasUID)):
-    """UidModel is a HasProperties object with uid"""
-    _REGISTRY = OrderedDict()
-
-    @properties.validator('uid')
-    def _ensure_uuid(self, change):
-        """Validate that new uids are UUID"""
-        self.validate_uid(change['value'])
-        return True
-
-
-    @classmethod
-    def validate_uid(cls, uid):
-        """Validate that uid is a UUID"""
-        uuid.UUID(uid)
-        return True
-
+    schema_type = ''
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(UidModel, self).serialize(
+        output = super(BaseModel, self).serialize(
             include_class,
             save_dynamic,
             **kwargs
         )
-        dict_to_mutate = None
-        if isinstance(output, dict):
-            dict_to_mutate = output
-        elif kwargs.get('registry', None):
-            dict_to_mutate = kwargs.get('registry')
-        if dict_to_mutate:
-            for entry in dict_to_mutate.values():
-                if not isinstance(entry, dict) or '__class__' not in entry:
-                    continue
-                entry.update(
-                    {'schema_type': self._REGISTRY[entry.pop('__class__')].schema_type}
-                )
+        output.update({'schema_type': self.schema_type})
         return output
 
 
     @classmethod
     def deserialize(cls, value, trusted=False, strict=False,
                     assert_valid=False, **kwargs):
-        if kwargs.get('registry', None) is None:
-            if not isinstance(value, dict):
-                raise ValueError('UidModel must deserialize from dictionary')
-            value = value.copy()
-            for entry in value.values():
-                if not isinstance(entry, dict) or 'schema_type' not in entry:
-                    continue
-                schema_type = entry.pop('schema_type')
-                for class_name, class_value in cls._REGISTRY.items():
-                    if getattr(class_value, 'schema_type', '') == schema_type:
-                        entry['__class__'] = class_name
-                        break
-                else:
-                    raise ValueError(
-                        'Unrecognized class type: {}'.format(schema_type)
-                    )
-        return super(UidModel, cls).deserialize(
+        schema_type = value.pop('schema_type', '')
+        for class_name, class_value in cls._REGISTRY.items():
+            if not hasattr(class_value, 'schema_type'):
+                continue
+            if class_value.schema_type == schema_type:
+                value.update({'__class__': class_name})
+                break
+        return super(BaseModel, cls).deserialize(
             value, trusted, strict, assert_valid, **kwargs
         )
 
@@ -233,8 +183,8 @@ class ArbitraryMetadataDict(properties.Dictionary):
         return info
 
 
-class ContentModel(UidModel):
-    """ContentModel is a UidModel with name, description, and metadata"""
+class ContentModel(BaseModel):
+    """ContentModel is a model with name, description, and metadata"""
     name = properties.String(
         'Title of the object',
         default='',
@@ -307,12 +257,12 @@ class ProjectElement(ContentModel):
                     )
                 )
             valid_length = self.location_length(dat.location)
-            if len(dat.array) != valid_length:
+            if len(dat.array.array) != valid_length:
                 raise properties.ValidationError(
                     'data[{index}] length {datalen} does not match '
                     '{loc} length {meshlen}'.format(
                         index=i,
-                        datalen=len(dat.array),
+                        datalen=len(dat.array.array),
                         loc=dat.location,
                         meshlen=valid_length
                     )
