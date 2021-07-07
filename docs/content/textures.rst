@@ -54,3 +54,8 @@ are given normalized UV coordinates which correspond to element
 vertices. This allows arbitrary mapping of images to surfaces.
 
 .. autoclass:: omf.texture.UVMappedTexture
+
+Image
+*****
+
+.. autoclass:: omf.texture.Image

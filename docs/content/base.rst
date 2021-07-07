@@ -21,12 +21,10 @@ Content Model
 
 .. autoclass:: omf.base.ContentModel
 
-Uid Model
----------
+Base Model
+----------
 
-UidModel gives all content a name, description, and unique uid.
-
-.. autoclass:: omf.base.UidModel
+.. autoclass:: omf.base.BaseModel
 
 Metadata Classes
 ----------------
