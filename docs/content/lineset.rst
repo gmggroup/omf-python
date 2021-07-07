@@ -20,6 +20,6 @@ Element
 Attributes
 ----------
 
-Attributes is a list of :ref:`attributes <data>`. For Lines,
+Attributes is a list of :ref:`attributes <attributes>`. For Lines,
 :code:`location='vertices'` and :code:`location='segments'` are valid.
 

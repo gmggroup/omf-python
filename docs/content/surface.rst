@@ -23,7 +23,7 @@ Elements
 Attributes
 ----------
 
-Attributes is a list of :ref:`attributes <data>`. For Surfaces,
+Attributes is a list of :ref:`attributes <attributes>`. For Surfaces,
 :code:`location='vertices'` and :code:`location='faces'` are valid.
 
 Textures

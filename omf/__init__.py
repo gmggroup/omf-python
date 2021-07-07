@@ -13,7 +13,7 @@ from .blockmodel import (
     TensorBlockModel,
 )
 from .composite import CompositeElement
-from .data import (
+from .attribute import (
     Array, CategoryAttribute, CategoryColormap, ContinuousColormap,
     DiscreteColormap, NumericAttribute, StringAttribute, VectorAttribute
 )

@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import properties
 
 from .base import ProjectElement
-from .data import ArrayInstanceProperty
+from .attribute import ArrayInstanceProperty
 from .texture import HasTexturesMixin
 
 

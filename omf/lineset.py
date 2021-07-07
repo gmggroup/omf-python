@@ -8,7 +8,7 @@ import numpy as np
 import properties
 
 from .base import ProjectElement
-from .data import ArrayInstanceProperty
+from .attribute import ArrayInstanceProperty
 
 
 class LineSetElement(ProjectElement):

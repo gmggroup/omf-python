@@ -20,7 +20,7 @@ Element
 Attributes
 ----------
 
-Attributes is a list of :ref:`attributes <data>`. For PointSets, only
+Attributes is a list of :ref:`attributes <attributes>`. For PointSets, only
 :code:`location='vertices'` is valid.
 
 Textures

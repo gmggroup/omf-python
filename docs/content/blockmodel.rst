@@ -28,4 +28,4 @@ Element
 Attributes
 ----------
 
-Attributes is a list of :ref:`attributes <data>`.
+Attributes is a list of :ref:`attributes <attributes>`.

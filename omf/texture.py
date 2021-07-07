@@ -10,7 +10,7 @@ import uuid
 import properties
 
 from .base import BaseModel, ContentModel
-from .data import ArrayInstanceProperty
+from .attribute import ArrayInstanceProperty
 
 
 class Image(BaseModel):

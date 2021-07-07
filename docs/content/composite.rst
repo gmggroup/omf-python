@@ -15,7 +15,7 @@ Element
 Attributes
 ----------
 
-Attributes is a list of :ref:`attributes <data>`. For Composite Elements,
+Attributes is a list of :ref:`attributes <attributes>`. For Composite Elements,
 only :code:`location='elements'` is valid. However, attributes may also be
 defined on the child :code:`elements`
 

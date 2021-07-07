@@ -1,4 +1,4 @@
-.. _data:
+.. _attributes:
 
 Attributes
 **********
@@ -44,34 +44,34 @@ the surface contains a mesh with 9 vertices and 4 faces (ie a 2x2 square grid).
 NumericAttribute
 ----------------
 
-.. autoclass:: omf.data.NumericAttribute
+.. autoclass:: omf.attribute.NumericAttribute
 
 VectorAttribute
 ---------------
 
-.. autoclass:: omf.data.VectorAttribute
+.. autoclass:: omf.attribute.VectorAttribute
 
 StringAttribute
 ---------------
 
-.. autoclass:: omf.data.StringAttribute
+.. autoclass:: omf.attribute.StringAttribute
 
 CategoryAttribute
 -----------------
 
-.. autoclass:: omf.data.CategoryAttribute
+.. autoclass:: omf.attribute.CategoryAttribute
 
 ContinuousColormap
 ------------------
 
-.. autoclass:: omf.data.ContinuousColormap
+.. autoclass:: omf.attribute.ContinuousColormap
 
 DiscreteColormap
 ----------------
 
-.. autoclass:: omf.data.DiscreteColormap
+.. autoclass:: omf.attribute.DiscreteColormap
 
 CategoryColormap
 ----------------
 
-.. autoclass:: omf.data.CategoryColormap
+.. autoclass:: omf.attribute.CategoryColormap

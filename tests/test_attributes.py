@@ -1,4 +1,4 @@
-"""Tests for data object validation"""
+"""Tests for attribute object validation"""
 import datetime
 
 import numpy as np
@@ -11,7 +11,7 @@ import omf
 #pylint: disable=comparison-with-callable
 def test_scalar_array():
     """Test array init and access works correctly"""
-    arr = omf.data.Array(np.array([1, 2, 3], dtype='uint8'))
+    arr = omf.attribute.Array(np.array([1, 2, 3], dtype='uint8'))
     assert arr.array.dtype.kind == 'u'
     assert np.array_equal(arr.array, [1, 2, 3])
     assert arr.datatype == 'Uint8Array'
@@ -27,33 +27,33 @@ def test_scalar_array():
         'size': 3,
         'array': list(binary_dict.keys())[0],
     }
-    new_arr = omf.data.Array.deserialize(output, binary_dict=binary_dict)
+    new_arr = omf.attribute.Array.deserialize(output, binary_dict=binary_dict)
     assert properties.equal(arr, new_arr)
 
 
 def test_invalid_array():
     """Test Array class without valid array"""
-    arr = omf.data.Array()
+    arr = omf.attribute.Array()
     assert arr.datatype is None
     assert arr.shape is None
     assert arr.size is None
-    assert isinstance(omf.data.Array.deserialize(''), omf.data.Array)
-    assert isinstance(omf.data.Array.deserialize({}), omf.data.Array)
+    assert isinstance(omf.attribute.Array.deserialize(''), omf.attribute.Array)
+    assert isinstance(omf.attribute.Array.deserialize({}), omf.attribute.Array)
 
 
 def test_invalid_string_list():
     """Test StringList class without valid array"""
-    arr = omf.data.StringList()
+    arr = omf.attribute.StringList()
     assert arr.datatype is None
     assert arr.shape is None
     assert arr.size is None
-    assert isinstance(omf.data.StringList.deserialize(''), omf.data.StringList)
-    assert isinstance(omf.data.StringList.deserialize({}), omf.data.StringList)
+    assert isinstance(omf.attribute.StringList.deserialize(''), omf.attribute.StringList)
+    assert isinstance(omf.attribute.StringList.deserialize({}), omf.attribute.StringList)
 
 
 def test_boolean_array():
     """Test boolean array bits"""
-    arr = omf.data.Array(np.array([[1, 1], [0, 0]], dtype='bool'))
+    arr = omf.attribute.Array(np.array([[1, 1], [0, 0]], dtype='bool'))
     assert arr.array.dtype.kind == 'b'
     assert arr.datatype == 'BooleanArray'
     assert arr.shape == [2, 2]
@@ -68,13 +68,13 @@ def test_boolean_array():
         'size': 1,
         'array': list(binary_dict.keys())[0],
     }
-    new_arr = omf.data.Array.deserialize(output, binary_dict=binary_dict)
+    new_arr = omf.attribute.Array.deserialize(output, binary_dict=binary_dict)
     assert properties.equal(arr, new_arr)
 
 
 def test_datetime_list():
     """Test string list gives datetime datatype"""
-    arr = omf.data.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
+    arr = omf.attribute.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
     assert arr.datatype == 'DateTimeArray'
     assert arr.shape == [2]
     binary_dict = {}
@@ -91,7 +91,7 @@ def test_datetime_list():
 
 def test_string_list():
     """Test string list gives string datatype"""
-    arr = omf.data.StringList.deserialize(
+    arr = omf.attribute.StringList.deserialize(
         {
             'shape': '',
             'datatype': '',
@@ -122,7 +122,7 @@ def test_array_instance_prop():
 
     class HasArray(properties.HasProperties):
         """Test class for ArrayInstanceProperty"""
-        arr = omf.data.ArrayInstanceProperty(
+        arr = omf.attribute.ArrayInstanceProperty(
             'Array instance',
             shape=('*', 3),
             dtype=float,
@@ -143,18 +143,18 @@ def test_array_instance_prop():
 
 def test_vector_data_dimensionality():
     """Test only 2D and 3D arrays are valid for vector data"""
-    vdata = omf.data.VectorAttribute(array=[[1, 1], [2, 2], [3, 3]])
-    assert vdata.array.shape == [3, 2]
-    vdata = omf.data.VectorAttribute(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])
-    assert vdata.array.shape == [3, 3]
+    vattr = omf.attribute.VectorAttribute(array=[[1, 1], [2, 2], [3, 3]])
+    assert vattr.array.shape == [3, 2]
+    vattr = omf.attribute.VectorAttribute(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    assert vattr.array.shape == [3, 3]
     with pytest.raises(properties.ValidationError):
-        omf.data.VectorAttribute(array=[1, 2, 3])
+        omf.attribute.VectorAttribute(array=[1, 2, 3])
     with pytest.raises(properties.ValidationError):
-        omf.data.VectorAttribute(array=[[1, 2, 3, 4]])
+        omf.attribute.VectorAttribute(array=[[1, 2, 3, 4]])
 
 def test_contiuous_colormap():
     """Test continuous colormap validation"""
-    cmap = omf.data.ContinuousColormap()
+    cmap = omf.attribute.ContinuousColormap()
     with pytest.raises(properties.ValidationError):
         cmap.limits = [1., 0.]
     cmap.gradient = [[0, 0, 0]]*100
@@ -171,7 +171,7 @@ def test_contiuous_colormap():
 
 def test_discrete_colormap():
     """Test discrete colormap validation"""
-    cmap = omf.data.DiscreteColormap()
+    cmap = omf.attribute.DiscreteColormap()
     cmap.end_points = [0.5]
     cmap.end_inclusive = [True]
     cmap.colors = [[0, 100, 0], [100, 0, 0]]
@@ -202,7 +202,7 @@ def test_discrete_colormap():
 
 def test_category_colormap():
     """Test legend validation"""
-    legend = omf.data.CategoryColormap(
+    legend = omf.attribute.CategoryColormap(
         name='test',
         indices=[0, 1, 2],
         values=['x', 'y', 'z'],
@@ -210,14 +210,14 @@ def test_category_colormap():
     assert legend.validate()
     legend.colors = [[0, 0, 0], [0, 0, 255], [255, 0, 0]]
     assert legend.validate()
-    legend = omf.data.CategoryColormap(
+    legend = omf.attribute.CategoryColormap(
         name='test',
         indices=[0, 1, 2],
         values=['x', 'y'],
     )
     with pytest.raises(properties.ValidationError):
         legend.validate()
-    legend = omf.data.CategoryColormap(
+    legend = omf.attribute.CategoryColormap(
         name='test',
         indices=[0, 1, 2],
         values=['x', 'y', 'z'],
@@ -230,32 +230,32 @@ def test_category_colormap():
 
 def test_category_data():
     """Test mapped data validation"""
-    mdata = omf.data.CategoryAttribute()
-    mdata.array = [0, 2, 1, -1]
-    mdata.categories = omf.data.CategoryColormap(
+    mattr = omf.attribute.CategoryAttribute()
+    mattr.array = [0, 2, 1, -1]
+    mattr.categories = omf.attribute.CategoryColormap(
         name='letter',
         indices=[0, 1, 2],
         values=['x', 'y', 'z'],
     )
-    mdata.location = 'vertices'
-    assert mdata.validate()
+    mattr.location = 'vertices'
+    assert mattr.validate()
     with pytest.raises(properties.ValidationError):
-        mdata.array = [0.5, 1.5, 2.5]
-    mdata.array = [-10, 0, 1]
-    assert mdata.validate()
-    mdata.array.array[0] = 0
-    mdata.categories.colors = ['red', 'blue', 'green']
-    mdata.metadata = {
+        mattr.array = [0.5, 1.5, 2.5]
+    mattr.array = [-10, 0, 1]
+    assert mattr.validate()
+    mattr.array.array[0] = 0
+    mattr.categories.colors = ['red', 'blue', 'green']
+    mattr.metadata = {
         'units': 'm',
         'date_created': datetime.datetime.utcnow(),
         'version': 'v1.3',
     }
-    assert mdata.validate()
-    mdata.categories.colors = ['red', 'blue']
+    assert mattr.validate()
+    mattr.categories.colors = ['red', 'blue']
     with pytest.raises(properties.ValidationError):
-        mdata.validate()
+        mattr.validate()
     with pytest.raises(properties.ValidationError):
-        mdata.categories = omf.data.CategoryColormap(
+        mattr.categories = omf.attribute.CategoryColormap(
             name='numeric',
             indices=[0, 1, 2],
             values=[0.5, 0.6, 0.7],

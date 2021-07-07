@@ -5,7 +5,7 @@ OMF API Index
 
 The OMF API contains tools for creating :ref:`projects` and adding
 :ref:`pointsets`, :ref:`linesets`, :ref:`surfaces`, and :ref:`volumes`.
-These different elements may have :ref:`data` or image :ref:`textures`.
+These different elements may have :ref:`attributes` or image :ref:`textures`.
 
 .. toctree::
     :maxdepth: 2
@@ -16,7 +16,7 @@ These different elements may have :ref:`data` or image :ref:`textures`.
     surface
     blockmodel
     composite
-    data
+    attributes
     textures
     arrays
     base

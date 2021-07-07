@@ -161,10 +161,10 @@ def test_project_element():
         element.validate()
     element._valid_locations = ('vertices',)                                   #pylint: disable=protected-access
     element.location_length = lambda _: 5
-    element.attributes = [MockData(location='faces')]
+    element.attributes = [MockAttribute(location='faces')]
     with pytest.raises(ValueError):
         element.validate()
-    element.attributes = [MockData(location='vertices')]
+    element.attributes = [MockAttribute(location='vertices')]
     with pytest.raises(ValueError):
         element.validate()
     element.location_length = lambda _: 3

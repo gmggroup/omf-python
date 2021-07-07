@@ -1,4 +1,4 @@
-"""data.py: different ProjectElementAttribute classes"""
+"""attribute.py: different ProjectElementAttribute classes"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -348,7 +348,7 @@ class NumericAttribute(ProjectElementAttribute):
         shape=('*',),
     )
     colormap = properties.Union(
-        'colormap associated with the data',
+        'colormap associated with the attribute',
         [ContinuousColormap, DiscreteColormap],
         required=False,
     )

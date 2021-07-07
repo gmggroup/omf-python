@@ -204,7 +204,7 @@ class ProjectElementAttribute(ContentModel):
     """Attribute array with values at specific locations on the mesh"""
 
     location = properties.StringChoice(
-        'Location of the data on mesh',
+        'Location of the attribute on mesh',
         choices=('vertices', 'segments', 'faces', 'cells', 'elements'),
     )
     metadata = ArbitraryMetadataDict(
