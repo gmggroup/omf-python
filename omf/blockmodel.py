@@ -167,7 +167,7 @@ class TensorBlockModel(BaseBlockModel):
     @property
     def num_parent_blocks(self):
         """Number of parent blocks equals number of blocks"""
-        if not self._tensors_defined:
+        if not self._tensors_defined():
             return None
         blocks = [len(self.tensor_u), len(self.tensor_v), len(self.tensor_w)]
         return blocks
@@ -250,7 +250,6 @@ class RegularBlockModel(BaseBlockModel):
                 instance=self,
                 reason='invalid',
             )
-        return value
 
     @property
     def num_cells(self):
@@ -379,7 +378,6 @@ class RegularSubBlockModel(BaseBlockModel):
                 instance=self,
                 reason='invalid',
             )
-        return value
 
     @property
     def num_cells(self):
@@ -495,7 +493,6 @@ class OctreeSubBlockModel(BaseBlockModel):
                 instance=self,
                 reason='invalid',
             )
-        return value
 
     @properties.validator('zoc')
     def validate_zoc(self, change):
@@ -504,7 +501,7 @@ class OctreeSubBlockModel(BaseBlockModel):
         cbi = self.cbi
         if cbi is None:
             pass
-        elif len(value) != cbi[-1]:
+        elif len(value.array) != cbi[-1]:
             raise properties.ValidationError(
                 'zoc must have length equal to maximum compressed block '
                 'index value',
@@ -513,14 +510,13 @@ class OctreeSubBlockModel(BaseBlockModel):
                 reason='invalid',
             )
         max_curve_value = 268435448  # -> 0b1111111111111111111111111000
-        if np.max(value) > max_curve_value or np.min(value) < 0:
+        if np.max(value.array) > max_curve_value or np.min(value.array) < 0:
             raise properties.ValidationError(
                 'zoc must have values between 0 and 8^8',
                 prop='cbc',
                 instance=self,
                 reason='invalid',
             )
-        return value
 
     @property
     def num_cells(self):
