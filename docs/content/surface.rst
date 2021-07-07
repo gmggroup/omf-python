@@ -20,11 +20,11 @@ Elements
 
 .. autoclass:: omf.surface.SurfaceGridElement
 
-Data
-----
+Attributes
+----------
 
-Data is a list of :ref:`data <data>`. For Surfaces, :code:`location='vertices'`
-and :code:`location='faces'` are valid.
+Attributes is a list of :ref:`attributes <data>`. For Surfaces,
+:code:`location='vertices'` and :code:`location='faces'` are valid.
 
 Textures
 --------

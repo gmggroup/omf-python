@@ -30,14 +30,14 @@ def test_doc_ex():
         name='Random Points',
         description='Just random points',
         vertices=np.random.rand(100, 3),
-        data=[
-            omf.NumericData(
-                name='rand data',
+        attributes=[
+            omf.NumericAttribute(
+                name='rand attr',
                 array=np.random.rand(100),
                 location='vertices',
             ),
-            omf.NumericData(
-                name='More rand data',
+            omf.NumericAttribute(
+                name='More rand attr',
                 array=np.random.rand(100),
                 location='vertices',
             ),
@@ -66,14 +66,14 @@ def test_doc_ex():
         name='Random Line',
         vertices=np.random.rand(100, 3),
         segments=np.floor(np.random.rand(50, 2)*100).astype(int),
-        data=[
-            omf.NumericData(
-                name='rand vert data',
+        attributes=[
+            omf.NumericAttribute(
+                name='rand vert attr',
                 array=np.random.rand(100),
                 location='vertices',
             ),
-            omf.NumericData(
-                name='rand segment data',
+            omf.NumericAttribute(
+                name='rand segment attr',
                 array=np.random.rand(50),
                 location='segments',
             ),
@@ -86,14 +86,14 @@ def test_doc_ex():
         name='trisurf',
         vertices=np.random.rand(100, 3),
         triangles=np.floor(np.random.rand(50, 3)*100).astype(int),
-        data=[
-            omf.NumericData(
-                name='rand vert data',
+        attributes=[
+            omf.NumericAttribute(
+                name='rand vert attr',
                 array=np.random.rand(100),
                 location='vertices',
             ),
-            omf.NumericData(
-                name='rand face data',
+            omf.NumericAttribute(
+                name='rand face attr',
                 array=np.random.rand(50),
                 location='faces',
             ),
@@ -110,14 +110,14 @@ def test_doc_ex():
         axis_u=[1., 0, 0],
         axis_v=[0, 0, 1.],
         offset_w=np.random.rand(11*16),
-        data=[
-            omf.NumericData(
-                name='rand vert data',
+        attributes=[
+            omf.NumericAttribute(
+                name='rand vert attr',
                 array=np.random.rand(11*16),
                 location='vertices',
             ),
-            omf.NumericData(
-                name='rand face data',
+            omf.NumericAttribute(
+                name='rand face attr',
                 array=np.random.rand(10*15),
                 location='faces',
             ),
@@ -138,9 +138,9 @@ def test_doc_ex():
         tensor_v=np.ones(15).astype(float),
         tensor_w=np.ones(20).astype(float),
         corner=[10., 10., -10],
-        data=[
-            omf.NumericData(
-                name='Random Data',
+        attributes=[
+            omf.NumericAttribute(
+                name='random attr',
                 location='cells',
                 array=np.random.rand(10*15*20)
             ),

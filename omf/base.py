@@ -200,8 +200,8 @@ class ContentModel(BaseModel):
     )
 
 
-class ProjectElementData(ContentModel):
-    """Data array with values at specific locations on the mesh"""
+class ProjectElementAttribute(ContentModel):
+    """Attribute array with values at specific locations on the mesh"""
 
     location = properties.StringChoice(
         'Location of the data on mesh',
@@ -215,8 +215,8 @@ class ProjectElementData(ContentModel):
 
     @property
     def array(self):
-        """Data subclasses should override array with their data array"""
-        raise ValueError('Cannot access array of base ProjectElementData')
+        """Attribute subclasses should override array"""
+        raise ValueError('Cannot access array of base ProjectElementAttribute')
 
 
 class ProjectElement(ContentModel):
@@ -226,9 +226,9 @@ class ProjectElement(ContentModel):
     ProjectElements include PointSet, LineSet, Surface, and Volume
     """
 
-    data = properties.List(
-        'Data defined on the element',
-        prop=ProjectElementData,
+    attributes = properties.List(
+        'Attributes defined on the element',
+        prop=ProjectElementAttribute,
         required=False,
         default=list,
     )
@@ -241,29 +241,29 @@ class ProjectElement(ContentModel):
     _valid_locations = None
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         raise NotImplementedError()
 
     @properties.validator
-    def _validate_data(self):
+    def _validate_attributes(self):
         """Check if element is built correctly"""
         assert self._valid_locations, 'ProjectElement needs _valid_locations'
-        for i, dat in enumerate(self.data):
-            if dat.location not in self._valid_locations:                      #pylint: disable=protected-access
+        for i, attr in enumerate(self.attributes):
+            if attr.location not in self._valid_locations:                      #pylint: disable=protected-access
                 raise properties.ValidationError(
                     'Invalid location {loc} - valid values: {locs}'.format(
-                        loc=dat.location,
+                        loc=attr.location,
                         locs=', '.join(self._valid_locations)                  #pylint: disable=protected-access
                     )
                 )
-            valid_length = self.location_length(dat.location)
-            if len(dat.array.array) != valid_length:
+            valid_length = self.location_length(attr.location)
+            if len(attr.array.array) != valid_length:
                 raise properties.ValidationError(
-                    'data[{index}] length {datalen} does not match '
+                    'attributes[{index}] length {attrlen} does not match '
                     '{loc} length {meshlen}'.format(
                         index=i,
-                        datalen=len(dat.array.array),
-                        loc=dat.location,
+                        attrlen=len(attr.array.array),
+                        loc=attr.location,
                         meshlen=valid_length
                     )
                 )

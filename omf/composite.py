@@ -37,9 +37,9 @@ class CompositeElement(ProjectElement):
     _valid_locations = ('elements',)
 
     def location_length(self, location):
-        """Composite element data may only be defined on each element
+        """Composite element attributes may only be defined on each element
 
         Each element within the composite element may also have its own
-        data sets.
+        attributes.
         """
         return len(self.elements)

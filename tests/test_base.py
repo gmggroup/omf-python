@@ -149,22 +149,22 @@ class MockArray(omf.base.BaseModel):
     """Test array class"""
     array = np.array([1, 2, 3])
 
-class MockData(omf.base.ProjectElementData):
-    """Test data class"""
+class MockAttribute(omf.base.ProjectElementAttribute):
+    """Test attribute class"""
     array = MockArray()
 
 
 def test_project_element():
-    """Test validation of element geometry and data"""
+    """Test validation of element geometry and attributes"""
     element = omf.base.ProjectElement()
     with pytest.raises(AssertionError):
         element.validate()
     element._valid_locations = ('vertices',)                                   #pylint: disable=protected-access
     element.location_length = lambda _: 5
-    element.data = [MockData(location='faces')]
+    element.attributes = [MockData(location='faces')]
     with pytest.raises(ValueError):
         element.validate()
-    element.data = [MockData(location='vertices')]
+    element.attributes = [MockData(location='vertices')]
     with pytest.raises(ValueError):
         element.validate()
     element.location_length = lambda _: 3

@@ -29,7 +29,7 @@ class PointSetElement(ProjectElement, HasTexturesMixin):
     _valid_locations = ('vertices',)
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         return self.num_nodes
 
     @property

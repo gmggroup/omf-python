@@ -37,7 +37,7 @@ class LineSetElement(ProjectElement):
     _valid_locations = ('vertices', 'segments')
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'segments':
             return self.num_cells
         return self.num_nodes

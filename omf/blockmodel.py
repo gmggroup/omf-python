@@ -134,7 +134,7 @@ class TensorBlockModel(BaseBlockModel):
     _valid_locations = ('vertices', 'cells')
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'cells':
             return self.num_cells
         return self.num_nodes
@@ -260,7 +260,7 @@ class RegularBlockModel(BaseBlockModel):
         return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         return self.num_cells
 
     @property
@@ -388,7 +388,7 @@ class RegularSubBlockModel(BaseBlockModel):
         return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'parent_blocks':
             return np.sum(self.cbc.array.astype(np.bool))                            # pylint: disable=no-member
         return self.num_cells
@@ -527,7 +527,7 @@ class OctreeSubBlockModel(BaseBlockModel):
         return cbi[-1]                                                         # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'parent_blocks':
             return np.sum(self.cbc.array.astype(np.bool))                            # pylint: disable=no-member
         return self.num_cells
@@ -877,7 +877,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'parent_blocks':
             return np.sum(self.cbc.array.astype(np.bool))
         return self.num_cells

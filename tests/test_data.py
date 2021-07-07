@@ -143,14 +143,14 @@ def test_array_instance_prop():
 
 def test_vector_data_dimensionality():
     """Test only 2D and 3D arrays are valid for vector data"""
-    vdata = omf.data.VectorData(array=[[1, 1], [2, 2], [3, 3]])
+    vdata = omf.data.VectorAttribute(array=[[1, 1], [2, 2], [3, 3]])
     assert vdata.array.shape == [3, 2]
-    vdata = omf.data.VectorData(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    vdata = omf.data.VectorAttribute(array=[[1, 1, 1], [2, 2, 2], [3, 3, 3]])
     assert vdata.array.shape == [3, 3]
     with pytest.raises(properties.ValidationError):
-        omf.data.VectorData(array=[1, 2, 3])
+        omf.data.VectorAttribute(array=[1, 2, 3])
     with pytest.raises(properties.ValidationError):
-        omf.data.VectorData(array=[[1, 2, 3, 4]])
+        omf.data.VectorAttribute(array=[[1, 2, 3, 4]])
 
 def test_contiuous_colormap():
     """Test continuous colormap validation"""
@@ -230,7 +230,7 @@ def test_category_colormap():
 
 def test_category_data():
     """Test mapped data validation"""
-    mdata = omf.data.CategoryData()
+    mdata = omf.data.CategoryAttribute()
     mdata.array = [0, 2, 1, -1]
     mdata.categories = omf.data.CategoryColormap(
         name='letter',

@@ -23,7 +23,7 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
     _valid_locations = ('vertices', 'faces')
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'faces':
             return self.num_cells
         return self.num_nodes

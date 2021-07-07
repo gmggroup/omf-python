@@ -1,4 +1,4 @@
-"""data.py: different ProjectElementData classes"""
+"""data.py: different ProjectElementAttribute classes"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -10,7 +10,7 @@ import uuid
 import numpy as np
 import properties
 
-from .base import BaseModel, ContentModel, ProjectElementData
+from .base import BaseModel, ContentModel, ProjectElementAttribute
 
 
 DATA_TYPE_LOOKUP_TO_NUMPY = {
@@ -255,7 +255,7 @@ class StringList(BaseModel):
 
 
 class ContinuousColormap(ContentModel):
-    """Color gradient with min/max values, used with NumericData"""
+    """Color gradient with min/max values, used with NumericAttribute"""
     schema_type = 'org.omf.v2.colormap.scalar'
 
     gradient = ArrayInstanceProperty(
@@ -265,7 +265,7 @@ class ContinuousColormap(ContentModel):
         dtype=int,
     )
     limits = properties.List(
-        'Data range associated with the gradient',
+        'Attribute range associated with the gradient',
         prop=properties.Float(''),
         min_length=2,
         max_length=2,
@@ -294,12 +294,12 @@ class ContinuousColormap(ContentModel):
             )
 
 class DiscreteColormap(ContentModel):
-    """Colormap for grouping discrete intervals of NumericData"""
+    """Colormap for grouping discrete intervals of NumericAttribute"""
 
     schema_type = 'org.omf.v2.colormap.discrete'
 
     end_points = properties.List(
-        'Data values associated with edge of color intervals',
+        'Attribute values associated with edge of color intervals',
         prop=properties.Float(''),
         default=properties.undefined,
     )
@@ -338,9 +338,9 @@ class DiscreteColormap(ContentModel):
 
 
 
-class NumericData(ProjectElementData):
-    """Data array with scalar values"""
-    schema_type = 'org.omf.v2.data.numeric'
+class NumericAttribute(ProjectElementAttribute):
+    """Attribute array with scalar values"""
+    schema_type = 'org.omf.v2.attribute.numeric'
 
     array = ArrayInstanceProperty(
         'Numeric values at locations on a mesh (see location parameter); '
@@ -354,13 +354,13 @@ class NumericData(ProjectElementData):
     )
 
 
-class VectorData(ProjectElementData):
-    """Data array with vector values
+class VectorAttribute(ProjectElementAttribute):
+    """Attribute array with vector values
 
-    This data type cannot have a colormap, since you cannot map colormaps
+    This Attribute type cannot have a colormap, since you cannot map colormaps
     to vectors.
     """
-    schema_type = 'org.omf.v2.data.vector'
+    schema_type = 'org.omf.v2.attribute.vector'
 
     array = ArrayInstanceProperty(
         'Numeric vectors at locations on a mesh (see location parameter); '
@@ -368,9 +368,9 @@ class VectorData(ProjectElementData):
         shape={('*', 2), ('*', 3)},
     )
 
-class StringData(ProjectElementData):
-    """Data consisting of a list of strings or datetimes"""
-    schema_type = 'org.omf.v2.data.string'
+class StringAttribute(ProjectElementAttribute):
+    """Attribute consisting of a list of strings or datetimes"""
+    schema_type = 'org.omf.v2.attribute.string'
 
     array = properties.Instance(
         'String values at locations on a mesh (see '
@@ -381,15 +381,15 @@ class StringData(ProjectElementData):
 
 
 class CategoryColormap(ContentModel):
-    """Legends to be used with CategoryData indices"""
+    """Legends to be used with CategoryAttribute indices"""
     schema_type = 'org.omf.v2.colormap.category'
 
     indices = properties.List(
-        'indices corresponding to CateogryData array values',
+        'indices corresponding to CateogryAttribute array values',
         properties.Integer(''),
     )
     values = properties.List(
-        'values for mapping indexed data',
+        'values for mapping indexed attribute',
         properties.String(''),
     )
     colors = properties.List(
@@ -409,13 +409,13 @@ class CategoryColormap(ContentModel):
         )
 
 
-class CategoryData(ProjectElementData):
-    """Data array of indices linked to category values
+class CategoryAttribute(ProjectElementAttribute):
+    """Attribute array of indices linked to category values
 
-    For no data, indices should correspond to a value outside the
+    For no attribute, indices should correspond to a value outside the
     range of the categories.
     """
-    schema_type = 'org.omf.v2.data.category'
+    schema_type = 'org.omf.v2.attribute.category'
 
     array = ArrayInstanceProperty(
         'indices into the category values for locations on a mesh',
