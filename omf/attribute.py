@@ -1,9 +1,4 @@
 """attribute.py: different ProjectElementAttribute classes"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import json
 import uuid
 
@@ -44,7 +39,7 @@ class Array(BaseModel):
     )
 
     def __init__(self, array=None, **kwargs):
-        super(Array, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if array is not None:
             self.array = array
 
@@ -94,7 +89,7 @@ class Array(BaseModel):
         return self.array.size * self.array.itemsize
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(Array, self).serialize(
+        output = super().serialize(
             include_class=include_class, save_dynamic=True, **kwargs
         )
         binary_dict = kwargs.get('binary_dict', None)
@@ -145,7 +140,7 @@ class ArrayInstanceProperty(properties.Instance):
             shape={('*',), ('*', '*')},
             dtype=(int, float, bool),
         )
-        super(ArrayInstanceProperty, self).__init__(
+        super().__init__(
             doc, instance_class=Array, **kwargs
         )
 
@@ -170,7 +165,7 @@ class ArrayInstanceProperty(properties.Instance):
 
     def validate(self, instance, value):
         self.validator_prop.name = self.name
-        value = super(ArrayInstanceProperty, self).validate(instance, value)
+        value = super().validate(instance, value)
         if value.array is not None:
             value.array = self.validator_prop.validate(instance, value.array)
         return value
@@ -187,7 +182,7 @@ class StringList(BaseModel):
     )
 
     def __init__(self, array=None, **kwargs):
-        super(StringList, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if array is not None:
             self.array = array
 
@@ -229,7 +224,7 @@ class StringList(BaseModel):
         return len(json.dumps(self.array))
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(StringList, self).serialize(
+        output = super().serialize(
             include_class=include_class, save_dynamic=True, **kwargs
         )
         binary_dict = kwargs.get('binary_dict', None)
