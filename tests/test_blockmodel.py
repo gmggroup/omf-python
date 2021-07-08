@@ -100,7 +100,7 @@ def test_tensorblockmodel():
 
 
 #pylint: disable=comparison-with-callable
-class TestRegularBlockModel(object):
+class TestRegularBlockModel:
     """Test class for regular block model functionality"""
 
     bm_class = omf.RegularBlockModel
@@ -188,7 +188,7 @@ class TestRegularBlockModel(object):
                                                np.array(range(8), dtype='int8')])
 
 
-class TestRegularSubBlockModel(object):
+class TestRegularSubBlockModel:
     """Test class for regular sub block model functionality"""
 
     bm_class = omf.RegularSubBlockModel
@@ -307,7 +307,7 @@ class TestRegularSubBlockModel(object):
         assert block_model.location_length('sub_blocks') == 67
 
 
-class TestOctreeSubBlockModel(object):
+class TestOctreeSubBlockModel:
     """Test class for octree sub block model"""
 
     bm_class = omf.OctreeSubBlockModel
@@ -495,7 +495,7 @@ class TestOctreeSubBlockModel(object):
             block_model.refine(2, refinements=6)
 
 
-class TestArbitrarySubBlockModel(object):
+class TestArbitrarySubBlockModel:
     """Test class for ArbitrarySubBlockModel"""
 
     bm_class = omf.ArbitrarySubBlockModel

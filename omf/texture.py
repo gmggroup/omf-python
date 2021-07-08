@@ -1,9 +1,4 @@
 """texture.py: contains ImageTexture definition"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import io
 import uuid
 
@@ -24,7 +19,7 @@ class Image(BaseModel):
     )
 
     def __init__(self, image=None, **kwargs):
-        super(Image, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if image is not None:
             self.image = image
 
@@ -45,7 +40,7 @@ class Image(BaseModel):
         return size
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(Image, self).serialize(
+        output = super().serialize(
             include_class=include_class, save_dynamic=True, **kwargs
         )
         image_uid = str(uuid.uuid4())

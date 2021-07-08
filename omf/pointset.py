@@ -1,9 +1,4 @@
 """pointset.py: PointSet element and geometry"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import properties
 
 from .base import ProjectElement

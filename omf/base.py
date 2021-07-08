@@ -1,9 +1,4 @@
 """base.py: OMF Project and base classes for its components"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import json
 
 import properties
@@ -16,7 +11,7 @@ class BaseModel(properties.HasProperties):
     schema = ''
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super(BaseModel, self).serialize(
+        output = super().serialize(
             include_class,
             save_dynamic,
             **kwargs
@@ -35,7 +30,7 @@ class BaseModel(properties.HasProperties):
             if class_value.schema == schema:
                 value.update({'__class__': class_name})
                 break
-        return super(BaseModel, cls).deserialize(
+        return super().deserialize(
             value, trusted, strict, assert_valid, **kwargs
         )
 
@@ -44,7 +39,7 @@ class StringDateTime(properties.DateTime):
     """DateTime property validated to be a string"""
 
     def validate(self, instance, value):
-        value = super(StringDateTime, self).validate(instance, value)
+        value = super().validate(instance, value)
         return self.to_json(value)
 
 
@@ -130,7 +125,7 @@ class ArbitraryMetadataDict(properties.Dictionary):
     def __init__(self, doc, metadata_class, **kwargs):
         self.metadata_class = metadata_class
         kwargs.update({'key_prop': properties.String('')})
-        super(ArbitraryMetadataDict, self).__init__(doc, **kwargs)
+        super().__init__(doc, **kwargs)
 
     def validate(self, instance, value):
         """Validate the dictionary and any property defined in metadata_class
@@ -138,7 +133,7 @@ class ArbitraryMetadataDict(properties.Dictionary):
         This also reassigns the dictionary after validation, so any
         coerced values persist.
         """
-        new_value = super(ArbitraryMetadataDict, self).validate(
+        new_value = super().validate(
             instance, value
         )
         filtered_value = properties.utils.filter_props(
@@ -156,16 +151,16 @@ class ArbitraryMetadataDict(properties.Dictionary):
                 reason='invalid',
                 prop=self.name,
                 instance=instance,
-            )
+            ) from err
         try:
             json.dumps(new_value)
-        except TypeError:
-            raise properties.ValidationError(                                  #pylint: disable=raise-missing-from
+        except TypeError as err:
+            raise properties.ValidationError(
                 'Metadata is not JSON compatible',
                 reason='invalid',
                 prop=self.name,
                 instance=instance,
-            )
+            ) from err
         if not self.equal(value, new_value):
             setattr(instance, self.name, new_value)
         return value
