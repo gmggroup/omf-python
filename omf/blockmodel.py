@@ -113,7 +113,7 @@ class BaseBlockModel(ProjectElement):
 
 class TensorBlockModel(BaseBlockModel):
     """Block model with variable spacing in each dimension"""
-    schema_type = 'org.omf.v2.element.blockmodel.tensor'
+    schema = 'org.omf.v2.element.blockmodel.tensor'
 
     tensor_u = properties.Array(
         'Tensor cell widths, u-direction',
@@ -176,7 +176,7 @@ class TensorBlockModel(BaseBlockModel):
 class RegularBlockModel(BaseBlockModel):
     """Block model with constant spacing in each dimension"""
 
-    schema_type = 'org.omf.v2.elements.blockmodel.regular'
+    schema = 'org.omf.v2.elements.blockmodel.regular'
 
     num_blocks = properties.List(
         'Number of blocks along u, v, and w axes',
@@ -279,7 +279,7 @@ class RegularBlockModel(BaseBlockModel):
 class RegularSubBlockModel(BaseBlockModel):
     """Regular block model with an additional level of sub-blocks"""
 
-    schema_type = 'org.omf.v2.elements.blockmodel.sub'
+    schema = 'org.omf.v2.elements.blockmodel.sub'
 
     num_parent_blocks = properties.List(
         'Number of parent blocks along u, v, and w axes',
@@ -417,7 +417,7 @@ class RegularSubBlockModel(BaseBlockModel):
 class OctreeSubBlockModel(BaseBlockModel):
     """Block model where sub-blocks follow an octree pattern"""
 
-    schema_type = 'org.omf.v2.elements.blockmodel.octree'
+    schema = 'org.omf.v2.elements.blockmodel.octree'
 
     max_level = 8  # Maximum times blocks can be subdivided
     level_bits = 4  # Enough for 0 to 8 refinements

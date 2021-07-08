@@ -15,7 +15,7 @@ from .attribute import ArrayInstanceProperty
 
 class Image(BaseModel):
     """Class for setting PNG image"""
-    schema_type = 'org.omf.v2.image.png'
+    schema = 'org.omf.v2.image.png'
 
     image = properties.ImagePNG(
         'PNG image file',
@@ -70,7 +70,7 @@ class Image(BaseModel):
 
 class ProjectedTexture(ContentModel):
     """Contains an image that can be projected onto a point set or surface"""
-    schema_type = 'org.omf.v2.texture.projected'
+    schema = 'org.omf.v2.texture.projected'
 
     origin = properties.Vector3(
         'Origin point of the texture',

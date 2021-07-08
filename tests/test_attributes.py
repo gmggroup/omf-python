@@ -21,7 +21,7 @@ def test_scalar_array():
     output = arr.serialize(include_class=False, binary_dict=binary_dict)
     assert len(binary_dict) == 1
     assert output == {
-        'schema_type': 'org.omf.v2.array.numeric',
+        'schema': 'org.omf.v2.array.numeric',
         'data_type': 'Uint8Array',
         'shape': [3],
         'size': 3,
@@ -62,7 +62,7 @@ def test_boolean_array():
     output = arr.serialize(include_class=False, binary_dict=binary_dict)
     assert len(binary_dict) == 1
     assert output == {
-        'schema_type': 'org.omf.v2.array.numeric',
+        'schema': 'org.omf.v2.array.numeric',
         'data_type': 'BooleanArray',
         'shape': [2, 2],
         'size': 1,
@@ -81,7 +81,7 @@ def test_datetime_list():
     output = arr.serialize(include_class=False, binary_dict=binary_dict)
     assert len(binary_dict) == 1
     assert output == {
-        'schema_type': 'org.omf.v2.array.string',
+        'schema': 'org.omf.v2.array.string',
         'data_type': 'DateTimeArray',
         'shape': [2],
         'size': 48,
@@ -109,7 +109,7 @@ def test_string_list():
     assert arr[2] == 'c'
     output = arr.serialize(include_class=False)
     assert output == {
-        'schema_type': 'org.omf.v2.array.string',
+        'schema': 'org.omf.v2.array.string',
         'data_type': 'StringArray',
         'shape': [3],
         'size': 15,

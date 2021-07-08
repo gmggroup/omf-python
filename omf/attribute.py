@@ -33,7 +33,7 @@ DATA_TYPE_LOOKUP_TO_STRING = {
 
 class Array(BaseModel):
     """Class with unique ID and data array"""
-    schema_type = 'org.omf.v2.array.numeric'
+    schema = 'org.omf.v2.array.numeric'
 
     array = properties.Array(
         'Shared Scalar Array',
@@ -177,7 +177,7 @@ class ArrayInstanceProperty(properties.Instance):
 
 class StringList(BaseModel):
     """Array-like class with unique ID and string-list array"""
-    schema_type = 'org.omf.v2.array.string'
+    schema = 'org.omf.v2.array.string'
 
     array = properties.List('List of datetimes or strings',
         properties.String(''),
@@ -256,7 +256,7 @@ class StringList(BaseModel):
 
 class ContinuousColormap(ContentModel):
     """Color gradient with min/max values, used with NumericAttribute"""
-    schema_type = 'org.omf.v2.colormap.scalar'
+    schema = 'org.omf.v2.colormap.scalar'
 
     gradient = ArrayInstanceProperty(
         'N x 3 Array of RGB values between 0 and 255 which defines '
@@ -296,7 +296,7 @@ class ContinuousColormap(ContentModel):
 class DiscreteColormap(ContentModel):
     """Colormap for grouping discrete intervals of NumericAttribute"""
 
-    schema_type = 'org.omf.v2.colormap.discrete'
+    schema = 'org.omf.v2.colormap.discrete'
 
     end_points = properties.List(
         'Attribute values associated with edge of color intervals',
@@ -340,7 +340,7 @@ class DiscreteColormap(ContentModel):
 
 class NumericAttribute(ProjectElementAttribute):
     """Attribute array with scalar values"""
-    schema_type = 'org.omf.v2.attribute.numeric'
+    schema = 'org.omf.v2.attribute.numeric'
 
     array = ArrayInstanceProperty(
         'Numeric values at locations on a mesh (see location parameter); '
@@ -360,7 +360,7 @@ class VectorAttribute(ProjectElementAttribute):
     This Attribute type cannot have a colormap, since you cannot map colormaps
     to vectors.
     """
-    schema_type = 'org.omf.v2.attribute.vector'
+    schema = 'org.omf.v2.attribute.vector'
 
     array = ArrayInstanceProperty(
         'Numeric vectors at locations on a mesh (see location parameter); '
@@ -370,7 +370,7 @@ class VectorAttribute(ProjectElementAttribute):
 
 class StringAttribute(ProjectElementAttribute):
     """Attribute consisting of a list of strings or datetimes"""
-    schema_type = 'org.omf.v2.attribute.string'
+    schema = 'org.omf.v2.attribute.string'
 
     array = properties.Instance(
         'String values at locations on a mesh (see '
@@ -382,7 +382,7 @@ class StringAttribute(ProjectElementAttribute):
 
 class CategoryColormap(ContentModel):
     """Legends to be used with CategoryAttribute indices"""
-    schema_type = 'org.omf.v2.colormap.category'
+    schema = 'org.omf.v2.colormap.category'
 
     indices = properties.List(
         'indices corresponding to CateogryAttribute array values',
@@ -415,7 +415,7 @@ class CategoryAttribute(ProjectElementAttribute):
     For no attribute, indices should correspond to a value outside the
     range of the categories.
     """
-    schema_type = 'org.omf.v2.attribute.category'
+    schema = 'org.omf.v2.attribute.category'
 
     array = ArrayInstanceProperty(
         'indices into the category values for locations on a mesh',

@@ -11,9 +11,9 @@ import properties.extras
 
 
 class BaseModel(properties.HasProperties):
-    """BaseModel is a HasProperties object with schema_type"""
+    """BaseModel is a HasProperties object with schema"""
 
-    schema_type = ''
+    schema = ''
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
         output = super(BaseModel, self).serialize(
@@ -21,18 +21,18 @@ class BaseModel(properties.HasProperties):
             save_dynamic,
             **kwargs
         )
-        output.update({'schema_type': self.schema_type})
+        output.update({'schema': self.schema})
         return output
 
 
     @classmethod
     def deserialize(cls, value, trusted=False, strict=False,
                     assert_valid=False, **kwargs):
-        schema_type = value.pop('schema_type', '')
+        schema = value.pop('schema', '')
         for class_name, class_value in cls._REGISTRY.items():
-            if not hasattr(class_value, 'schema_type'):
+            if not hasattr(class_value, 'schema'):
                 continue
-            if class_value.schema_type == schema_type:
+            if class_value.schema == schema:
                 value.update({'__class__': class_name})
                 break
         return super(BaseModel, cls).deserialize(
@@ -272,7 +272,7 @@ class ProjectElement(ContentModel):
 
 class Project(ContentModel):
     """OMF Project for serializing to .omf file"""
-    schema_type = 'org.omf.v2.project'
+    schema = 'org.omf.v2.project'
 
     elements = properties.List(
         'Project Elements',
