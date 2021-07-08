@@ -41,7 +41,7 @@ class BaseBlockModel(ProjectElement):
         return True
 
     @property
-    def num_parent_blocks(self):
+    def parent_block_count(self):
         """Computed property for number of parent blocks
 
         This is required for ijk indexing. For tensor and regular block
@@ -55,9 +55,9 @@ class BaseBlockModel(ProjectElement):
 
     def ijk_array_to_indices(self, ijk_array):
         """Return an array of indices for a list of ijk triples"""
-        blocks = self.num_parent_blocks
+        blocks = self.parent_block_count
         if not blocks:
-            raise AttributeError("num_parent_blocks is required to calculate index")
+            raise AttributeError("parent_block_count is required to calculate index")
         if not isinstance(ijk_array, (list, tuple, np.ndarray)):
             raise ValueError("ijk_array must be a list of length-3 ijk values")
         ijk_array = np.array(ijk_array)
@@ -67,7 +67,7 @@ class BaseBlockModel(ProjectElement):
             raise ValueError("ijk values must be non-negative integers")
         if np.any(np.max(ijk_array, axis=0) >= blocks):
             raise ValueError(
-                "ijk must be less than num_parent_blocks in each dimension"
+                "ijk must be less than parent_block_count in each dimension"
             )
         index = np.ravel_multi_index(
             multi_index=ijk_array.T,
@@ -82,10 +82,10 @@ class BaseBlockModel(ProjectElement):
 
     def indices_to_ijk_array(self, indices):
         """Return an array of ijk triples for an array of indices"""
-        blocks = self.num_parent_blocks
+        blocks = self.parent_block_count
         if not blocks:
             raise AttributeError(
-                "num_parent_blocks is required to calculate ijk values"
+                "parent_block_count is required to calculate ijk values"
             )
         if not isinstance(indices, (list, tuple, np.ndarray)):
             raise ValueError("indices must be a list of index values")
@@ -160,7 +160,7 @@ class TensorGridBlockModel(BaseBlockModel):
         return cells
 
     @property
-    def num_parent_blocks(self):
+    def parent_block_count(self):
         """Number of parent blocks equals number of blocks"""
         if not self._tensors_defined():
             return None
@@ -173,13 +173,13 @@ class RegularBlockModel(BaseBlockModel):
 
     schema = "org.omf.v2.elements.blockmodel.regular"
 
-    num_blocks = properties.List(
+    block_count = properties.List(
         "Number of blocks along u, v, and w axes",
         properties.Integer("", min=1),
         min_length=3,
         max_length=3,
     )
-    size_blocks = properties.List(
+    block_size = properties.List(
         "Size of blocks in the u, v, and w dimensions",
         properties.Float("", min=0),
         min_length=3,
@@ -187,7 +187,7 @@ class RegularBlockModel(BaseBlockModel):
     )
     cbc = ArrayInstanceProperty(
         "Compressed block count - for regular block models this must "
-        "have length equal to the product of num_blocks and all values "
+        "have length equal to the product of block_count and all values "
         "must be 1 (if attributes exist on the block) or 0; the default "
         "is an array of 1s",
         shape=("*",),
@@ -199,7 +199,7 @@ class RegularBlockModel(BaseBlockModel):
     @properties.Array(
         "Compressed block index - used for indexing attributes "
         "into the block model; must have length equal to the "
-        "product of num_blocks plus 1 and monotonically increasing",
+        "product of block_count plus 1 and monotonically increasing",
         shape=("*",),
         dtype=int,
         coerce=False,
@@ -217,13 +217,13 @@ class RegularBlockModel(BaseBlockModel):
         )
         return cbi
 
-    @properties.validator("size_blocks")
+    @properties.validator("block_size")
     def _validate_size_is_not_zero(self, change):
         """Ensure block sizes are non-zero"""
         if 0 in change["value"]:
             raise properties.ValidationError(
                 "Block size cannot be 0",
-                prop="size_blocks",
+                prop="block_size",
                 instance=self,
                 reason="invalid",
             )
@@ -232,9 +232,9 @@ class RegularBlockModel(BaseBlockModel):
     def validate_cbc(self, change):
         """Ensure cbc is correct size and values"""
         value = change["value"]
-        if self.num_blocks and len(value.array) != np.prod(self.num_blocks):
+        if self.block_count and len(value.array) != np.prod(self.block_count):
             raise properties.ValidationError(
-                "cbc must have length equal to the product " "of num_blocks",
+                "cbc must have length equal to the product of block_count",
                 prop="cbc",
                 instance=self,
                 reason="invalid",
@@ -260,15 +260,15 @@ class RegularBlockModel(BaseBlockModel):
         return self.num_cells
 
     @property
-    def num_parent_blocks(self):
+    def parent_block_count(self):
         """Number of parent blocks equals number of blocks"""
-        return self.num_blocks
+        return self.block_count
 
     def reset_cbc(self):
         """Reset cbc to no sub-blocks"""
-        if not self.num_blocks:
-            raise ValueError("cannot reset cbc until num_blocks is set")
-        cbc_len = np.prod(self.num_blocks)
+        if not self.block_count:
+            raise ValueError("cannot reset cbc until block_count is set")
+        cbc_len = np.prod(self.block_count)
         self.cbc = np.ones(cbc_len, dtype=np.bool)
 
 
@@ -277,19 +277,19 @@ class RegularSubBlockModel(BaseBlockModel):
 
     schema = "org.omf.v2.elements.blockmodel.sub"
 
-    num_parent_blocks = properties.List(
+    parent_block_count = properties.List(
         "Number of parent blocks along u, v, and w axes",
         properties.Integer("", min=1),
         min_length=3,
         max_length=3,
     )
-    num_sub_blocks = properties.List(
+    sub_block_count = properties.List(
         "Number of sub blocks in each parent block, along u, v, and w axes",
         properties.Integer("", min=1),
         min_length=3,
         max_length=3,
     )
-    size_parent_blocks = properties.List(
+    parent_block_size = properties.List(
         "Size of parent blocks in the u, v, and w dimensions",
         properties.Float("", min=0),
         min_length=3,
@@ -297,8 +297,8 @@ class RegularSubBlockModel(BaseBlockModel):
     )
     cbc = ArrayInstanceProperty(
         "Compressed block count - for regular sub block models this must "
-        "have length equal to the product of num_parent_blocks and all "
-        "values must be the product of num_sub_blocks (if attributes "
+        "have length equal to the product of parent_block_count and all "
+        "values must be the product of sub_block_count (if attributes "
         "exist on the sub blocks), 1 (if attributes exist on the parent "
         "block) or 0; the default is an array of 1s",
         shape=("*",),
@@ -310,7 +310,7 @@ class RegularSubBlockModel(BaseBlockModel):
     @properties.Array(
         "Compressed block index - used for indexing attributes "
         "into the sub block model; must have length equal to the "
-        "product of num_parent_blocks plus 1 and monotonically increasing",
+        "product of parent_block_count plus 1 and monotonically increasing",
         shape=("*",),
         dtype=int,
         coerce=False,
@@ -333,19 +333,19 @@ class RegularSubBlockModel(BaseBlockModel):
         min_length=3,
         max_length=3,
     )
-    def size_sub_blocks(self):
+    def sub_block_size(self):
         """Computed sub block size"""
-        if not self.num_sub_blocks or not self.size_parent_blocks:
+        if not self.sub_block_count or not self.parent_block_size:
             return None
-        return self.size_parent_blocks / np.array(self.num_sub_blocks)
+        return self.parent_block_size / np.array(self.sub_block_count)
 
-    @properties.validator("size_parent_blocks")
+    @properties.validator("parent_block_size")
     def _validate_size_is_not_zero(self, change):
         """Ensure block sizes are non-zero"""
         if 0 in change["value"]:
             raise properties.ValidationError(
                 "Block size cannot be 0",
-                prop="size_blocks",
+                prop="parent_block_size",
                 instance=self,
                 reason="invalid",
             )
@@ -354,24 +354,24 @@ class RegularSubBlockModel(BaseBlockModel):
     def validate_cbc(self, change):
         """Ensure cbc is correct size and values"""
         value = change["value"]
-        if not self.num_parent_blocks:
+        if not self.parent_block_count:
             pass
-        elif len(value.array) != np.prod(self.num_parent_blocks):
+        elif len(value.array) != np.prod(self.parent_block_count):
             raise properties.ValidationError(
-                "cbc must have length equal to the product " "of num_parent_blocks",
+                "cbc must have length equal to the product of parent_block_count",
                 prop="cbc",
                 instance=self,
                 reason="invalid",
             )
-        if not self.num_sub_blocks:
+        if not self.sub_block_count:
             pass
         elif np.any(
             (value.array != 1)
             & (value.array != 0)
-            & (value.array != np.prod(self.num_sub_blocks))
+            & (value.array != np.prod(self.sub_block_count))
         ):
             raise properties.ValidationError(
-                "cbc must have only values of prod(num_sub_blocks), 1, or 0",
+                "cbc must have only values of prod(sub_block_count), 1, or 0",
                 prop="cbc",
                 instance=self,
                 reason="invalid",
@@ -393,14 +393,14 @@ class RegularSubBlockModel(BaseBlockModel):
 
     def reset_cbc(self):
         """Reset cbc to no sub-blocks"""
-        if not self.num_parent_blocks:
-            raise ValueError("cannot reset cbc until num_parent_blocks is set")
-        cbc_len = np.prod(self.num_parent_blocks)
+        if not self.parent_block_count:
+            raise ValueError("cannot reset cbc until parent_block_count is set")
+        cbc_len = np.prod(self.parent_block_count)
         self.cbc = np.ones(cbc_len, dtype=np.uint32)
 
     def refine(self, ijk):
         """Refine parent blocks at a single ijk or a list of multiple ijks"""
-        if self.cbc is None or not self.num_sub_blocks:
+        if self.cbc is None or not self.sub_block_count:
             raise ValueError(
                 "Cannot refine sub block model without specifying number "
                 "of parent and sub blocks"
@@ -409,7 +409,7 @@ class RegularSubBlockModel(BaseBlockModel):
             inds = self.ijk_array_to_indices(ijk)
         except ValueError:
             inds = self.ijk_to_index(ijk)
-        self.cbc.array[inds] = np.prod(self.num_sub_blocks)  # pylint: disable=E1137
+        self.cbc.array[inds] = np.prod(self.sub_block_count)  # pylint: disable=E1137
 
 
 class OctreeSubBlockModel(BaseBlockModel):
@@ -420,13 +420,13 @@ class OctreeSubBlockModel(BaseBlockModel):
     max_level = 8  # Maximum times blocks can be subdivided
     level_bits = 4  # Enough for 0 to 8 refinements
 
-    num_parent_blocks = properties.List(
+    parent_block_count = properties.List(
         "Number of parent blocks along u, v, and w axes",
         properties.Integer("", min=1),
         min_length=3,
         max_length=3,
     )
-    size_parent_blocks = properties.List(
+    parent_block_size = properties.List(
         "Size of parent blocks in the u, v, and w dimensions",
         properties.Float("", min=0),
         min_length=3,
@@ -434,7 +434,7 @@ class OctreeSubBlockModel(BaseBlockModel):
     )
     cbc = ArrayInstanceProperty(
         "Compressed block count - for octree sub block models this must "
-        "have length equal to the product of num_parent_blocks and each "
+        "have length equal to the product of parent_block_count and each "
         "value must be equal to the number of octree sub blocks within "
         "the corresponding parent block (since max level is 8 in each "
         "dimension, the max number of sub blocks in a parent is (2^8)^3), "
@@ -444,7 +444,7 @@ class OctreeSubBlockModel(BaseBlockModel):
         dtype=(int, bool),
     )
     zoc = ArrayInstanceProperty(
-        "Z-order curves - sub block location pointer and level, encoded " "as bits",
+        "Z-order curves - sub block location pointer and level, encoded as bits",
         shape=("*",),
         dtype=int,
     )
@@ -454,7 +454,7 @@ class OctreeSubBlockModel(BaseBlockModel):
     @properties.Array(
         "Compressed block index - used for indexing attributes "
         "into the sub block model; must have length equal to the "
-        "product of num_parent_blocks plus 1 and monotonically increasing",
+        "product of parent_block_count plus 1 and monotonically increasing",
         shape=("*",),
         dtype=int,
         coerce=False,
@@ -475,11 +475,11 @@ class OctreeSubBlockModel(BaseBlockModel):
     def validate_cbc(self, change):
         """Ensure cbc is correct size and values"""
         value = change["value"]
-        if not self.num_parent_blocks:
+        if not self.parent_block_count:
             pass
-        elif len(value.array) != np.prod(self.num_parent_blocks):
+        elif len(value.array) != np.prod(self.parent_block_count):
             raise properties.ValidationError(
-                "cbc must have length equal to the product " "of num_parent_blocks",
+                "cbc must have length equal to the product of parent_block_count",
                 prop="cbc",
                 instance=self,
                 reason="invalid",
@@ -501,7 +501,7 @@ class OctreeSubBlockModel(BaseBlockModel):
             pass
         elif len(value.array) != cbi[-1]:
             raise properties.ValidationError(
-                "zoc must have length equal to maximum compressed block " "index value",
+                "zoc must have length equal to maximum compressed block index value",
                 prop="zoc",
                 instance=self,
                 reason="invalid",
@@ -531,16 +531,16 @@ class OctreeSubBlockModel(BaseBlockModel):
 
     def reset_cbc(self):
         """Reset cbc to no sub-blocks"""
-        if not self.num_parent_blocks:
-            raise ValueError("cannot reset cbc until num_parent_blocks is set")
-        cbc_len = np.prod(self.num_parent_blocks)
+        if not self.parent_block_count:
+            raise ValueError("cannot reset cbc until parent_block_count is set")
+        cbc_len = np.prod(self.parent_block_count)
         self.cbc = np.ones(cbc_len, dtype=np.uint32)
 
     def reset_zoc(self):
         """Reset zoc to no sub-blocks"""
-        if not self.num_parent_blocks:
-            raise ValueError("cannot reset zoc until num_parent_blocks is set")
-        zoc_len = np.prod(self.num_parent_blocks)
+        if not self.parent_block_count:
+            raise ValueError("cannot reset zoc until parent_block_count is set")
+        zoc_len = np.prod(self.parent_block_count)
         self.zoc = np.zeros(zoc_len, dtype=np.int32)
 
     @staticmethod
@@ -675,13 +675,13 @@ class OctreeSubBlockModel(BaseBlockModel):
 class ArbitrarySubBlockModel(BaseBlockModel):
     """Block model with arbitrary, variable sub-blocks"""
 
-    num_parent_blocks = properties.List(
+    parent_block_count = properties.List(
         "Number of parent blocks along u, v, and w axes",
         properties.Integer("", min=1),
         min_length=3,
         max_length=3,
     )
-    size_parent_blocks = properties.List(
+    parent_block_size = properties.List(
         "Size of parent blocks in the u, v, and w dimensions",
         properties.Float("", min=0),
         min_length=3,
@@ -689,7 +689,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
     )
     cbc = ArrayInstanceProperty(
         "Compressed block count - for arbitrary sub block models this must "
-        "have length equal to the product of num_parent_blocks and each "
+        "have length equal to the product of parent_block_count and each "
         "value must be equal to the number of sub blocks within the "
         "corresponding parent block, 1 (if attributes exist on the parent "
         "block) or 0; the default is an array of 1s",
@@ -712,7 +712,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
     @properties.Array(
         "Compressed block index - used for indexing attributes "
         "into the sub block model; must have length equal to the "
-        "product of num_parent_blocks plus 1 and monotonically increasing",
+        "product of parent_block_count plus 1 and monotonically increasing",
         shape=("*",),
         dtype=int,
         coerce=False,
@@ -753,14 +753,14 @@ class ArbitrarySubBlockModel(BaseBlockModel):
 
         Computed from sub_block_corners and sub_block_sizes
         """
-        if self.sub_block_corners is None or self.size_parent_blocks is None:
+        if self.sub_block_corners is None or self.parent_block_size is None:
             return None
         cbc = self.cbc
         all_indices = np.array(range(len(cbc)), dtype=np.uint64)
         unique_parent_ijks = self.indices_to_ijk_array(all_indices)
         parent_ijks = np.repeat(unique_parent_ijks, cbc, axis=0)
         corners = parent_ijks + self.sub_block_corners
-        return corners * self.size_parent_blocks
+        return corners * self.parent_block_size
 
     @properties.Array(
         "Block centroids relative to parent block",
@@ -773,14 +773,14 @@ class ArbitrarySubBlockModel(BaseBlockModel):
 
         Computed from sub_block_corners and sub_block_sizes
         """
-        if self.sub_block_centroids is None or self.size_parent_blocks is None:
+        if self.sub_block_centroids is None or self.parent_block_size is None:
             return None
         cbc = self.cbc
         all_indices = np.array(range(len(cbc)), dtype=np.uint64)
         unique_parent_ijks = self.indices_to_ijk_array(all_indices)
         parent_ijks = np.repeat(unique_parent_ijks, cbc, axis=0)
         centroids = parent_ijks + self.sub_block_centroids
-        return centroids * self.size_parent_blocks
+        return centroids * self.parent_block_size
 
     @properties.Array(
         "Block widths relative to parent block",
@@ -793,17 +793,17 @@ class ArbitrarySubBlockModel(BaseBlockModel):
 
         Computed from sub_block_corners and sub_block_sizes
         """
-        if self.sub_block_sizes is None or self.size_parent_blocks is None:
+        if self.sub_block_sizes is None or self.parent_block_size is None:
             return None
-        return self.sub_block_sizes.array * self.size_parent_blocks
+        return self.sub_block_sizes.array * self.parent_block_size
 
-    @properties.validator("size_parent_blocks")
+    @properties.validator("parent_block_size")
     def _validate_size_is_not_zero(self, change):
         """Ensure parent blocks are non-zero"""
         if 0 in change["value"]:
             raise properties.ValidationError(
                 "Block size cannot be 0",
-                prop="size_blocks",
+                prop="parent_block_size",
                 instance=self,
                 reason="invalid",
             )
@@ -812,11 +812,11 @@ class ArbitrarySubBlockModel(BaseBlockModel):
     def validate_cbc(self, change):
         """Ensure cbc is correct size and values"""
         value = change["value"]
-        if not self.num_parent_blocks:
+        if not self.parent_block_count:
             pass
-        elif len(value.array) != np.prod(self.num_parent_blocks):
+        elif len(value.array) != np.prod(self.parent_block_count):
             raise properties.ValidationError(
-                "cbc must have length equal to the product " "of num_parent_blocks",
+                "cbc must have length equal to the product of parent_block_count",
                 prop="cbc",
                 instance=self,
                 reason="invalid",
@@ -880,7 +880,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
 
     def reset_cbc(self):
         """Reset cbc to no sub-blocks"""
-        if not self.num_parent_blocks:
-            raise ValueError("cannot reset cbc until num_parent_blocks is set")
-        cbc_len = np.prod(self.num_parent_blocks)
+        if not self.parent_block_count:
+            raise ValueError("cannot reset cbc until parent_block_count is set")
+        cbc_len = np.prod(self.parent_block_count)
         self.cbc = np.ones(cbc_len, dtype=np.uint32)
