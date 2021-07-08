@@ -12,8 +12,8 @@ def test_lineset():
     assert elem.validate()
     elem.segments = np.random.randint(9, size=[5, 2])
     assert elem.validate()
-    assert elem.location_length('vertices') == 10
-    assert elem.location_length('segments') == 5
+    assert elem.location_length("vertices") == 10
+    assert elem.location_length("segments") == 5
     elem.segments.array[0, 0] = -1
     with pytest.raises(ValueError):
         elem.validate()

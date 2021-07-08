@@ -8,32 +8,33 @@ from .attribute import ArrayInstanceProperty
 
 class LineSetElement(ProjectElement):
     """Contains line set spatial information and attributes"""
-    schema = 'org.omf.v2.element.lineset'
+
+    schema = "org.omf.v2.element.lineset"
 
     vertices = ArrayInstanceProperty(
-        'Spatial coordinates of line vertices relative to line set origin',
-        shape=('*', 3),
+        "Spatial coordinates of line vertices relative to line set origin",
+        shape=("*", 3),
         dtype=float,
     )
     segments = ArrayInstanceProperty(
-        'Endpoint vertex indices of line segments; if segments is not '
-        'specified, the vertices are connected in order, equivalent to '
-        'segments=[[0, 1], [1, 2], [2, 3], ...]',
-        shape=('*', 2),
+        "Endpoint vertex indices of line segments; if segments is not "
+        "specified, the vertices are connected in order, equivalent to "
+        "segments=[[0, 1], [1, 2], [2, 3], ...]",
+        shape=("*", 2),
         dtype=int,
         required=False,
     )
     subtype = properties.StringChoice(
-        'Category of LineSet',
-        choices=('line', 'borehole'),
-        default='line',
+        "Category of LineSet",
+        choices=("line", "borehole"),
+        default="line",
     )
 
-    _valid_locations = ('vertices', 'segments')
+    _valid_locations = ("vertices", "segments")
 
     def location_length(self, location):
         """Return correct attribute length based on location"""
-        if location == 'segments':
+        if location == "segments":
             return self.num_cells
         return self.num_nodes
 
@@ -55,7 +56,9 @@ class LineSetElement(ProjectElement):
         if self.segments is None:
             return True
         if np.min(self.segments.array) < 0:
-            raise properties.ValidationError('Segments may only have positive integers')
+            raise properties.ValidationError("Segments may only have positive integers")
         if np.max(self.segments.array) >= len(self.vertices.array):
-            raise properties.ValidationError('Segments expects more vertices than provided')
+            raise properties.ValidationError(
+                "Segments expects more vertices than provided"
+            )
         return True
