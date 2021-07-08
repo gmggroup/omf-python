@@ -18,6 +18,9 @@ test-docs:
 tests:
 	pytest tests/
 
+format:
+	black .
+
 docker-build:
 	docker build -t $(ORG)/$(APP):latest -f Dockerfile .
 
@@ -40,6 +43,14 @@ docker-lint: docker-build
 		-v $(shell pwd)/.pylintrc:/usr/src/app/.pylintrc \
 		$(ORG)/$(APP):latest \
 		pylint --rcfile=.pylintrc $(APP) tests
+
+docker-format: docker-build
+	docker run --rm \
+		--name=$(APP)-tests \
+		-v $(shell pwd)/$(APP):/usr/src/app/$(APP) \
+		-v $(shell pwd)/tests:/usr/src/app/tests \
+		$(ORG)/$(APP):latest \
+		black --check /usr/src/app
 
 docker-docs: docker-build
 	docker run --rm \

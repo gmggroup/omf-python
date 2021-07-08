@@ -80,7 +80,8 @@ Contributions will be collected here, then version-bumped and deployed
 via pull request from `dev` to `master` as appropriate.
 
 Finally, everyone appreciates unit tests, code documentation, and
-consistent style. And, to ensure the OMF community remains welcoming
+consistent style (just run [black](https://black.readthedocs.io/en/stable/)).
+And, to ensure the OMF community remains welcoming
 and productive, read and follow our [Code of Conduct](code_of_conduct.md).
 
 ### <a name="docs"></a>Contributing documentation and examples

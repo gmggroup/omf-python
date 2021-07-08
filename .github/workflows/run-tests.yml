@@ -18,6 +18,8 @@ jobs:
         uses: actions/checkout@v2
       - name: unit tests
         run: make docker-tests
+      - name: check formatting
+        run: make docker-format
       - name: pylint tests
         run: make docker-lint
       - name: docs tests
