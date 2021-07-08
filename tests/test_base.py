@@ -87,13 +87,13 @@ def test_metadata_property():
 
 class MyModelWithInt(omf.base.BaseModel):
     """Test class with one integer property"""
-    schema_type = 'my.model.with.int'
+    schema = 'my.model.with.int'
     my_int = properties.Integer('')
 
 
 class MyModelWithIntAndInstance(MyModelWithInt):
     """Test class with an integer property and an instance property"""
-    schema_type = 'my.model.with.int.and.instance'
+    schema = 'my.model.with.int.and.instance'
     my_model = properties.Instance('', omf.base.BaseModel)
 
 
@@ -108,13 +108,13 @@ def test_uid_model_serialize(include_class):
         ),
     )
     expected = {
-        'schema_type': 'my.model.with.int.and.instance',
+        'schema': 'my.model.with.int.and.instance',
         'my_int': 0,
         'my_model': {
-            'schema_type': 'my.model.with.int.and.instance',
+            'schema': 'my.model.with.int.and.instance',
             'my_int': 1,
             'my_model': {
-                'schema_type': 'my.model.with.int',
+                'schema': 'my.model.with.int',
             }
 
         }
@@ -132,9 +132,9 @@ def test_deserialize():
         'my_int': 0,
         'my_model': {
             'my_int': 1,
-            'schema_type': 'my.model.with.int',
+            'schema': 'my.model.with.int',
         },
-        'schema_type': 'my.model.with.int.and.instance',
+        'schema': 'my.model.with.int.and.instance',
     }
     model_a = omf.base.BaseModel.deserialize(input_dict, trusted=True)
     assert isinstance(model_a, MyModelWithIntAndInstance)
@@ -149,22 +149,22 @@ class MockArray(omf.base.BaseModel):
     """Test array class"""
     array = np.array([1, 2, 3])
 
-class MockData(omf.base.ProjectElementData):
-    """Test data class"""
+class MockAttribute(omf.base.ProjectElementAttribute):
+    """Test attribute class"""
     array = MockArray()
 
 
 def test_project_element():
-    """Test validation of element geometry and data"""
+    """Test validation of element geometry and attributes"""
     element = omf.base.ProjectElement()
     with pytest.raises(AssertionError):
         element.validate()
     element._valid_locations = ('vertices',)                                   #pylint: disable=protected-access
     element.location_length = lambda _: 5
-    element.data = [MockData(location='faces')]
+    element.attributes = [MockAttribute(location='faces')]
     with pytest.raises(ValueError):
         element.validate()
-    element.data = [MockData(location='vertices')]
+    element.attributes = [MockAttribute(location='vertices')]
     with pytest.raises(ValueError):
         element.validate()
     element.location_length = lambda _: 3

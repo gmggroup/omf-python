@@ -1,4 +1,4 @@
-"""data.py: different ProjectElementData classes"""
+"""attribute.py: different ProjectElementAttribute classes"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -10,7 +10,7 @@ import uuid
 import numpy as np
 import properties
 
-from .base import BaseModel, ContentModel, ProjectElementData
+from .base import BaseModel, ContentModel, ProjectElementAttribute
 
 
 DATA_TYPE_LOOKUP_TO_NUMPY = {
@@ -33,7 +33,7 @@ DATA_TYPE_LOOKUP_TO_STRING = {
 
 class Array(BaseModel):
     """Class with unique ID and data array"""
-    schema_type = 'org.omf.v2.array.numeric'
+    schema = 'org.omf.v2.array.numeric'
 
     array = properties.Array(
         'Shared Scalar Array',
@@ -55,7 +55,7 @@ class Array(BaseModel):
         return self.array.__getitem__(i)
 
     @properties.validator
-    def _validate_datatype(self):
+    def _validate_data_type(self):
         if self.array.dtype not in DATA_TYPE_LOOKUP_TO_STRING:
             raise properties.ValidationError(
                 'bad dtype: {} - Array must have dtype in {}'.format(
@@ -65,10 +65,11 @@ class Array(BaseModel):
                 )
             )
         return True
+
     @properties.StringChoice(
         'Array data type string', choices=list(DATA_TYPE_LOOKUP_TO_NUMPY)
     )
-    def datatype(self):
+    def data_type(self):
         """Array type descriptor, determined directly from the array"""
         if self.array is None:
             return None
@@ -88,7 +89,7 @@ class Array(BaseModel):
         """Total size of the array in bytes"""
         if self.array is None:
             return None
-        if self.datatype == 'BooleanArray':                                    #pylint: disable=comparison-with-callable
+        if self.data_type == 'BooleanArray':                                    #pylint: disable=comparison-with-callable
             return int(np.ceil(self.array.size / 8))
         return self.array.size * self.array.itemsize
 
@@ -99,7 +100,7 @@ class Array(BaseModel):
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:
             array_uid = str(uuid.uuid4())
-            if self.datatype == 'BooleanArray':                                #pylint: disable=comparison-with-callable
+            if self.data_type == 'BooleanArray':                                #pylint: disable=comparison-with-callable
                 array_binary = np.packbits(self.array, axis=None).tobytes()
             else:
                 array_binary = self.array.tobytes()
@@ -113,12 +114,12 @@ class Array(BaseModel):
         binary_dict = kwargs.get('binary_dict', {})
         if not isinstance(value, dict):
             pass
-        elif any(key not in value for key in ['shape', 'datatype', 'array']):
+        elif any(key not in value for key in ['shape', 'data_type', 'array']):
             pass
         elif value['array'] in binary_dict:
             array_binary = binary_dict[value['array']]
-            array_dtype = DATA_TYPE_LOOKUP_TO_NUMPY[value['datatype']]
-            if value['datatype'] == 'BooleanArray':
+            array_dtype = DATA_TYPE_LOOKUP_TO_NUMPY[value['data_type']]
+            if value['data_type'] == 'BooleanArray':
                 int_arr = np.frombuffer(array_binary, dtype='uint8')
                 bit_arr = np.unpackbits(int_arr)[:np.product(value['shape'])]
                 arr = bit_arr.astype(array_dtype)
@@ -177,7 +178,7 @@ class ArrayInstanceProperty(properties.Instance):
 
 class StringList(BaseModel):
     """Array-like class with unique ID and string-list array"""
-    schema_type = 'org.omf.v2.array.string'
+    schema = 'org.omf.v2.array.string'
 
     array = properties.List('List of datetimes or strings',
         properties.String(''),
@@ -199,7 +200,7 @@ class StringList(BaseModel):
     @properties.StringChoice(
         'List data type string', choices=['DateTimeArray', 'StringArray']
     )
-    def datatype(self):
+    def data_type(self):
         """Array type descriptor, determined directly from the array"""
         if self.array is None:
             return None
@@ -246,7 +247,7 @@ class StringList(BaseModel):
         binary_dict = kwargs.get('binary_dict', {})
         if not isinstance(value, dict):
             pass
-        elif any(key not in value for key in ['shape', 'datatype', 'array']):
+        elif any(key not in value for key in ['shape', 'data_type', 'array']):
             pass
         elif value['array'] in binary_dict:
             arr = json.loads(binary_dict[value['array']].decode('utf8'))
@@ -255,8 +256,8 @@ class StringList(BaseModel):
 
 
 class ContinuousColormap(ContentModel):
-    """Color gradient with min/max values, used with NumericData"""
-    schema_type = 'org.omf.v2.colormap.scalar'
+    """Color gradient with min/max values, used with NumericAttribute"""
+    schema = 'org.omf.v2.colormap.scalar'
 
     gradient = ArrayInstanceProperty(
         'N x 3 Array of RGB values between 0 and 255 which defines '
@@ -265,7 +266,7 @@ class ContinuousColormap(ContentModel):
         dtype=int,
     )
     limits = properties.List(
-        'Data range associated with the gradient',
+        'Attribute range associated with the gradient',
         prop=properties.Float(''),
         min_length=2,
         max_length=2,
@@ -294,12 +295,12 @@ class ContinuousColormap(ContentModel):
             )
 
 class DiscreteColormap(ContentModel):
-    """Colormap for grouping discrete intervals of NumericData"""
+    """Colormap for grouping discrete intervals of NumericAttribute"""
 
-    schema_type = 'org.omf.v2.colormap.discrete'
+    schema = 'org.omf.v2.colormap.discrete'
 
     end_points = properties.List(
-        'Data values associated with edge of color intervals',
+        'Attribute values associated with edge of color intervals',
         prop=properties.Float(''),
         default=properties.undefined,
     )
@@ -338,9 +339,9 @@ class DiscreteColormap(ContentModel):
 
 
 
-class NumericData(ProjectElementData):
-    """Data array with scalar values"""
-    schema_type = 'org.omf.v2.data.numeric'
+class NumericAttribute(ProjectElementAttribute):
+    """Attribute array with scalar values"""
+    schema = 'org.omf.v2.attribute.numeric'
 
     array = ArrayInstanceProperty(
         'Numeric values at locations on a mesh (see location parameter); '
@@ -348,19 +349,19 @@ class NumericData(ProjectElementData):
         shape=('*',),
     )
     colormap = properties.Union(
-        'colormap associated with the data',
+        'colormap associated with the attribute',
         [ContinuousColormap, DiscreteColormap],
         required=False,
     )
 
 
-class VectorData(ProjectElementData):
-    """Data array with vector values
+class VectorAttribute(ProjectElementAttribute):
+    """Attribute array with vector values
 
-    This data type cannot have a colormap, since you cannot map colormaps
+    This Attribute type cannot have a colormap, since you cannot map colormaps
     to vectors.
     """
-    schema_type = 'org.omf.v2.data.vector'
+    schema = 'org.omf.v2.attribute.vector'
 
     array = ArrayInstanceProperty(
         'Numeric vectors at locations on a mesh (see location parameter); '
@@ -368,9 +369,9 @@ class VectorData(ProjectElementData):
         shape={('*', 2), ('*', 3)},
     )
 
-class StringData(ProjectElementData):
-    """Data consisting of a list of strings or datetimes"""
-    schema_type = 'org.omf.v2.data.string'
+class StringAttribute(ProjectElementAttribute):
+    """Attribute consisting of a list of strings or datetimes"""
+    schema = 'org.omf.v2.attribute.string'
 
     array = properties.Instance(
         'String values at locations on a mesh (see '
@@ -381,15 +382,15 @@ class StringData(ProjectElementData):
 
 
 class CategoryColormap(ContentModel):
-    """Legends to be used with CategoryData indices"""
-    schema_type = 'org.omf.v2.colormap.category'
+    """Legends to be used with CategoryAttribute indices"""
+    schema = 'org.omf.v2.colormap.category'
 
     indices = properties.List(
-        'indices corresponding to CateogryData array values',
+        'indices corresponding to CateogryAttribute array values',
         properties.Integer(''),
     )
     values = properties.List(
-        'values for mapping indexed data',
+        'values for mapping indexed attribute',
         properties.String(''),
     )
     colors = properties.List(
@@ -409,13 +410,13 @@ class CategoryColormap(ContentModel):
         )
 
 
-class CategoryData(ProjectElementData):
-    """Data array of indices linked to category values
+class CategoryAttribute(ProjectElementAttribute):
+    """Attribute array of indices linked to category values
 
-    For no data, indices should correspond to a value outside the
+    For no attribute, indices should correspond to a value outside the
     range of the categories.
     """
-    schema_type = 'org.omf.v2.data.category'
+    schema = 'org.omf.v2.attribute.category'
 
     array = ArrayInstanceProperty(
         'indices into the category values for locations on a mesh',

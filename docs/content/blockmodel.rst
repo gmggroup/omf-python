@@ -25,8 +25,7 @@ Element
 
 .. autoclass:: omf.blockmodel.ArbitrarySubBlockModel
 
-Data
-----
+Attributes
+----------
 
-Data is a list of :ref:`data <data>`. For Volumes, :code:`location='vertices'`
-and :code:`location='cells'` are valid.
+Attributes is a list of :ref:`attributes <attributes>`.

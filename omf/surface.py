@@ -8,7 +8,7 @@ import numpy as np
 import properties
 
 from .base import ProjectElement
-from .data import ArrayInstanceProperty
+from .attribute import ArrayInstanceProperty
 from .texture import HasTexturesMixin
 
 
@@ -23,7 +23,7 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
     _valid_locations = ('vertices', 'faces')
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'faces':
             return self.num_cells
         return self.num_nodes
@@ -41,7 +41,7 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
 
 class SurfaceElement(BaseSurfaceElement):                                      #pylint: disable=too-many-ancestors
     """Contains triangulated surface spatial information and attributes"""
-    schema_type = 'org.omf.v2.element.surface'
+    schema = 'org.omf.v2.element.surface'
 
     vertices = ArrayInstanceProperty(
         'Spatial coordinates of vertices relative to surface origin',
@@ -75,7 +75,7 @@ class SurfaceElement(BaseSurfaceElement):                                      #
 
 class SurfaceGridElement(BaseSurfaceElement):                                  #pylint: disable=too-many-ancestors
     """Contains 2D grid spatial information and attributes"""
-    schema_type = 'org.omf.v2.element.surfacegrid'
+    schema = 'org.omf.v2.element.surfacegrid'
 
     tensor_u = properties.List(
         'Grid cell widths, u-direction',

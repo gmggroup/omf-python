@@ -3,18 +3,18 @@
 Other Classes
 *************
 
-ProjectElement
---------------
+Project Element
+---------------
 
 Available elements are :ref:`pointsets`, :ref:`linesets`, :ref:`surfaces`, and
 :ref:`volumes`; :ref:`projects` are built with elements.
 
 .. autoclass:: omf.base.ProjectElement
 
-ProjectElement Data
--------------------
+Project Element Attribute
+-------------------------
 
-.. autoclass:: omf.base.ProjectElementData
+.. autoclass:: omf.base.ProjectElementAttribute
 
 Content Model
 -------------

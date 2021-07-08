@@ -8,7 +8,7 @@ import numpy as np
 import properties
 
 from .base import ProjectElement
-from .data import ArrayInstanceProperty
+from .attribute import ArrayInstanceProperty
 
 
 class BaseBlockModel(ProjectElement):
@@ -113,7 +113,7 @@ class BaseBlockModel(ProjectElement):
 
 class TensorBlockModel(BaseBlockModel):
     """Block model with variable spacing in each dimension"""
-    schema_type = 'org.omf.v2.element.blockmodel.tensor'
+    schema = 'org.omf.v2.element.blockmodel.tensor'
 
     tensor_u = properties.Array(
         'Tensor cell widths, u-direction',
@@ -134,7 +134,7 @@ class TensorBlockModel(BaseBlockModel):
     _valid_locations = ('vertices', 'cells')
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'cells':
             return self.num_cells
         return self.num_nodes
@@ -176,7 +176,7 @@ class TensorBlockModel(BaseBlockModel):
 class RegularBlockModel(BaseBlockModel):
     """Block model with constant spacing in each dimension"""
 
-    schema_type = 'org.omf.v2.elements.blockmodel.regular'
+    schema = 'org.omf.v2.elements.blockmodel.regular'
 
     num_blocks = properties.List(
         'Number of blocks along u, v, and w axes',
@@ -260,7 +260,7 @@ class RegularBlockModel(BaseBlockModel):
         return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         return self.num_cells
 
     @property
@@ -279,7 +279,7 @@ class RegularBlockModel(BaseBlockModel):
 class RegularSubBlockModel(BaseBlockModel):
     """Regular block model with an additional level of sub-blocks"""
 
-    schema_type = 'org.omf.v2.elements.blockmodel.sub'
+    schema = 'org.omf.v2.elements.blockmodel.sub'
 
     num_parent_blocks = properties.List(
         'Number of parent blocks along u, v, and w axes',
@@ -388,7 +388,7 @@ class RegularSubBlockModel(BaseBlockModel):
         return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'parent_blocks':
             return np.sum(self.cbc.array.astype(np.bool))                            # pylint: disable=no-member
         return self.num_cells
@@ -417,7 +417,7 @@ class RegularSubBlockModel(BaseBlockModel):
 class OctreeSubBlockModel(BaseBlockModel):
     """Block model where sub-blocks follow an octree pattern"""
 
-    schema_type = 'org.omf.v2.elements.blockmodel.octree'
+    schema = 'org.omf.v2.elements.blockmodel.octree'
 
     max_level = 8  # Maximum times blocks can be subdivided
     level_bits = 4  # Enough for 0 to 8 refinements
@@ -527,7 +527,7 @@ class OctreeSubBlockModel(BaseBlockModel):
         return cbi[-1]                                                         # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'parent_blocks':
             return np.sum(self.cbc.array.astype(np.bool))                            # pylint: disable=no-member
         return self.num_cells
@@ -877,7 +877,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
         return cbi[-1]                                                    # pylint: disable=unsubscriptable-object
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'parent_blocks':
             return np.sum(self.cbc.array.astype(np.bool))
         return self.num_cells

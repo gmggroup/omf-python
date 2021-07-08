@@ -7,13 +7,13 @@ from __future__ import unicode_literals
 import properties
 
 from .base import ProjectElement
-from .data import ArrayInstanceProperty
+from .attribute import ArrayInstanceProperty
 from .texture import HasTexturesMixin
 
 
 class PointSetElement(ProjectElement, HasTexturesMixin):
     """Contains point set spatial information and attributes"""
-    schema_type = 'org.omf.v2.element.pointset'
+    schema = 'org.omf.v2.element.pointset'
 
     vertices = ArrayInstanceProperty(
         'Spatial coordinates of points relative to point set origin',
@@ -29,7 +29,7 @@ class PointSetElement(ProjectElement, HasTexturesMixin):
     _valid_locations = ('vertices',)
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         return self.num_nodes
 
     @property

@@ -15,10 +15,10 @@ def test_composite():
     ]
     assert elem.validate()
     assert elem.location_length('elements') == 2
-    elem.data = [
-        omf.NumericData(array=[1., 2.], location='elements'),
+    elem.attributes = [
+        omf.NumericAttribute(array=[1., 2.], location='elements'),
     ]
     assert elem.validate()
-    elem.data[0].array = [1., 2., 3.]
+    elem.attributes[0].array = [1., 2., 3.]
     with pytest.raises(properties.ValidationError):
         elem.validate()

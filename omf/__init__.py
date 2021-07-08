@@ -13,9 +13,9 @@ from .blockmodel import (
     TensorBlockModel,
 )
 from .composite import CompositeElement
-from .data import (
-    Array, CategoryData, CategoryColormap, ContinuousColormap,
-    DiscreteColormap, NumericData, StringData, VectorData
+from .attribute import (
+    Array, CategoryAttribute, CategoryColormap, ContinuousColormap,
+    DiscreteColormap, NumericAttribute, StringAttribute, VectorAttribute
 )
 from .lineset import LineSetElement
 from .pointset import PointSetElement

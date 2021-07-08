@@ -8,12 +8,12 @@ import numpy as np
 import properties
 
 from .base import ProjectElement
-from .data import ArrayInstanceProperty
+from .attribute import ArrayInstanceProperty
 
 
 class LineSetElement(ProjectElement):
     """Contains line set spatial information and attributes"""
-    schema_type = 'org.omf.v2.element.lineset'
+    schema = 'org.omf.v2.element.lineset'
 
     vertices = ArrayInstanceProperty(
         'Spatial coordinates of line vertices relative to line set origin',
@@ -37,7 +37,7 @@ class LineSetElement(ProjectElement):
     _valid_locations = ('vertices', 'segments')
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         if location == 'segments':
             return self.num_cells
         return self.num_nodes

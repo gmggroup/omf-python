@@ -9,14 +9,14 @@ Array classes exist allow arrays to be shared across different objects.
 Array
 -----------
 
-.. autoclass:: omf.data.Array
+.. autoclass:: omf.attribute.Array
 
 StringList
 -----------
 
-.. autoclass:: omf.data.StringList
+.. autoclass:: omf.attribute.StringList
 
 ArrayInstanceProperty
 ---------------------
 
-.. autoclass:: omf.data.ArrayInstanceProperty
+.. autoclass:: omf.attribute.ArrayInstanceProperty

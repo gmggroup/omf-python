@@ -17,10 +17,10 @@ Element
 
 .. autoclass:: omf.pointset.PointSetElement
 
-Data
-----
+Attributes
+----------
 
-Data is a list of :ref:`data <data>`. For PointSets, only
+Attributes is a list of :ref:`attributes <attributes>`. For PointSets, only
 :code:`location='vertices'` is valid.
 
 Textures

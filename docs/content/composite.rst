@@ -12,10 +12,10 @@ Element
 
 .. autoclass:: omf.composite.CompositeElement
 
-Data
-----
+Attributes
+----------
 
-Data is a list of :ref:`data <data>`. For Composite Elements,
-only :code:`location='elements'` is valid. However, Data may also be
+Attributes is a list of :ref:`attributes <attributes>`. For Composite Elements,
+only :code:`location='elements'` is valid. However, attributes may also be
 defined on the child :code:`elements`
 
