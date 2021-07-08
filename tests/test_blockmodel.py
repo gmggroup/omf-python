@@ -81,7 +81,7 @@ def test_ijk_index(ijk, index):
 
 def test_tensorblockmodel():
     """Test volume grid geometry validation"""
-    elem = omf.TensorBlockModel()
+    elem = omf.TensorGridBlockModel()
     assert elem.num_nodes is None
     assert elem.num_cells is None
     assert elem.num_parent_blocks is None

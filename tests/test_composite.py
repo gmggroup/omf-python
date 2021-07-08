@@ -8,10 +8,10 @@ import omf
 
 def test_composite():
     """Test composite element validation"""
-    elem = omf.CompositeElement()
+    elem = omf.Composite()
     elem.elements = [
-        omf.PointSetElement(vertices=np.random.rand(10, 3)),
-        omf.PointSetElement(vertices=np.random.rand(10, 3)),
+        omf.PointSet(vertices=np.random.rand(10, 3)),
+        omf.PointSet(vertices=np.random.rand(10, 3)),
     ]
     assert elem.validate()
     assert elem.location_length("elements") == 2

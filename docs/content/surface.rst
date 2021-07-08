@@ -13,12 +13,12 @@ Elements
 .. image:: /images/SurfaceGeometry.png
     :align: center
 
-.. autoclass:: omf.surface.SurfaceElement
+.. autoclass:: omf.surface.Surface
 
 .. image:: /images/SurfaceGridGeometry.png
     :align: center
 
-.. autoclass:: omf.surface.SurfaceGridElement
+.. autoclass:: omf.surface.TensorGridSurface
 
 Attributes
 ----------

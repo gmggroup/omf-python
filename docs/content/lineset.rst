@@ -15,7 +15,7 @@ Element
     :width: 80%
     :align: center
 
-.. autoclass:: omf.lineset.LineSetElement
+.. autoclass:: omf.lineset.LineSet
 
 Attributes
 ----------

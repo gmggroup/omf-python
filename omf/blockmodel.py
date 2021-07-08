@@ -105,10 +105,10 @@ class BaseBlockModel(ProjectElement):
         return ijk_array
 
 
-class TensorBlockModel(BaseBlockModel):
+class TensorGridBlockModel(BaseBlockModel):
     """Block model with variable spacing in each dimension"""
 
-    schema = "org.omf.v2.element.blockmodel.tensor"
+    schema = "org.omf.v2.element.blockmodel.tensorgrid"
 
     tensor_u = properties.Array(
         "Tensor cell widths, u-direction",
