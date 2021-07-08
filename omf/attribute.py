@@ -55,7 +55,7 @@ class Array(BaseModel):
         return self.array.__getitem__(i)
 
     @properties.validator
-    def _validate_datatype(self):
+    def _validate_data_type(self):
         if self.array.dtype not in DATA_TYPE_LOOKUP_TO_STRING:
             raise properties.ValidationError(
                 'bad dtype: {} - Array must have dtype in {}'.format(
@@ -68,7 +68,7 @@ class Array(BaseModel):
     @properties.StringChoice(
         'Array data type string', choices=list(DATA_TYPE_LOOKUP_TO_NUMPY)
     )
-    def datatype(self):
+    def data_type(self):
         """Array type descriptor, determined directly from the array"""
         if self.array is None:
             return None
@@ -88,7 +88,7 @@ class Array(BaseModel):
         """Total size of the array in bytes"""
         if self.array is None:
             return None
-        if self.datatype == 'BooleanArray':                                    #pylint: disable=comparison-with-callable
+        if self.data_type == 'BooleanArray':                                    #pylint: disable=comparison-with-callable
             return int(np.ceil(self.array.size / 8))
         return self.array.size * self.array.itemsize
 
@@ -99,7 +99,7 @@ class Array(BaseModel):
         binary_dict = kwargs.get('binary_dict', None)
         if binary_dict is not None:
             array_uid = str(uuid.uuid4())
-            if self.datatype == 'BooleanArray':                                #pylint: disable=comparison-with-callable
+            if self.data_type == 'BooleanArray':                                #pylint: disable=comparison-with-callable
                 array_binary = np.packbits(self.array, axis=None).tobytes()
             else:
                 array_binary = self.array.tobytes()
@@ -113,12 +113,12 @@ class Array(BaseModel):
         binary_dict = kwargs.get('binary_dict', {})
         if not isinstance(value, dict):
             pass
-        elif any(key not in value for key in ['shape', 'datatype', 'array']):
+        elif any(key not in value for key in ['shape', 'data_type', 'array']):
             pass
         elif value['array'] in binary_dict:
             array_binary = binary_dict[value['array']]
-            array_dtype = DATA_TYPE_LOOKUP_TO_NUMPY[value['datatype']]
-            if value['datatype'] == 'BooleanArray':
+            array_dtype = DATA_TYPE_LOOKUP_TO_NUMPY[value['data_type']]
+            if value['data_type'] == 'BooleanArray':
                 int_arr = np.frombuffer(array_binary, dtype='uint8')
                 bit_arr = np.unpackbits(int_arr)[:np.product(value['shape'])]
                 arr = bit_arr.astype(array_dtype)
@@ -199,7 +199,7 @@ class StringList(BaseModel):
     @properties.StringChoice(
         'List data type string', choices=['DateTimeArray', 'StringArray']
     )
-    def datatype(self):
+    def data_type(self):
         """Array type descriptor, determined directly from the array"""
         if self.array is None:
             return None
@@ -246,7 +246,7 @@ class StringList(BaseModel):
         binary_dict = kwargs.get('binary_dict', {})
         if not isinstance(value, dict):
             pass
-        elif any(key not in value for key in ['shape', 'datatype', 'array']):
+        elif any(key not in value for key in ['shape', 'data_type', 'array']):
             pass
         elif value['array'] in binary_dict:
             arr = json.loads(binary_dict[value['array']].decode('utf8'))

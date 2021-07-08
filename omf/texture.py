@@ -31,7 +31,7 @@ class Image(BaseModel):
     @properties.StringChoice(
         'Image data type string', choices=['png']
     )                                                                          #pylint: disable=no-self-use
-    def datatype(self):
+    def data_type(self):
         """Image type descriptor, currently only PNGs are supported"""
         return 'png'
 

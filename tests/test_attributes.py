@@ -14,7 +14,7 @@ def test_scalar_array():
     arr = omf.attribute.Array(np.array([1, 2, 3], dtype='uint8'))
     assert arr.array.dtype.kind == 'u'
     assert np.array_equal(arr.array, [1, 2, 3])
-    assert arr.datatype == 'Uint8Array'
+    assert arr.data_type == 'Uint8Array'
     assert arr.shape == [3]
     assert arr.size == 3
     binary_dict = {}
@@ -22,7 +22,7 @@ def test_scalar_array():
     assert len(binary_dict) == 1
     assert output == {
         'schema_type': 'org.omf.v2.array.numeric',
-        'datatype': 'Uint8Array',
+        'data_type': 'Uint8Array',
         'shape': [3],
         'size': 3,
         'array': list(binary_dict.keys())[0],
@@ -34,7 +34,7 @@ def test_scalar_array():
 def test_invalid_array():
     """Test Array class without valid array"""
     arr = omf.attribute.Array()
-    assert arr.datatype is None
+    assert arr.data_type is None
     assert arr.shape is None
     assert arr.size is None
     assert isinstance(omf.attribute.Array.deserialize(''), omf.attribute.Array)
@@ -44,7 +44,7 @@ def test_invalid_array():
 def test_invalid_string_list():
     """Test StringList class without valid array"""
     arr = omf.attribute.StringList()
-    assert arr.datatype is None
+    assert arr.data_type is None
     assert arr.shape is None
     assert arr.size is None
     assert isinstance(omf.attribute.StringList.deserialize(''), omf.attribute.StringList)
@@ -55,7 +55,7 @@ def test_boolean_array():
     """Test boolean array bits"""
     arr = omf.attribute.Array(np.array([[1, 1], [0, 0]], dtype='bool'))
     assert arr.array.dtype.kind == 'b'
-    assert arr.datatype == 'BooleanArray'
+    assert arr.data_type == 'BooleanArray'
     assert arr.shape == [2, 2]
     assert arr.size == 1
     binary_dict = {}
@@ -63,7 +63,7 @@ def test_boolean_array():
     assert len(binary_dict) == 1
     assert output == {
         'schema_type': 'org.omf.v2.array.numeric',
-        'datatype': 'BooleanArray',
+        'data_type': 'BooleanArray',
         'shape': [2, 2],
         'size': 1,
         'array': list(binary_dict.keys())[0],
@@ -73,16 +73,16 @@ def test_boolean_array():
 
 
 def test_datetime_list():
-    """Test string list gives datetime datatype"""
+    """Test string list gives datetime data_type"""
     arr = omf.attribute.StringList(['1995-08-12T18:00:00Z', '1995-08-13T18:00:00Z'])
-    assert arr.datatype == 'DateTimeArray'
+    assert arr.data_type == 'DateTimeArray'
     assert arr.shape == [2]
     binary_dict = {}
     output = arr.serialize(include_class=False, binary_dict=binary_dict)
     assert len(binary_dict) == 1
     assert output == {
         'schema_type': 'org.omf.v2.array.string',
-        'datatype': 'DateTimeArray',
+        'data_type': 'DateTimeArray',
         'shape': [2],
         'size': 48,
         'array': list(binary_dict.keys())[0],
@@ -90,17 +90,17 @@ def test_datetime_list():
 
 
 def test_string_list():
-    """Test string list gives string datatype"""
+    """Test string list gives string data_type"""
     arr = omf.attribute.StringList.deserialize(
         {
             'shape': '',
-            'datatype': '',
+            'data_type': '',
             'size': '',
             'array': 'a',
         },
         binary_dict={'a': b'["a", "b", "c"]'}
     )
-    assert arr.datatype == 'StringArray'
+    assert arr.data_type == 'StringArray'
     assert arr.shape == [3]
     assert arr.size == 15
     assert len(arr) == 3
@@ -110,7 +110,7 @@ def test_string_list():
     output = arr.serialize(include_class=False)
     assert output == {
         'schema_type': 'org.omf.v2.array.string',
-        'datatype': 'StringArray',
+        'data_type': 'StringArray',
         'shape': [3],
         'size': 15,
     }
@@ -132,7 +132,7 @@ def test_array_instance_prop():
     harr.arr = np.array([[1., 2, 3], [4, 5, 6]])
     assert harr.validate()
     assert np.array_equal(harr.arr.array, [[1., 2, 3], [4, 5, 6]])
-    assert harr.arr.datatype == 'Float64Array'                                 # pylint: disable=no-member
+    assert harr.arr.data_type == 'Float64Array'                                 # pylint: disable=no-member
     assert harr.arr.shape == [2, 3]
     assert harr.arr.size == 8*6
 
