@@ -65,6 +65,7 @@ class Array(BaseModel):
                 )
             )
         return True
+
     @properties.StringChoice(
         'Array data type string', choices=list(DATA_TYPE_LOOKUP_TO_NUMPY)
     )
