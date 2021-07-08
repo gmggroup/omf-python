@@ -15,9 +15,9 @@ possible level        |w 0  0  0  0  0  0  0  0       = 0
 
 import numpy as np
 
-dimension = 3 # Always in 3D
-level_bits = 4 # Enough for eight refinements
-max_bits = 8 # max necessary per integer, enough for UInt32
+dimension = 3  # Always in 3D
+level_bits = 4  # Enough for eight refinements
+max_bits = 8  # max necessary per integer, enough for UInt32
 total_bits = max_bits * dimension + level_bits
 
 
@@ -29,8 +29,8 @@ total_bits = max_bits * dimension + level_bits
 
 def bitrange(x, width, start, end):
     """
-        Extract a bit range as an integer.
-        (start, end) is inclusive lower bound, exclusive upper bound.
+    Extract a bit range as an integer.
+    (start, end) is inclusive lower bound, exclusive upper bound.
     """
     return x >> (width - end) & ((2 ** (end - start)) - 1)
 
@@ -66,7 +66,6 @@ def level_width(level):
     return 2 ** (total_levels - level)
 
 
-
 def _print_example(pointer, level):
 
     ind = get_index(pointer, level)
@@ -74,13 +73,17 @@ def _print_example(pointer, level):
     assert (pointer == pnt) & (level == lvl)
 
     def print_binary(num, frm):
-        bstr = "{0:b}".format(num).rjust(max_bits, '0')
-        print(''.join([frm(b) for b in bstr]) + '    = ' + str(num))
+        bstr = "{0:b}".format(num).rjust(max_bits, "0")
+        print("".join([frm(b) for b in bstr]) + "    = " + str(num))
 
-    print("{0:b}".format(level).rjust(level_bits, '0').rjust(total_bits, ' ') + ' = ' + str(level))
-    print_binary(pointer[0], lambda b: '  ' + b + '')
-    print_binary(pointer[1], lambda b: ' ' + b + ' ')
-    print_binary(pointer[2], lambda b: '' + b + '  ')
-    print("{0:b}".format(ind).rjust(total_bits, '0') + ' = ' + str(ind))
+    print(
+        "{0:b}".format(level).rjust(level_bits, "0").rjust(total_bits, " ")
+        + " = "
+        + str(level)
+    )
+    print_binary(pointer[0], lambda b: "  " + b + "")
+    print_binary(pointer[1], lambda b: " " + b + " ")
+    print_binary(pointer[2], lambda b: "" + b + "  ")
+    print("{0:b}".format(ind).rjust(total_bits, "0") + " = " + str(ind))
 
     return ind

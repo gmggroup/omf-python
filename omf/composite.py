@@ -16,25 +16,29 @@ from .surface import SurfaceElement, SurfaceGridElement
 
 class CompositeElement(ProjectElement):
     """Element constructed from other primitive elements"""
-    schema = 'org.omf.v2.composite'
+
+    schema = "org.omf.v2.composite"
 
     elements = properties.List(
-        'Elements grouped into one composite element',
-        prop=properties.Union('', (
-            RegularBlockModel,
-            RegularSubBlockModel,
-            OctreeSubBlockModel,
-            TensorBlockModel,
-            ArbitrarySubBlockModel,
-            LineSetElement,
-            PointSetElement,
-            SurfaceElement,
-            SurfaceGridElement,
-        )),
+        "Elements grouped into one composite element",
+        prop=properties.Union(
+            "",
+            (
+                RegularBlockModel,
+                RegularSubBlockModel,
+                OctreeSubBlockModel,
+                TensorBlockModel,
+                ArbitrarySubBlockModel,
+                LineSetElement,
+                PointSetElement,
+                SurfaceElement,
+                SurfaceGridElement,
+            ),
+        ),
         default=list,
     )
 
-    _valid_locations = ('elements',)
+    _valid_locations = ("elements",)
 
     def location_length(self, location):
         """Composite element attributes may only be defined on each element

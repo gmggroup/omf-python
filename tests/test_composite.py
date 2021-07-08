@@ -14,11 +14,11 @@ def test_composite():
         omf.PointSetElement(vertices=np.random.rand(10, 3)),
     ]
     assert elem.validate()
-    assert elem.location_length('elements') == 2
+    assert elem.location_length("elements") == 2
     elem.attributes = [
-        omf.NumericAttribute(array=[1., 2.], location='elements'),
+        omf.NumericAttribute(array=[1.0, 2.0], location="elements"),
     ]
     assert elem.validate()
-    elem.attributes[0].array = [1., 2., 3.]
+    elem.attributes[0].array = [1.0, 2.0, 3.0]
     with pytest.raises(properties.ValidationError):
         elem.validate()

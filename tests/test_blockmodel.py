@@ -17,6 +17,7 @@ class BlockModelTester(omf.blockmodel.BaseBlockModel):
 
 class MockArray(omf.base.BaseModel):
     """Test array class"""
+
     array = np.array([1, 2, 3])
 
 
@@ -30,9 +31,9 @@ def test_ijk_index_errors():
         block_model.index_to_ijk(0)
     block_model.num_parent_blocks = [3, 4, 5]
     with pytest.raises(ValueError):
-        block_model.ijk_to_index('a')
+        block_model.ijk_to_index("a")
     with pytest.raises(ValueError):
-        block_model.index_to_ijk('a')
+        block_model.index_to_ijk("a")
     with pytest.raises(ValueError):
         block_model.ijk_to_index([0, 0])
     with pytest.raises(ValueError):
@@ -47,9 +48,9 @@ def test_ijk_index_errors():
         block_model.index_to_ijk(60)
 
     with pytest.raises(ValueError):
-        block_model.ijk_array_to_indices('a')
+        block_model.ijk_array_to_indices("a")
     with pytest.raises(ValueError):
-        block_model.indices_to_ijk_array('a')
+        block_model.indices_to_ijk_array("a")
     with pytest.raises(ValueError):
         block_model.ijk_array_to_indices([[0, 0, 5], [0, 0, 3]])
     with pytest.raises(ValueError):
@@ -67,10 +68,8 @@ def test_ijk_index_arrays():
 
 
 @pytest.mark.parametrize(
-    ('ijk', 'index'), [
-        ([0, 0, 0], 0), ([1, 0, 0], 1), ([0, 1, 0], 3),
-        ([0, 0, 1], 12), ([2, 3, 4], 59)
-    ]
+    ("ijk", "index"),
+    [([0, 0, 0], 0), ([1, 0, 0], 1), ([0, 1, 0], 3), ([0, 0, 1], 12), ([2, 3, 4], 59)],
 )
 def test_ijk_index(ijk, index):
     """Test ijk indexing into parent blocks works as expected"""
@@ -86,38 +85,37 @@ def test_tensorblockmodel():
     assert elem.num_nodes is None
     assert elem.num_cells is None
     assert elem.num_parent_blocks is None
-    elem.tensor_u = [1., 1.]
-    elem.tensor_v = [2., 2., 2.]
-    elem.tensor_w = [3.]
+    elem.tensor_u = [1.0, 1.0]
+    elem.tensor_v = [2.0, 2.0, 2.0]
+    elem.tensor_w = [3.0]
     assert elem.num_parent_blocks == [2, 3, 1]
     assert elem.validate()
-    assert elem.location_length('vertices') == 24
-    assert elem.location_length('cells') == 6
-    elem.axis_v = [1., 1., 0]
+    assert elem.location_length("vertices") == 24
+    assert elem.location_length("cells") == 6
+    elem.axis_v = [1.0, 1.0, 0]
     with pytest.raises(ValueError):
         elem.validate()
-    elem.axis_v = 'Y'
+    elem.axis_v = "Y"
 
 
-#pylint: disable=comparison-with-callable
+# pylint: disable=W0143
 class TestRegularBlockModel:
     """Test class for regular block model functionality"""
 
     bm_class = omf.RegularBlockModel
 
     @pytest.mark.parametrize(
-        'num_blocks', ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
+        "num_blocks", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
     )
     def test_bad_num_blocks(self, num_blocks):
         """Test mismatched num_blocks"""
-        block_model = self.bm_class(size_blocks=[1., 2., 3.])
+        block_model = self.bm_class(size_blocks=[1.0, 2.0, 3.0])
         with pytest.raises(properties.ValidationError):
             block_model.num_blocks = num_blocks
             block_model.validate()
 
-
     @pytest.mark.parametrize(
-        'size_blocks', ([2., 2.], [2., 2., 2., 2.], [-1., 2, 2], [0., 2, 2])
+        "size_blocks", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
     )
     def test_bad_size_blocks(self, size_blocks):
         """Test mismatched size_blocks"""
@@ -125,7 +123,6 @@ class TestRegularBlockModel:
         with pytest.raises(properties.ValidationError):
             block_model.size_blocks = size_blocks
             block_model.validate()
-
 
     def test_uninstantiated(self):
         """Test all attributes are None on instantiation"""
@@ -138,26 +135,24 @@ class TestRegularBlockModel:
         with pytest.raises(ValueError):
             block_model.reset_cbc()
 
-
     def test_num_cells(self):
         """Test num_cells calculation is correct"""
         block_model = self.bm_class(
             num_blocks=[2, 2, 2],
-            size_blocks=[1., 2., 3.],
+            size_blocks=[1.0, 2.0, 3.0],
         )
         assert block_model.num_parent_blocks == [2, 2, 2]
         block_model.reset_cbc()
         assert block_model.num_cells == 8
-        assert block_model.location_length('') == 8
+        assert block_model.location_length("") == 8
         block_model.cbc = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         assert block_model.num_cells == 4
-
 
     def test_cbc(self):
         """Test cbc access and validation is correct"""
         block_model = self.bm_class(
             num_blocks=[2, 2, 2],
-            size_blocks=[1., 2., 3.],
+            size_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         assert block_model.validate()
@@ -165,8 +160,8 @@ class TestRegularBlockModel:
         block_model.cbc.array[0] = 0
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc = np.ones(7, dtype='int8')
-        block_model.cbc = np.ones(8, dtype='uint8')
+            block_model.cbc = np.ones(7, dtype="int8")
+        block_model.cbc = np.ones(8, dtype="uint8")
         with pytest.raises(properties.ValidationError):
             block_model.cbc.array[0] = 2
             block_model.validate()
@@ -174,18 +169,19 @@ class TestRegularBlockModel:
             block_model.cbc.array[0] = -1
             block_model.validate()
 
-
     def test_cbi(self):
         """Test cbi access and validation is correct"""
         block_model = self.bm_class()
         assert block_model.cbi is None
         block_model.num_blocks = [2, 2, 2]
-        block_model.size_blocks = [1., 2., 3.]
+        block_model.size_blocks = [1.0, 2.0, 3.0]
         block_model.reset_cbc()
-        assert np.all(block_model.cbi == np.array(range(9), dtype='int8'))
+        assert np.all(block_model.cbi == np.array(range(9), dtype="int8"))
         block_model.cbc.array[0] = 0
-        assert np.all(block_model.cbi == np.r_[np.array([0], dtype='int8'),
-                                               np.array(range(8), dtype='int8')])
+        assert np.all(
+            block_model.cbi
+            == np.r_[np.array([0], dtype="int8"), np.array(range(8), dtype="int8")]
+        )
 
 
 class TestRegularSubBlockModel:
@@ -194,19 +190,18 @@ class TestRegularSubBlockModel:
     bm_class = omf.RegularSubBlockModel
 
     @pytest.mark.parametrize(
-        'num_blocks', ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
+        "num_blocks", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
     )
-    @pytest.mark.parametrize('attr', ('num_parent_blocks', 'num_sub_blocks'))
+    @pytest.mark.parametrize("attr", ("num_parent_blocks", "num_sub_blocks"))
     def test_bad_num_blocks(self, num_blocks, attr):
         """Test mismatched num_blocks"""
-        block_model = self.bm_class(size_parent_blocks=[1., 2., 3.])
+        block_model = self.bm_class(size_parent_blocks=[1.0, 2.0, 3.0])
         with pytest.raises(properties.ValidationError):
             setattr(block_model, attr, num_blocks)
             block_model.validate()
 
-
     @pytest.mark.parametrize(
-        'size_blocks', ([2., 2.], [2., 2., 2., 2.], [-1., 2, 2], [0., 2, 2])
+        "size_blocks", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
     )
     def test_bad_size_blocks(self, size_blocks):
         """Test mismatched size_blocks"""
@@ -214,7 +209,6 @@ class TestRegularSubBlockModel:
         with pytest.raises(properties.ValidationError):
             block_model.size_parent_blocks = size_blocks
             block_model.validate()
-
 
     def test_uninstantiated(self):
         """Test all attributes are None on instantiation"""
@@ -230,15 +224,14 @@ class TestRegularSubBlockModel:
             block_model.reset_cbc()
         with pytest.raises(ValueError):
             block_model.refine([0, 0, 0])
-        block_model.validate_cbc({'value': MockArray()})
-
+        block_model.validate_cbc({"value": MockArray()})
 
     def test_num_cells(self):
         """Test num_cells calculation is correct"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
             num_sub_blocks=[2, 2, 2],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         assert block_model.num_cells == 8
@@ -247,13 +240,12 @@ class TestRegularSubBlockModel:
         block_model.refine([1, 1, 1])
         assert block_model.num_cells == 11
 
-
     def test_cbc(self):
         """Test cbc access and validation is correct"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
             num_sub_blocks=[3, 4, 5],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         assert block_model.validate()
@@ -263,8 +255,8 @@ class TestRegularSubBlockModel:
         block_model.cbc.array[0] = 60
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc = np.ones(7, dtype='int8')
-        block_model.cbc = np.ones(8, dtype='uint8')
+            block_model.cbc = np.ones(7, dtype="int8")
+        block_model.cbc = np.ones(8, dtype="uint8")
         with pytest.raises(properties.ValidationError):
             block_model.cbc.array[0] = 2
             block_model.validate()
@@ -278,18 +270,20 @@ class TestRegularSubBlockModel:
         assert block_model.cbi is None
         block_model.num_parent_blocks = [2, 2, 2]
         block_model.num_sub_blocks = [3, 4, 5]
-        block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.size_parent_blocks = [1.0, 2.0, 3.0]
         block_model.reset_cbc()
-        assert np.all(block_model.cbi == np.array(range(9), dtype='int8'))
+        assert np.all(block_model.cbi == np.array(range(9), dtype="int8"))
         block_model.cbc.array[0] = 0
         assert np.all(
-            block_model.cbi == np.r_[np.array([0], dtype='int8'),
-                                     np.array(range(8), dtype='int8')]
+            block_model.cbi
+            == np.r_[np.array([0], dtype="int8"), np.array(range(8), dtype="int8")]
         )
         block_model.refine([1, 0, 0])
         assert np.all(
-            block_model.cbi == np.r_[np.array([0, 0], dtype='int8'),
-                                     np.array(range(60, 67), dtype='int8')]
+            block_model.cbi
+            == np.r_[
+                np.array([0, 0], dtype="int8"), np.array(range(60, 67), dtype="int8")
+            ]
         )
 
     def test_location_length(self):
@@ -297,14 +291,14 @@ class TestRegularSubBlockModel:
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
             num_sub_blocks=[3, 4, 5],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
-        assert block_model.location_length('parent_blocks') == 8
-        assert block_model.location_length('sub_blocks') == 8
+        assert block_model.location_length("parent_blocks") == 8
+        assert block_model.location_length("sub_blocks") == 8
         block_model.refine([0, 0, 0])
-        assert block_model.location_length('parent_blocks') == 8
-        assert block_model.location_length('sub_blocks') == 67
+        assert block_model.location_length("parent_blocks") == 8
+        assert block_model.location_length("sub_blocks") == 67
 
 
 class TestOctreeSubBlockModel:
@@ -313,18 +307,17 @@ class TestOctreeSubBlockModel:
     bm_class = omf.OctreeSubBlockModel
 
     @pytest.mark.parametrize(
-        'num_blocks', ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
+        "num_blocks", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
     )
     def test_bad_num_blocks(self, num_blocks):
         """Test mismatched num_blocks"""
-        block_model = self.bm_class(size_parent_blocks=[1., 2., 3.])
+        block_model = self.bm_class(size_parent_blocks=[1.0, 2.0, 3.0])
         with pytest.raises(properties.ValidationError):
             block_model.size_parent_blocks = num_blocks
             block_model.validate()
 
-
     @pytest.mark.parametrize(
-        'size_blocks', ([2., 2.], [2., 2., 2., 2.], [-1., 2, 2], [0., 2, 2])
+        "size_blocks", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
     )
     def test_bad_size_blocks(self, size_blocks):
         """Test mismatched size_blocks"""
@@ -332,7 +325,6 @@ class TestOctreeSubBlockModel:
         with pytest.raises(properties.ValidationError):
             block_model.num_parent_blocks = size_blocks
             block_model.validate()
-
 
     def test_uninstantiated(self):
         """Test all attributes are None on instantiation"""
@@ -343,31 +335,29 @@ class TestOctreeSubBlockModel:
         assert block_model.cbi is None
         assert block_model.zoc is None
         assert block_model.num_cells is None
-        block_model.validate_cbc({'value': MockArray()})
-        block_model.validate_zoc({'value': MockArray()})
+        block_model.validate_cbc({"value": MockArray()})
+        block_model.validate_zoc({"value": MockArray()})
         with pytest.raises(ValueError):
             block_model.reset_cbc()
         with pytest.raises(ValueError):
             block_model.reset_zoc()
 
-
     def test_num_cells(self):
         """Test num_cells calculation is correct"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         assert block_model.num_cells == 8
         block_model.cbc = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         assert block_model.num_cells == 4
 
-
     def test_cbc(self):
         """Test cbc access and validation is correct"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         block_model.reset_zoc()
@@ -377,9 +367,9 @@ class TestOctreeSubBlockModel:
         block_model.zoc = block_model.zoc[1:]
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc = np.ones(7, dtype='int8')
-        block_model.cbc = np.ones(8, dtype='uint8')
-        block_model.zoc = np.zeros(8, dtype='uint8')
+            block_model.cbc = np.ones(7, dtype="int8")
+        block_model.cbc = np.ones(8, dtype="uint8")
+        block_model.zoc = np.zeros(8, dtype="uint8")
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
             block_model.cbc.array[0] = 2
@@ -388,25 +378,27 @@ class TestOctreeSubBlockModel:
             block_model.cbc.array[0] = -1
             block_model.validate()
 
-
     def test_cbi(self):
         """Test cbi access and validation is correct"""
         block_model = self.bm_class()
         assert block_model.cbi is None
         block_model.num_parent_blocks = [2, 2, 2]
-        block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.size_parent_blocks = [1.0, 2.0, 3.0]
         block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype=np.uint64))
         block_model.cbc.array[0] = 0
-        assert np.all(block_model.cbi == np.r_[np.array([0], dtype=np.uint64),
-                                               np.array(range(8), dtype=np.uint64)])
-
+        assert np.all(
+            block_model.cbi
+            == np.r_[
+                np.array([0], dtype=np.uint64), np.array(range(8), dtype=np.uint64)
+            ]
+        )
 
     def test_zoc(self):
         """Test z-order curves"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         block_model.reset_zoc()
@@ -414,19 +406,19 @@ class TestOctreeSubBlockModel:
         with pytest.raises(properties.ValidationError):
             block_model.zoc = np.zeros(7, dtype=np.uint64)
         with pytest.raises(properties.ValidationError):
-            block_model.zoc = np.r_[np.zeros(7), -1.].astype(np.uint64)
+            block_model.zoc = np.r_[np.zeros(7), -1.0].astype(np.uint64)
         with pytest.raises(properties.ValidationError):
-            block_model.zoc = np.r_[np.zeros(7), 268435448+1].astype(np.uint64)
+            block_model.zoc = np.r_[np.zeros(7), 268435448 + 1].astype(np.uint64)
         block_model.zoc = np.r_[np.zeros(7), 268435448].astype(np.uint64)
         assert block_model.validate()
 
-
     @pytest.mark.parametrize(
-        ('pointer', 'level', 'curve_value'), [
+        ("pointer", "level", "curve_value"),
+        [
             ([1, 16, 0], 7, 131095),
             ([0, 0, 0], 0, 0),
             ([255, 255, 255], 8, 268435448),
-        ]
+        ],
     )
     def test_curve_values(self, pointer, level, curve_value):
         """Test curve value functions"""
@@ -439,12 +431,11 @@ class TestOctreeSubBlockModel:
         with pytest.raises(ValueError):
             self.bm_class.level_width(9)
 
-
     def test_refinement(self):
         """Test refinement method"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
-            size_parent_blocks=[5., 5., 5.],
+            size_parent_blocks=[5.0, 5.0, 5.0],
         )
         block_model.reset_cbc()
         block_model.reset_zoc()
@@ -452,12 +443,13 @@ class TestOctreeSubBlockModel:
         assert all(zoc == 0 for zoc in block_model.zoc)
         block_model.refine(0)
         assert len(block_model.zoc) == 15
-        assert block_model.location_length('parent_blocks') == 8
-        assert block_model.location_length('') == 15
-        assert np.array_equal(block_model.cbc, [8] + [1]*7)
+        assert block_model.location_length("parent_blocks") == 8
+        assert block_model.location_length("") == 15
+        assert np.array_equal(block_model.cbc, [8] + [1] * 7)
         assert np.array_equal(block_model.cbi, [0] + list(range(8, 16)))
         assert np.array_equal(
-            block_model.zoc, [
+            block_model.zoc,
+            [
                 block_model.get_curve_value([0, 0, 0], 1),
                 block_model.get_curve_value([128, 0, 0], 1),
                 block_model.get_curve_value([0, 128, 0], 1),
@@ -466,11 +458,12 @@ class TestOctreeSubBlockModel:
                 block_model.get_curve_value([128, 0, 128], 1),
                 block_model.get_curve_value([0, 128, 128], 1),
                 block_model.get_curve_value([128, 128, 128], 1),
-            ] + [0]*7
+            ]
+            + [0] * 7,
         )
         block_model.refine(2, refinements=2)
         assert len(block_model.zoc) == 78
-        assert np.array_equal(block_model.cbc, [71] + [1]*7)
+        assert np.array_equal(block_model.cbc, [71] + [1] * 7)
         assert np.array_equal(block_model.cbi, [0] + list(range(71, 79)))
         assert block_model.zoc[2] == block_model.get_curve_value([0, 128, 0], 3)
         assert block_model.zoc[3] == block_model.get_curve_value([32, 128, 0], 3)
@@ -482,7 +475,7 @@ class TestOctreeSubBlockModel:
         assert block_model.zoc[66] == block_model.get_curve_value([128, 128, 0], 1)
         block_model.refine(0, [1, 0, 0])
         assert len(block_model.zoc) == 85
-        assert np.array_equal(block_model.cbc, [71, 8] + [1]*6)
+        assert np.array_equal(block_model.cbc, [71, 8] + [1] * 6)
         with pytest.raises(ValueError):
             block_model.refine(85)
         with pytest.raises(ValueError):
@@ -501,18 +494,17 @@ class TestArbitrarySubBlockModel:
     bm_class = omf.ArbitrarySubBlockModel
 
     @pytest.mark.parametrize(
-        'num_blocks', ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
+        "num_blocks", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
     )
     def test_bad_num_blocks(self, num_blocks):
         """Test mismatched num_blocks"""
-        block_model = self.bm_class(size_parent_blocks=[1., 2., 3.])
+        block_model = self.bm_class(size_parent_blocks=[1.0, 2.0, 3.0])
         with pytest.raises(properties.ValidationError):
             block_model.size_parent_blocks = num_blocks
             block_model.validate()
 
-
     @pytest.mark.parametrize(
-        'size_blocks', ([2., 2.], [2., 2., 2., 2.], [-1., 2, 2], [0., 2, 2])
+        "size_blocks", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
     )
     def test_bad_size_blocks(self, size_blocks):
         """Test mismatched size_blocks"""
@@ -520,7 +512,6 @@ class TestArbitrarySubBlockModel:
         with pytest.raises(properties.ValidationError):
             block_model.num_parent_blocks = size_blocks
             block_model.validate()
-
 
     def test_uninstantiated(self):
         """Test all attributes are None on instantiation"""
@@ -536,28 +527,26 @@ class TestArbitrarySubBlockModel:
         assert block_model.sub_block_sizes_absolute is None
         assert block_model.sub_block_centroids_absolute is None
         assert block_model.num_cells is None
-        block_model.validate_cbc({'value': MockArray()})
+        block_model.validate_cbc({"value": MockArray()})
         with pytest.raises(ValueError):
             block_model.reset_cbc()
-
 
     def test_num_cells(self):
         """Test num_cells calculation is correct"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         assert block_model.num_cells == 8
         block_model.cbc = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         assert block_model.num_cells == 4
 
-
     def test_cbc(self):
         """Test cbc access and validation is correct"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         with pytest.raises(properties.ValidationError):
             block_model.validate()
@@ -573,8 +562,8 @@ class TestArbitrarySubBlockModel:
         block_model.sub_block_sizes = np.ones((7, 3))
         assert block_model.validate()
         with pytest.raises(properties.ValidationError):
-            block_model.cbc = np.ones(7, dtype='int8')
-        block_model.cbc = np.ones(8, dtype='uint8')
+            block_model.cbc = np.ones(7, dtype="int8")
+        block_model.cbc = np.ones(8, dtype="uint8")
         block_model.sub_block_corners = np.zeros((8, 3))
         block_model.sub_block_sizes = np.ones((8, 3))
         with pytest.raises(properties.ValidationError):
@@ -584,54 +573,54 @@ class TestArbitrarySubBlockModel:
             block_model.cbc.array[0] = -1
             block_model.validate()
 
-
     def test_cbi(self):
         """Test cbi access and validation is correct"""
         block_model = self.bm_class()
         assert block_model.cbi is None
         block_model.num_parent_blocks = [2, 2, 2]
-        block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.size_parent_blocks = [1.0, 2.0, 3.0]
         block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype=np.uint64))
         block_model.cbc.array[0] = 0
-        assert np.all(block_model.cbi == np.r_[np.array([0], dtype=np.uint64),
-                                               np.array(range(8), dtype=np.uint64)])
-
+        assert np.all(
+            block_model.cbi
+            == np.r_[
+                np.array([0], dtype=np.uint64), np.array(range(8), dtype=np.uint64)
+            ]
+        )
 
     def test_validate_sub_block_attrs(self):
         """Test sub block attribute validation"""
         block_model = self.bm_class()
         value = [1, 2, 3]
-        assert block_model.validate_sub_block_attributes(value, '') is value
+        assert block_model.validate_sub_block_attributes(value, "") is value
         block_model.num_parent_blocks = [2, 2, 2]
-        block_model.size_parent_blocks = [1., 2., 3.]
+        block_model.size_parent_blocks = [1.0, 2.0, 3.0]
         block_model.reset_cbc()
         with pytest.raises(properties.ValidationError):
-            block_model.validate_sub_block_attributes(value, '')
-
+            block_model.validate_sub_block_attributes(value, "")
 
     def test_validate_sub_block_sizes(self):
         """Test sub block size validation"""
         block_model = self.bm_class()
-        block_model.sub_block_sizes = [[1., 2, 3]]
+        block_model.sub_block_sizes = [[1.0, 2, 3]]
         with pytest.raises(properties.ValidationError):
-            block_model.sub_block_sizes = [[0., 1, 2]]
-
+            block_model.sub_block_sizes = [[0.0, 1, 2]]
 
     def test_sub_block_attributes(self):
         """Test sub block attributes"""
         block_model = self.bm_class(
             num_parent_blocks=[2, 2, 2],
-            size_parent_blocks=[1., 2., 3.],
+            size_parent_blocks=[1.0, 2.0, 3.0],
         )
         block_model.reset_cbc()
         with pytest.raises(properties.ValidationError):
             block_model.sub_block_sizes = np.ones((3, 3))
         with pytest.raises(properties.ValidationError):
-            block_model.sub_block_sizes = np.r_[np.ones((7, 3)), [[1., 1., 0]]]
+            block_model.sub_block_sizes = np.r_[np.ones((7, 3)), [[1.0, 1.0, 0]]]
         block_model.sub_block_sizes = np.ones((8, 3))
         assert np.array_equal(
-            block_model.sub_block_sizes_absolute, np.array([[1., 2., 3.]]*8)
+            block_model.sub_block_sizes_absolute, np.array([[1.0, 2.0, 3.0]] * 8)
         )
         assert block_model.sub_block_centroids is None
         assert block_model.sub_block_centroids_absolute is None
@@ -639,31 +628,47 @@ class TestArbitrarySubBlockModel:
             block_model.sub_block_corners = np.zeros((3, 3))
         block_model.sub_block_corners = np.zeros((8, 3))
         assert np.array_equal(
-            block_model.sub_block_corners_absolute, np.array([
-                [0., 0, 0], [1., 0, 0], [0., 2, 0], [1., 2, 0],
-                [0., 0, 3], [1., 0, 3], [0., 2, 3], [1., 2, 3],
-            ])
+            block_model.sub_block_corners_absolute,
+            np.array(
+                [
+                    [0.0, 0, 0],
+                    [1.0, 0, 0],
+                    [0.0, 2, 0],
+                    [1.0, 2, 0],
+                    [0.0, 0, 3],
+                    [1.0, 0, 3],
+                    [0.0, 2, 3],
+                    [1.0, 2, 3],
+                ]
+            ),
         )
+        assert np.array_equal(block_model.sub_block_centroids, np.ones((8, 3)) * 0.5)
         assert np.array_equal(
-            block_model.sub_block_centroids, np.ones((8, 3))*0.5
-        )
-        assert np.array_equal(
-            block_model.sub_block_centroids_absolute, np.array([
-                [0.5, 1, 1.5], [1.5, 1, 1.5], [0.5, 3, 1.5], [1.5, 3, 1.5],
-                [0.5, 1, 4.5], [1.5, 1, 4.5], [0.5, 3, 4.5], [1.5, 3, 4.5],
-            ])
+            block_model.sub_block_centroids_absolute,
+            np.array(
+                [
+                    [0.5, 1, 1.5],
+                    [1.5, 1, 1.5],
+                    [0.5, 3, 1.5],
+                    [1.5, 3, 1.5],
+                    [0.5, 1, 4.5],
+                    [1.5, 1, 4.5],
+                    [0.5, 3, 4.5],
+                    [1.5, 3, 4.5],
+                ]
+            ),
         )
         assert block_model.validate()
-        assert block_model.location_length('parent_blocks') == 8
-        assert block_model.location_length('') == 8
-        block_model.cbc = np.array([1] + [0]*7, dtype=np.int)
+        assert block_model.location_length("parent_blocks") == 8
+        assert block_model.location_length("") == 8
+        block_model.cbc = np.array([1] + [0] * 7, dtype=np.int)
         with pytest.raises(properties.ValidationError):
             block_model.validate()
         block_model.sub_block_corners = np.array([[-0.5, 2, 0]])
         block_model.sub_block_sizes = np.array([[0.5, 0.5, 2]])
         assert block_model.validate()
-        assert block_model.location_length('parent_blocks') == 1
-        assert block_model.location_length('') == 1
+        assert block_model.location_length("parent_blocks") == 1
+        assert block_model.location_length("") == 1
         assert np.array_equal(
             block_model.sub_block_centroids, np.array([[-0.25, 2.25, 1]])
         )
@@ -674,8 +679,9 @@ class TestArbitrarySubBlockModel:
             block_model.sub_block_sizes_absolute, np.array([[0.5, 1, 6]])
         )
         assert np.array_equal(
-            block_model.sub_block_centroids_absolute,
-            np.array([[-0.25, 4.5, 3]])
+            block_model.sub_block_centroids_absolute, np.array([[-0.25, 4.5, 3]])
         )
         assert block_model.validate()
-#pylint: enable=comparison-with-callable
+
+
+# pylint: enable=W0143

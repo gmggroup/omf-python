@@ -10,10 +10,10 @@ def test_pointset():
     elem = omf.pointset.PointSetElement()
     elem.vertices = np.random.rand(10, 3)
     assert elem.validate()
-    assert elem.location_length('vertices') == 10
+    assert elem.location_length("vertices") == 10
     elem.metadata = {
-        'color': 'green',
-        'date_created': datetime.datetime.utcnow(),
-        'version': 'v1.3',
+        "color": "green",
+        "date_created": datetime.datetime.utcnow(),
+        "version": "v1.3",
     }
     assert elem.validate()
