@@ -15,7 +15,7 @@ Element
     :width: 80%
     :align: center
 
-.. autoclass:: omf.pointset.PointSetElement
+.. autoclass:: omf.pointset.PointSet
 
 Attributes
 ----------

@@ -71,8 +71,8 @@ class ProjectedTexture(ContentModel):
 
     schema = "org.omf.v2.texture.projected"
 
-    origin = properties.Vector3(
-        "Origin point of the texture",
+    corner = properties.Vector3(
+        "Corner (origin) point of the texture",
         default=[0.0, 0.0, 0.0],
     )
     axis_u = properties.Vector3(

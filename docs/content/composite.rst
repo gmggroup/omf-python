@@ -10,7 +10,7 @@ a single, more complex, grouped object.
 Element
 -------
 
-.. autoclass:: omf.composite.CompositeElement
+.. autoclass:: omf.composite.Composite
 
 Attributes
 ----------

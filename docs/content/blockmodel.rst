@@ -15,7 +15,7 @@ Element
     :width: 80%
     :align: center
 
-.. autoclass:: omf.blockmodel.TensorBlockModel
+.. autoclass:: omf.blockmodel.TensorGridBlockModel
 
 .. autoclass:: omf.blockmodel.RegularBlockModel
 

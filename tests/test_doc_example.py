@@ -26,7 +26,7 @@ def test_doc_ex():
         name="Test project",
         description="Just some assorted elements",
     )
-    pts = omf.PointSetElement(
+    pts = omf.PointSet(
         name="Random Points",
         description="Just random points",
         vertices=np.random.rand(100, 3),
@@ -46,14 +46,14 @@ def test_doc_ex():
             omf.ProjectedTexture(
                 name="test image",
                 image=pngfile,
-                origin=[0, 0, 0],
+                corner=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 1, 0],
             ),
             omf.ProjectedTexture(
                 name="test image",
                 image=pngfile,
-                origin=[0, 0, 0],
+                corner=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 0, 1],
             ),
@@ -62,7 +62,7 @@ def test_doc_ex():
             "color": "green",
         },
     )
-    lin = omf.LineSetElement(
+    lin = omf.LineSet(
         name="Random Line",
         vertices=np.random.rand(100, 3),
         segments=np.floor(np.random.rand(50, 2) * 100).astype(int),
@@ -82,7 +82,7 @@ def test_doc_ex():
             "color": "#0000FF",
         },
     )
-    surf = omf.SurfaceElement(
+    surf = omf.Surface(
         name="trisurf",
         vertices=np.random.rand(100, 3),
         triangles=np.floor(np.random.rand(50, 3) * 100).astype(int),
@@ -102,11 +102,11 @@ def test_doc_ex():
             "color": [100, 200, 200],
         },
     )
-    grid = omf.SurfaceGridElement(
+    grid = omf.TensorGridSurface(
         name="gridsurf",
         tensor_u=np.ones(10).astype(float),
         tensor_v=np.ones(15).astype(float),
-        origin=[50.0, 50.0, 50.0],
+        corner=[50.0, 50.0, 50.0],
         axis_u=[1.0, 0, 0],
         axis_v=[0, 0, 1.0],
         offset_w=np.random.rand(11 * 16),
@@ -126,13 +126,13 @@ def test_doc_ex():
             omf.ProjectedTexture(
                 name="test image",
                 image=pngfile,
-                origin=[2.0, 2.0, 2.0],
+                corner=[2.0, 2.0, 2.0],
                 axis_u=[5.0, 0, 0],
                 axis_v=[0, 2.0, 5.0],
             ),
         ],
     )
-    vol = omf.TensorBlockModel(
+    vol = omf.TensorGridBlockModel(
         name="vol",
         tensor_u=np.ones(10).astype(float),
         tensor_v=np.ones(15).astype(float),

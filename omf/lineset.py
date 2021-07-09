@@ -6,13 +6,13 @@ from .base import ProjectElement
 from .attribute import ArrayInstanceProperty
 
 
-class LineSetElement(ProjectElement):
+class LineSet(ProjectElement):
     """Contains line set spatial information and attributes"""
 
     schema = "org.omf.v2.element.lineset"
 
     vertices = ArrayInstanceProperty(
-        "Spatial coordinates of line vertices relative to line set origin",
+        "Spatial coordinates of line vertices relative to project origin",
         shape=("*", 3),
         dtype=float,
     )
@@ -23,11 +23,6 @@ class LineSetElement(ProjectElement):
         shape=("*", 2),
         dtype=int,
         required=False,
-    )
-    subtype = properties.StringChoice(
-        "Category of LineSet",
-        choices=("line", "borehole"),
-        default="line",
     )
 
     _valid_locations = ("vertices", "segments")

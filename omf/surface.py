@@ -10,12 +10,6 @@ from .texture import HasTexturesMixin
 class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
     """Base class for surface elements"""
 
-    subtype = properties.StringChoice(
-        "Category of Surface",
-        choices=("surface",),
-        default="surface",
-    )
-
     _valid_locations = ("vertices", "faces")
 
     def location_length(self, location):
@@ -35,13 +29,13 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
         raise NotImplementedError()
 
 
-class SurfaceElement(BaseSurfaceElement):  # pylint: disable=R0901
+class Surface(BaseSurfaceElement):  # pylint: disable=R0901
     """Contains triangulated surface spatial information and attributes"""
 
     schema = "org.omf.v2.element.surface"
 
     vertices = ArrayInstanceProperty(
-        "Spatial coordinates of vertices relative to surface origin",
+        "Spatial coordinates of vertices relative to project origin",
         shape=("*", 3),
         dtype=float,
     )
@@ -74,10 +68,10 @@ class SurfaceElement(BaseSurfaceElement):  # pylint: disable=R0901
         return True
 
 
-class SurfaceGridElement(BaseSurfaceElement):  # pylint: disable=R0901
+class TensorGridSurface(BaseSurfaceElement):  # pylint: disable=R0901
     """Contains 2D grid spatial information and attributes"""
 
-    schema = "org.omf.v2.element.surfacegrid"
+    schema = "org.omf.v2.element.surfacetensorgrid"
 
     tensor_u = properties.List(
         "Grid cell widths, u-direction",
@@ -105,8 +99,8 @@ class SurfaceGridElement(BaseSurfaceElement):  # pylint: disable=R0901
         dtype=float,
         required=False,
     )
-    origin = properties.Vector3(
-        "Origin of the Mesh relative to Project coordinate reference system",
+    corner = properties.Vector3(
+        "Corner (origin) of the Mesh relative to Project coordinate reference system",
         default=[0.0, 0.0, 0.0],
     )
 

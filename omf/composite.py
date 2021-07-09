@@ -7,14 +7,14 @@ from .blockmodel import (
     OctreeSubBlockModel,
     RegularBlockModel,
     RegularSubBlockModel,
-    TensorBlockModel,
+    TensorGridBlockModel,
 )
-from .lineset import LineSetElement
-from .pointset import PointSetElement
-from .surface import SurfaceElement, SurfaceGridElement
+from .lineset import LineSet
+from .pointset import PointSet
+from .surface import Surface, TensorGridSurface
 
 
-class CompositeElement(ProjectElement):
+class Composite(ProjectElement):
     """Element constructed from other primitive elements"""
 
     schema = "org.omf.v2.composite"
@@ -27,12 +27,12 @@ class CompositeElement(ProjectElement):
                 RegularBlockModel,
                 RegularSubBlockModel,
                 OctreeSubBlockModel,
-                TensorBlockModel,
+                TensorGridBlockModel,
                 ArbitrarySubBlockModel,
-                LineSetElement,
-                PointSetElement,
-                SurfaceElement,
-                SurfaceGridElement,
+                LineSet,
+                PointSet,
+                Surface,
+                TensorGridSurface,
             ),
         ),
         default=list,

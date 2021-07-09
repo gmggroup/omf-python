@@ -5,9 +5,9 @@ from .blockmodel import (
     OctreeSubBlockModel,
     RegularBlockModel,
     RegularSubBlockModel,
-    TensorBlockModel,
+    TensorGridBlockModel,
 )
-from .composite import CompositeElement
+from .composite import Composite
 from .attribute import (
     Array,
     CategoryAttribute,
@@ -18,9 +18,9 @@ from .attribute import (
     StringAttribute,
     VectorAttribute,
 )
-from .lineset import LineSetElement
-from .pointset import PointSetElement
-from .surface import SurfaceElement, SurfaceGridElement
+from .lineset import LineSet
+from .pointset import PointSet
+from .surface import Surface, TensorGridSurface
 from .texture import ProjectedTexture, UVMappedTexture
 
 from .fileio import load, save, __version__

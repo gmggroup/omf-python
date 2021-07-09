@@ -7,7 +7,7 @@ import omf
 
 def test_lineset():
     """Test lineset geometry validation"""
-    elem = omf.lineset.LineSetElement()
+    elem = omf.lineset.LineSet()
     elem.vertices = np.random.rand(10, 3)
     assert elem.validate()
     elem.segments = np.random.randint(9, size=[5, 2])

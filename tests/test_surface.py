@@ -7,7 +7,7 @@ import omf
 
 def test_surface():
     """Test surface geometry validation"""
-    elem = omf.surface.SurfaceElement()
+    elem = omf.surface.Surface()
     elem.vertices = np.random.rand(10, 3)
     elem.triangles = np.random.randint(9, size=[5, 3])
     assert elem.validate()
@@ -23,7 +23,7 @@ def test_surface():
 
 def test_surfacegrid():
     """Test surface grid geometry validation"""
-    elem = omf.surface.SurfaceGridElement()
+    elem = omf.surface.TensorGridSurface()
     elem.tensor_u = [1.0, 1.0]
     elem.tensor_v = [2.0, 2.0, 2.0]
     assert elem.validate()

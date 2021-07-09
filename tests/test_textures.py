@@ -48,7 +48,7 @@ def test_uvmappedtexture(pngfile):
     tex.uv_coordinates = [[0.0, 0.5], [0.5, np.nan]]
     assert tex.validate()
 
-    points = omf.PointSetElement()
+    points = omf.PointSet()
     points.vertices = [[0.0, 0, 0], [1, 1, 1], [2, 2, 2]]
     points.textures = [tex]
     with pytest.raises(properties.ValidationError):
