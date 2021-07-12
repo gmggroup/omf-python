@@ -242,7 +242,9 @@ class StringList(BaseModel):
 
     @properties.List(
         "Shape of the string list",
-        properties.Integer(""), min_length=1, max_length=1,
+        properties.Integer(""),
+        min_length=1,
+        max_length=1,
     )
     def shape(self):
         """Array shape, determined directly from the array"""
