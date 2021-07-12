@@ -22,7 +22,7 @@ omf
     :alt: Code coverage
 
 
-Version: 1.0.1
+Version: 2.0.0a0
 
 API library for Open Mining Format, a new standard for mining data backed by
 the `Global Mining Guidelines Group <https://gmggroup.org>`_.

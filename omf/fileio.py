@@ -6,7 +6,7 @@ import zipfile
 
 from .base import Project
 
-__version__ = "1.0.1"
+__version__ = "2.0.0a0"
 OMF_VERSION = "2.0"
 
 

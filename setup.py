@@ -22,7 +22,7 @@ with open("README.rst") as f:
 
 setup(
     name="omf",
-    version="1.0.1",
+    version="2.0.0a0",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
         "numpy>=1.7",
