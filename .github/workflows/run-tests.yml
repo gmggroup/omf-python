@@ -24,3 +24,8 @@ jobs:
         run: make docker-lint
       - name: docs tests
         run: make docker-docs
+      - name: upload coverage to codecov
+        uses: codecov/codecov-action@v1
+        with:
+          files: ./.coverage
+          verbose: true
