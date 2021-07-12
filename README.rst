@@ -13,9 +13,9 @@ omf
     :target: https://github.com/gmggroup/omf/blob/master/LICENSE
     :alt: MIT license
 
-.. image:: https://api.travis-ci.org/gmggroup/omf.svg?branch=master
-    :target: https://travis-ci.org/gmggroup/omf
-    :alt: Travis tests
+.. image:: https://github.com/gmggroup/omf/actions/workflows/run-tests.yml/badge.svg
+    :target: https://github.com/gmggroup/omf/actions
+    :alt: Github actions
 
 .. image:: https://codecov.io/gh/gmggroup/omf/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/gmggroup/omf
