@@ -1,0 +1,19 @@
+name: Publish omf
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+  TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+      - name: publish
+        run: make publish
