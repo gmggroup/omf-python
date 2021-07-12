@@ -4,21 +4,17 @@
 OMF IO API
 ##########
 
-OMF Writer
-**********
-
-Batch export multiple different object types from a geological modeling software package.
+Save
+****
 
 .. image:: /images/ProjectExport.png
 
-.. autoclass:: omf.fileio.OMFWriter
+.. autofunction:: omf.fileio.save
 
 
-OMF Reader
-**********
-
-Select which objects from the file are to be imported into a 3D visualization software.
+Load
+****
 
 .. image:: /images/ProjectImport.png
 
-.. autoclass:: omf.fileio.OMFReader
+.. autofunction:: omf.fileio.load

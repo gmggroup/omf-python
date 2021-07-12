@@ -1,46 +1,30 @@
 .. _surfaces:
 
-Surface
-*******
-
-Transfer geological domains from 3D modelling software to Resource Estimation software.
+Surfaces
+********
 
 .. image:: /images/Surface.png
 
-Element
--------
-
-.. autoclass:: omf.surface.SurfaceElement
-
-Geometry
+Elements
 --------
-
-Surfaces have two available geometries: SurfaceGeometry, an unstructured triangular mesh,
-and SurfaceGridGeometry, a gridded mesh.
-
-SurfaceGeometry
-===============
 
 .. image:: /images/SurfaceGeometry.png
     :align: center
 
-.. autoclass:: omf.surface.SurfaceGeometry
-
-SurfaceGridGeometry
-===================
+.. autoclass:: omf.surface.Surface
 
 .. image:: /images/SurfaceGridGeometry.png
     :align: center
 
-.. autoclass:: omf.surface.SurfaceGridGeometry
+.. autoclass:: omf.surface.TensorGridSurface
 
-Data
-----
+Attributes
+----------
 
-Data is a list of :ref:`data <data>`. For Surfaces, :code:`location='vertices'`
-and :code:`location='faces'` are valid.
+Attributes is a list of :ref:`attributes <attributes>`. For Surfaces,
+:code:`location='vertices'` and :code:`location='faces'` are valid.
 
 Textures
 --------
 
-Textures are :ref:`ImageTexture <textures>` mapped to the Surface.
+Textures is a list of :ref:`textures` mapped to the Surface.

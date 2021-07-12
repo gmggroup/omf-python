@@ -1,27 +1,24 @@
-"""pointset.py: PointSet element and geometry"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-import properties
-
-from .base import ProjectElement, ProjectElementGeometry
-from .data import Vector3Array
-from .texture import ImageTexture
+"""pointset.py: PointSet element definition"""
+from .base import ProjectElement
+from .attribute import ArrayInstanceProperty
+from .texture import HasTexturesMixin
 
 
-class PointSetGeometry(ProjectElementGeometry):
-    """Contains spatial information of a point set"""
-    vertices = properties.Instance(
-        'Spatial coordinates of points relative to point set origin',
-        Vector3Array
+class PointSet(ProjectElement, HasTexturesMixin):
+    """Point set element defined by vertices"""
+
+    schema = "org.omf.v2.element.pointset"
+
+    vertices = ArrayInstanceProperty(
+        "Spatial coordinates of points relative to project origin",
+        shape=("*", 3),
+        dtype=float,
     )
 
-    _valid_locations = ('vertices',)
+    _valid_locations = ("vertices",)
 
     def location_length(self, location):
-        """Return correct data length based on location"""
+        """Return correct attribute length based on location"""
         return self.num_nodes
 
     @property
@@ -33,22 +30,3 @@ class PointSetGeometry(ProjectElementGeometry):
     def num_cells(self):
         """Number of cell centers (same as nodes)"""
         return self.num_nodes
-
-
-class PointSetElement(ProjectElement):
-    """Contains mesh, data, textures, and options of a point set"""
-    geometry = properties.Instance(
-        'Structure of the point set element',
-        instance_class=PointSetGeometry
-    )
-    textures = properties.List(
-        'Images mapped on the element',
-        prop=ImageTexture,
-        required=False,
-        default=list,
-    )
-    subtype = properties.StringChoice(
-        'Category of PointSet',
-        choices=('point', 'collar', 'blasthole'),
-        default='point'
-    )

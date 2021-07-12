@@ -1,9 +1,7 @@
 .. _pointsets:
 
-PointSet
-********
-
-Transfering LIDAR point-cloud data from surveying software into 3D modelling software packages.
+PointSets
+*********
 
 .. image:: /images/PointSet.png
     :scale: 80%
@@ -11,24 +9,19 @@ Transfering LIDAR point-cloud data from surveying software into 3D modelling sof
 Element
 -------
 
-.. autoclass:: omf.pointset.PointSetElement
-
-Geometry
---------
-
 .. image:: /images/PointSetGeometry.png
     :width: 80%
     :align: center
 
-.. autoclass:: omf.pointset.PointSetGeometry
+.. autoclass:: omf.pointset.PointSet
 
-Data
-----
+Attributes
+----------
 
-Data is a list of :ref:`data <data>`. For PointSets, only
+Attributes is a list of :ref:`attributes <attributes>`. For PointSets, only
 :code:`location='vertices'` is valid.
 
 Textures
 --------
 
-Textures are :ref:`ImageTexture <textures>` mapped to the PointSets.
+Textures is a list of :ref:`textures` mapped to the PointSet.

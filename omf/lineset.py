@@ -1,32 +1,35 @@
-"""lineset.py: LineSet element and geometry"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
+"""lineset.py: LineSet element definition"""
 import numpy as np
 import properties
 
-from .base import ProjectElement, ProjectElementGeometry
-from .data import Int2Array, Vector3Array
+from .base import ProjectElement
+from .attribute import ArrayInstanceProperty
 
 
-class LineSetGeometry(ProjectElementGeometry):
-    """Contains spatial information of a line set"""
-    vertices = properties.Instance(
-        'Spatial coordinates of line vertices relative to line set origin',
-        Vector3Array
+class LineSet(ProjectElement):
+    """Line set element defined by vertices connected by segments"""
+
+    schema = "org.omf.v2.element.lineset"
+
+    vertices = ArrayInstanceProperty(
+        "Spatial coordinates of line vertices relative to project origin",
+        shape=("*", 3),
+        dtype=float,
     )
-    segments = properties.Instance(
-        'Endpoint vertex indices of line segments',
-        Int2Array
+    segments = ArrayInstanceProperty(
+        "Endpoint vertex indices of line segments; if segments is not "
+        "specified, the vertices are connected in order, equivalent to "
+        "segments=[[0, 1], [1, 2], [2, 3], ...]",
+        shape=("*", 2),
+        dtype=int,
+        required=False,
     )
 
-    _valid_locations = ('vertices', 'segments')
+    _valid_locations = ("vertices", "segments")
 
     def location_length(self, location):
-        """Return correct data length based on location"""
-        if location == 'segments':
+        """Return correct attribute length based on location"""
+        if location == "segments":
             return self.num_cells
         return self.num_nodes
 
@@ -38,26 +41,19 @@ class LineSetGeometry(ProjectElementGeometry):
     @property
     def num_cells(self):
         """Number of cells (segments)"""
+        if self.segments is None:
+            return len(self.vertices.array) - 1
         return len(self.segments.array)
 
     @properties.validator
     def _validate_mesh(self):
         """Ensures segment indices are valid"""
+        if self.segments is None:
+            return True
         if np.min(self.segments.array) < 0:
-            raise ValueError('Segments may only have positive integers')
+            raise properties.ValidationError("Segments may only have positive integers")
         if np.max(self.segments.array) >= len(self.vertices.array):
-            raise ValueError('Segments expects more vertices than provided')
+            raise properties.ValidationError(
+                "Segments expects more vertices than provided"
+            )
         return True
-
-
-class LineSetElement(ProjectElement):
-    """Contains mesh, data, and options of a line set"""
-    geometry = properties.Instance(
-        'Structure of the line element',
-        instance_class=LineSetGeometry
-    )
-    subtype = properties.StringChoice(
-        'Category of LineSet',
-        choices=('line', 'borehole'),
-        default='line'
-    )

@@ -1,9 +1,7 @@
 .. _linesets:
 
-LineSet
-*******
-
-Transfer mapped geological contacts from a GIS software package into a 3D modelling software package to help construct a 3D model.
+LineSets
+********
 
 .. image:: /images/LineSet.png
     :scale: 80%
@@ -11,20 +9,15 @@ Transfer mapped geological contacts from a GIS software package into a 3D modell
 Element
 -------
 
-.. autoclass:: omf.lineset.LineSetElement
-
-Geometry
---------
-
 .. image:: /images/LineSetGeometry.png
     :width: 80%
     :align: center
 
-.. autoclass:: omf.lineset.LineSetGeometry
+.. autoclass:: omf.lineset.LineSet
 
-Data
-----
+Attributes
+----------
 
-Data is a list of :ref:`data <data>`. For Lines, :code:`location='vertices'`
-and :code:`location='segments'` are valid.
+Attributes is a list of :ref:`attributes <attributes>`. For LineSets,
+:code:`location='vertices'` and :code:`location='segments'` are valid.
 

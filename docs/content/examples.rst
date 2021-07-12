@@ -11,148 +11,145 @@ bottom of page).
 
 .. code:: python
 
+    import datetime
     import numpy as np
     import omf
 
     proj = omf.Project(
-        name='Test project',
-        description='Just some assorted elements'
+        name="Test project",
+        description="Just some assorted elements",
     )
-
-    pts = omf.PointSetElement(
-        name='Random Points',
-        description='Just random points',
-        geometry=omf.PointSetGeometry(
-            vertices=np.random.rand(100, 3)
-        ),
-        data=[
-            omf.ScalarData(
-                name='rand data',
+    pts = omf.PointSet(
+        name="Random Points",
+        description="Just random points",
+        vertices=np.random.rand(100, 3),
+        attributes=[
+            omf.NumericAttribute(
+                name="rand attr",
                 array=np.random.rand(100),
-                location='vertices'
+                location="vertices",
             ),
-            omf.ScalarData(
-                name='More rand data',
+            omf.NumericAttribute(
+                name="More rand attr",
                 array=np.random.rand(100),
-                location='vertices'
-            )
+                location="vertices",
+            ),
         ],
         textures=[
-            omf.ImageTexture(
-                name='test image',
-                image='test_image.png',
-                origin=[0, 0, 0],
+            omf.ProjectedTexture(
+                name="test image",
+                image="image.png",
+                corner=[0, 0, 0],
                 axis_u=[1, 0, 0],
-                axis_v=[0, 1, 0]
+                axis_v=[0, 1, 0],
             ),
-            omf.ImageTexture(
-                name='test image',
-                image='test_image.png',
-                origin=[0, 0, 0],
+            omf.ProjectedTexture(
+                name="test image",
+                image="image.png",
+                corner=[0, 0, 0],
                 axis_u=[1, 0, 0],
-                axis_v=[0, 0, 1]
-            )
+                axis_v=[0, 0, 1],
+            ),
         ],
-        color='green'
+        metadata={
+            "color": "green",
+        },
     )
-
-    lin = omf.LineSetElement(
-        name='Random Line',
-        geometry=omf.LineSetGeometry(
-            vertices=np.random.rand(100, 3),
-            segments=np.floor(np.random.rand(50, 2)*100).astype(int)
-        ),
-        data=[
-            omf.ScalarData(
-                name='rand vert data',
+    lin = omf.LineSet(
+        name="Random Line",
+        vertices=np.random.rand(100, 3),
+        segments=np.floor(np.random.rand(50, 2) * 100).astype(int),
+        attributes=[
+            omf.NumericAttribute(
+                name="rand vert attr",
                 array=np.random.rand(100),
-                location='vertices'
+                location="vertices",
             ),
-            omf.ScalarData(
-                name='rand segment data',
+            omf.NumericAttribute(
+                name="rand segment attr",
                 array=np.random.rand(50),
-                location='segments'
-            )
+                location="segments",
+            ),
         ],
-        color='#0000FF'
+        metadata={
+            "color": "#0000FF",
+        },
     )
-
-    surf = omf.SurfaceElement(
-        name='trisurf',
-        geometry=omf.SurfaceGeometry(
-            vertices=np.random.rand(100, 3),
-            triangles=np.floor(np.random.rand(50, 3)*100).astype(int)
-        ),
-        data=[
-            omf.ScalarData(
-                name='rand vert data',
+    surf = omf.Surface(
+        name="trisurf",
+        vertices=np.random.rand(100, 3),
+        triangles=np.floor(np.random.rand(50, 3) * 100).astype(int),
+        attributes=[
+            omf.NumericAttribute(
+                name="rand vert attr",
                 array=np.random.rand(100),
-                location='vertices'
+                location="vertices",
             ),
-            omf.ScalarData(
-                name='rand face data',
+            omf.NumericAttribute(
+                name="rand face attr",
                 array=np.random.rand(50),
-                location='faces'
-            )
-        ],
-        color=[100, 200, 200]
-    )
-
-    grid = omf.SurfaceElement(
-        name='gridsurf',
-        geometry=omf.SurfaceGridGeometry(
-            tensor_u=np.ones(10).astype(float),
-            tensor_v=np.ones(15).astype(float),
-            origin=[50., 50., 50.],
-            axis_u=[1., 0, 0],
-            axis_v=[0, 0, 1.],
-            offset_w=np.random.rand(11, 16).flatten()
-        ),
-        data=[
-            omf.ScalarData(
-                name='rand vert data',
-                array=np.random.rand(11, 16).flatten(),
-                location='vertices'
+                location="faces",
             ),
-            omf.ScalarData(
-                name='rand face data',
-                array=np.random.rand(10, 15).flatten(order='f'),
-                location='faces'
-            )
+        ],
+        metadata={
+            "color": [100, 200, 200],
+        },
+    )
+    grid = omf.TensorGridSurface(
+        name="gridsurf",
+        tensor_u=np.ones(10).astype(float),
+        tensor_v=np.ones(15).astype(float),
+        corner=[50.0, 50.0, 50.0],
+        axis_u=[1.0, 0, 0],
+        axis_v=[0, 0, 1.0],
+        offset_w=np.random.rand(11 * 16),
+        attributes=[
+            omf.NumericAttribute(
+                name="rand vert attr",
+                array=np.random.rand(11 * 16),
+                location="vertices",
+            ),
+            omf.NumericAttribute(
+                name="rand face attr",
+                array=np.random.rand(10 * 15),
+                location="faces",
+            ),
         ],
         textures=[
-            omf.ImageTexture(
-                name='test image',
-                image='test_image.png',
-                origin=[2., 2., 2.],
-                axis_u=[5., 0, 0],
-                axis_v=[0, 2., 5.]
-            )
-        ]
+            omf.ProjectedTexture(
+                name="test image",
+                image="image.png",
+                corner=[2.0, 2.0, 2.0],
+                axis_u=[5.0, 0, 0],
+                axis_v=[0, 2.0, 5.0],
+            ),
+        ],
     )
-
-    vol = omf.VolumeElement(
-        name='vol',
-        geometry=omf.VolumeGridGeometry(
-            tensor_u=np.ones(10).astype(float),
-            tensor_v=np.ones(15).astype(float),
-            tensor_w=np.ones(20).astype(float),
-            origin=[10., 10., -10]
-        ),
-        data=[
-            omf.ScalarData(
-                name='Random Data',
-                location='cells',
-                array=np.random.rand(10, 15, 20).flatten()
-            )
-        ]
+    vol = omf.TensorGridBlockModel(
+        name="vol",
+        tensor_u=np.ones(10).astype(float),
+        tensor_v=np.ones(15).astype(float),
+        tensor_w=np.ones(20).astype(float),
+        corner=[10.0, 10.0, -10],
+        attributes=[
+            omf.NumericAttribute(
+                name="random attr", location="cells", array=np.random.rand(10 * 15 * 20)
+            ),
+        ],
     )
 
     proj.elements = [pts, lin, surf, grid, vol]
 
+    proj.metadata = {
+        "coordinate_reference_system": "epsg 3857",
+        "date_created": datetime.datetime.utcnow(),
+        "version": "v1.3",
+        "revision": "10",
+    }
+
     assert proj.validate()
 
-    omf.OMFWriter(proj, 'omfproj.omf')
+    omf.save(proj, "output.omf")
 
 
 Piecewise building example:
@@ -160,8 +157,7 @@ Piecewise building example:
 .. code:: python
 
     ...
-    pts = omf.PointSetElement()
+    pts = omf.PointSet()
     pts.name = 'Random Points',
-    pts.mesh = omf.PointSetGeometry()
-    pts.mesh.vertices = np.random.rand(100, 3)
+    pts.vertices = np.random.rand(100, 3)
     ...

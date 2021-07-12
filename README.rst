@@ -2,30 +2,38 @@ omf
 ***
 
 .. image:: https://img.shields.io/pypi/v/omf.svg
-    :target: https://pypi.python.org/pypi/omf
+    :target: https://pypi.org/project/omf/
     :alt: Latest PyPI version
 
 .. image:: https://readthedocs.org/projects/omf/badge/?version=stable
-    :target: http://omf.readthedocs.io/en/latest/
+    :target: https://omf.readthedocs.io/en/latest/
     :alt: Documentation
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
     :target: https://github.com/gmggroup/omf/blob/master/LICENSE
     :alt: MIT license
 
-.. image:: https://travis-ci.org/gmggroup/omf.svg?branch=master
-    :target: https://travis-ci.org/gmggroup/omf
-    :alt: Travis tests
+.. image:: https://github.com/gmggroup/omf/actions/workflows/run-tests.yml/badge.svg
+    :target: https://github.com/gmggroup/omf/actions
+    :alt: Github actions
 
 .. image:: https://codecov.io/gh/gmggroup/omf/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/gmggroup/omf
     :alt: Code coverage
 
 
-Version: 1.0.1
+Version: 2.0.0a0
 
 API library for Open Mining Format, a new standard for mining data backed by
 the `Global Mining Guidelines Group <https://gmggroup.org>`_.
+
+.. warning::
+    **Pre-Release Notice**
+
+    Version 2 of the Open Mining Format (OMF) and the associated Python API
+    is under active development, and subject to backwards-incompatible changes
+    at any time. The latest stable release of Version 1 is
+    `available on PyPI <https://pypi.org/project/omf/1.0.1/>`_.
 
 Why?
 ----
@@ -83,8 +91,9 @@ Or from `github <https://github.com/gmggroup/omf>`_:
 3D Visualization
 ----------------
 
-To easily visualize OMF project files and data objects in a pure Python environment, check out ``omfvtk`` (`OMF-VTK`_) which provides tools for creating interactive renderings of OMF datasets using ``vtki`` (the vtkInterface_).
+To easily visualize OMF project files and data objects in a pure Python environment,
+check out omfvista_ which provides a module for loading OMF datasets into PyVista_
+mesh objects for 3D visualization and analysis.
 
-.. _OMF-VTK: https://github.com/OpenGeoVis/omfvtk
-
-.. _vtkInterface: https://github.com/akaszynski/vtki
+.. _omfvista: https://github.com/OpenGeoVis/omfvista
+.. _PyVista: https://github.com/pyvista/pyvista
