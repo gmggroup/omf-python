@@ -1,11 +1,11 @@
-"""pointset.py: PointSet element and geometry"""
+"""pointset.py: PointSet element definition"""
 from .base import ProjectElement
 from .attribute import ArrayInstanceProperty
 from .texture import HasTexturesMixin
 
 
 class PointSet(ProjectElement, HasTexturesMixin):
-    """Contains point set spatial information and attributes"""
+    """Point set element defined by vertices"""
 
     schema = "org.omf.v2.element.pointset"
 
@@ -18,7 +18,6 @@ class PointSet(ProjectElement, HasTexturesMixin):
     _valid_locations = ("vertices",)
 
     def location_length(self, location):
-
         """Return correct attribute length based on location"""
         return self.num_nodes
 

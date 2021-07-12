@@ -126,13 +126,13 @@ class TensorGridBlockModel(BaseBlockModel):
         dtype=float,
     )
 
-    _valid_locations = ("vertices", "cells")
+    _valid_locations = ("vertices", "cells", "parent_blocks")
 
     def location_length(self, location):
         """Return correct attribute length based on location"""
-        if location == "cells":
-            return self.num_cells
-        return self.num_nodes
+        if location == "vertices":
+            return self.num_nodes
+        return self.num_cells
 
     def _tensors_defined(self):
         """Check if all tensors are defined"""
@@ -194,7 +194,7 @@ class RegularBlockModel(BaseBlockModel):
         dtype=(int, bool),
     )
 
-    _valid_locations = ("cells",)
+    _valid_locations = ("cells", "parent_blocks")
 
     @properties.Array(
         "Compressed block index - used for indexing attributes "
@@ -273,7 +273,7 @@ class RegularBlockModel(BaseBlockModel):
 
 
 class RegularSubBlockModel(BaseBlockModel):
-    """Regular block model with an additional level of sub-blocks"""
+    """Block model with one level of sub-blocking possible in each parent block"""
 
     schema = "org.omf.v2.elements.blockmodel.sub"
 
@@ -413,7 +413,7 @@ class RegularSubBlockModel(BaseBlockModel):
 
 
 class OctreeSubBlockModel(BaseBlockModel):
-    """Block model where sub-blocks follow an octree pattern"""
+    """Block model where sub-blocks follow an octree pattern in each parent"""
 
     schema = "org.omf.v2.elements.blockmodel.octree"
 

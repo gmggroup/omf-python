@@ -1,9 +1,9 @@
 .. _composites:
 
-Composite Element
-*****************
+Composites
+**********
 
-Composite Elements are used to compose multiple other elements into
+Composites are used to compose multiple other elements into
 a single, more complex, grouped object.
 
 

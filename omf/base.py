@@ -6,7 +6,11 @@ import properties.extras
 
 
 class BaseModel(properties.HasProperties):
-    """BaseModel is a HasProperties object with schema"""
+    """BaseModel is a HasProperties subclass with schema
+
+    When deserializing, this class prioritizes schema value over __class__
+    to decide the class.
+    """
 
     schema = ""
 
@@ -189,11 +193,19 @@ class ContentModel(BaseModel):
 
 
 class ProjectElementAttribute(ContentModel):
-    """Attribute array with values at specific locations on the mesh"""
+    """Attribute with values at specific locations on the mesh"""
 
     location = properties.StringChoice(
         "Location of the attribute on mesh",
-        choices=("vertices", "segments", "faces", "cells", "elements"),
+        choices=(
+            "vertices",
+            "segments",
+            "faces",
+            "cells",
+            "parent_blocks",
+            "sub_blocks",
+            "elements",
+        ),
     )
     metadata = ArbitraryMetadataDict(
         "Attribute metadata",
@@ -208,10 +220,9 @@ class ProjectElementAttribute(ContentModel):
 
 
 class ProjectElement(ContentModel):
-    """Base ProjectElement class for OMF file
+    """Base class for all OMF elements
 
-    ProjectElement subclasses must define their geometric definition.
-    ProjectElements include PointSet, LineSet, Surface, and Volume
+    ProjectElement subclasses must define their geometry.
     """
 
     attributes = properties.List(
@@ -259,7 +270,11 @@ class ProjectElement(ContentModel):
 
 
 class Project(ContentModel):
-    """OMF Project for serializing to .omf file"""
+    """OMF Project for holding all elements and metadata
+
+    Save these objects to OMF files with :meth:`omf.fileio.save` and
+    load them with :meth:`omf.fileio.load`
+    """
 
     schema = "org.omf.v2.project"
 

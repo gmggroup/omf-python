@@ -1,4 +1,4 @@
-"""texture.py: contains ImageTexture definition"""
+"""texture.py: contains Texture definitions"""
 import io
 import uuid
 
@@ -9,7 +9,15 @@ from .attribute import ArrayInstanceProperty
 
 
 class Image(BaseModel):
-    """Class for setting PNG image"""
+    """Class to validate and serialize a PNG image
+
+    Data type and size are computed directly from the image.
+
+    Serializing and deserializing this class requires passing an additional
+    keyword argument :code:`binary_dict` where the image binary is persisted.
+    The serialized JSON includes image metadata and a UUID; this UUID
+    is the key in the binary_dict.
+    """
 
     schema = "org.omf.v2.image.png"
 
@@ -67,7 +75,7 @@ class Image(BaseModel):
 
 
 class ProjectedTexture(ContentModel):
-    """Contains an image that can be projected onto a point set or surface"""
+    """Image located in space to be projected at its normal onto an element"""
 
     schema = "org.omf.v2.texture.projected"
 
@@ -90,7 +98,7 @@ class ProjectedTexture(ContentModel):
 
 
 class UVMappedTexture(ContentModel):
-    """Contains an image that is UV mapped to a geometry"""
+    """Image mapped to surface where uv coordinates correspond to vertices"""
 
     image = properties.Instance(
         "PNG image file",

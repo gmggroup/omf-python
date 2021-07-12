@@ -1,9 +1,7 @@
-.. _volumes:
+.. _blockmodels:
 
 Block Models
 ************
-
-Transferring a block model from Resource Estimation software into Mine planning software.
 
 .. image:: /images/VolumeGrid.png
     :scale: 80%
@@ -28,4 +26,5 @@ Element
 Attributes
 ----------
 
-Attributes is a list of :ref:`attributes <attributes>`.
+Attributes is a list of :ref:`attributes <attributes>`. For block models,
+:code:`location='parent_blocks'` and :code:`location='sub_blocks'` are valid.

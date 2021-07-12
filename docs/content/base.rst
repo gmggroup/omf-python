@@ -6,8 +6,8 @@ Other Classes
 Project Element
 ---------------
 
-Available elements are :ref:`pointsets`, :ref:`linesets`, :ref:`surfaces`, and
-:ref:`volumes`; :ref:`projects` are built with elements.
+Available elements are :ref:`pointsets`, :ref:`linesets`, :ref:`surfaces`,
+:ref:`blockmodels`, and :ref:`composites`; :ref:`projects` are built with elements.
 
 .. autoclass:: omf.base.ProjectElement
 

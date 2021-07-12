@@ -4,16 +4,16 @@
 OMF IO API
 ##########
 
-OMF Writer
-**********
+Save
+****
 
 .. image:: /images/ProjectExport.png
 
 .. autofunction:: omf.fileio.save
 
 
-OMF Reader
-**********
+Load
+****
 
 .. image:: /images/ProjectImport.png
 

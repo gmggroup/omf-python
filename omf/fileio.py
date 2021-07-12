@@ -11,16 +11,18 @@ OMF_VERSION = "2.0"
 
 
 def save(project, filename, mode="x"):
-    """save serializes a OMF project to a file
+    """Serialize a OMF project to a file
 
     The .omf file is a ZIP archive containing the project JSON
     with pointers to separate files for each binary array/image.
 
-    .. code::
+    **Inputs:**
 
-        proj = omf.project()
-        ...
-        omf.save(proj, 'outfile.omf')
+    * **project** - Instance of :class:`omf.base.Project` to be saved
+    * **filename** - Name and path of output OMF file. If not already present,
+      ".omf" will be appended
+    * **mode** - Valid values are "w" or "x" - if file exists, "w" will
+      overwrite and "x" will error. Default is "X"
     """
     time_tuple = datetime.datetime.utcnow().timetuple()[:6]
     if mode not in ("w", "x"):
@@ -31,7 +33,7 @@ def save(project, filename, mode="x"):
         raise ValueError("File already exists: {}".format(filename))
     project.validate()
     binary_dict = {}
-    serial_dict = project.serialize(binary_dict=binary_dict)
+    serial_dict = project.serialize(binary_dict=binary_dict, include_class=False)
     serial_dict["version"] = OMF_VERSION
     with zipfile.ZipFile(
         file=filename,
@@ -56,11 +58,33 @@ def save(project, filename, mode="x"):
 
 
 def load(filename, include_binary=True, project_json=None):
-    """load deserializes an OMF file into a project
+    """Deserialize an OMF file into a project
 
-    Optionally, :code:`include_binary=False` may be specified. This
-    will only load the project JSON without loading the
-    binary data into memory.
+    **Inputs:**
+
+    * **filename** - Name and path of input OMF file
+    * **include_binary** - If True, binary data from the OMF file will be
+      loaded into memory. Default is True
+    * **project_json** - Alternative JSON used to construct the output OMF
+      project. By default, the project JSON from the OMF file is used.
+
+    The most common use of this function is simply to load an entire OMF
+    file:
+
+    .. code::
+
+        import omf
+        proj = omf.load('my_project.omf')
+
+    However, if the OMF file is too big, you may partially load it with
+    something like:
+
+    .. code::
+
+        import omf
+        proj_no_bin = omf.load('my_project.omf', include_binary=False)
+        ...  # Mutate proj_no_bin to include only the desired elements/attributes
+        proj = omf.load('my_project.omf', project_json=proj_no_bin.serialize())
     """
     with zipfile.ZipFile(
         file=filename,
@@ -87,7 +111,10 @@ def load(filename, include_binary=True, project_json=None):
 
 
 def check_omf_version(file_version):
-    """Validate file version compatibility against the current OMF version"""
+    """Validate file version compatibility against the current OMF version
+
+    This logic may become more complex with future releases.
+    """
     if file_version is None:
         return True
     return file_version == OMF_VERSION
