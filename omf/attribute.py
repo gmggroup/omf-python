@@ -27,12 +27,20 @@ DATA_TYPE_LOOKUP_TO_STRING = {
 
 
 class Array(BaseModel):
-    """Class with unique ID and data array"""
+    """Class to validate and serialize a 1D or 2D numpy array
+
+    Data type, size, shape are computed directly from the array.
+
+    Serializing and deserializing this class requires passing an additional
+    keyword argument :code:`binary_dict` where the array binary is persisted.
+    The serialized JSON includes array metadata and a UUID; this UUID
+    is the key in the binary_dict.
+    """
 
     schema = "org.omf.v2.array.numeric"
 
     array = properties.Array(
-        "Shared Scalar Array",
+        "1D or 2D numpy array wrapped by the Array instance",
         shape={("*",), ("*", "*")},
         dtype=(int, float, bool),
         serializer=lambda *args, **kwargs: None,
@@ -82,7 +90,7 @@ class Array(BaseModel):
 
     @properties.Integer("Size of array in bytes")
     def size(self):
-        """Total size of the array in bytes"""
+        """Total size of the array in bytes, determined directly from the array"""
         if self.array is None:
             return None
         if self.data_type == "BooleanArray":  # pylint: disable=W0143
@@ -130,7 +138,15 @@ class Array(BaseModel):
 class ArrayInstanceProperty(properties.Instance):
     """Instance property for OMF Array objects
 
-    This adds additional shape and dtype validation.
+    This is a custom :class:`Instance <properties.Instance>` property
+    that has :code:`instance_class` set as :class:`Array <omf.attribute.Array>`.
+    It exposes additional keyword arguments that further validate the
+    shape and data type of the array.
+
+    **Available keywords**:
+
+    * **shape** - Valid array shape(s), as described by :class:`properties.Array`
+    * **dtype** - Valid array dtype(s), as described by :class:`properties.Array`
     """
 
     def __init__(self, doc, **kwargs):
@@ -170,9 +186,26 @@ class ArrayInstanceProperty(properties.Instance):
             value.array = self.validator_prop.validate(instance, value.array)
         return value
 
+    @property
+    def info(self):
+        info = "{instance_info} with shape {shape} and dtype {dtype}".format(
+            instance_info=super().info,
+            shape=self.shape,
+            dtype=self.dtype,
+        )
+        return info
+
 
 class StringList(BaseModel):
-    """Array-like class with unique ID and string-list array"""
+    """Class to validate and serialize a large list of strings
+
+    Data type, size, shape are computed directly from the list.
+
+    Serializing and deserializing this class requires passing an additional
+    keyword argument :code:`binary_dict` where the string list is persisted.
+    The serialized JSON includes array metadata and a UUID; this UUID
+    is the key in the binary_dict.
+    """
 
     schema = "org.omf.v2.array.string"
 
@@ -210,6 +243,8 @@ class StringList(BaseModel):
     @properties.List(
         "Shape of the string list",
         properties.Integer(""),
+        min_length=1,
+        max_length=1,
     )
     def shape(self):
         """Array shape, determined directly from the array"""
@@ -251,7 +286,25 @@ class StringList(BaseModel):
 
 
 class ContinuousColormap(ContentModel):
-    """Color gradient with min/max values, used with NumericAttribute"""
+    """Color gradient with min/max values, used with NumericAttribute
+
+    When this colormap is applied to a numeric attribute the attribute
+    values between the limits are colored based on the gradient values.
+    Any attribute value below and above the limits are colored with the
+    first and last gradient values, respectively.
+
+    .. code::
+
+      #   gradient
+      #
+      #     RGB4 -                   x - - - - - - ->
+      #     RGB3 -                  /
+      #     RGB2 -                 /
+      #     RGB1 -                /
+      #     RGB0 -  <- - - - - - x
+      #             <------------|---|--------------> attribute values
+      #                          limits
+    """
 
     schema = "org.omf.v2.colormap.scalar"
 
@@ -290,7 +343,31 @@ class ContinuousColormap(ContentModel):
 
 
 class DiscreteColormap(ContentModel):
-    """Colormap for grouping discrete intervals of NumericAttribute"""
+    """Colormap for grouping discrete intervals of NumericAttribute
+
+    This colormap creates n+1 intervals where n is the length of end_points.
+    Attribute values between -inf and the first end point correspond to
+    the first color; attribute values between the first and second end point
+    correspond to the second color; and so on until attribute values between
+    the last end point and inf correspond to the last color.
+
+    The end_inclusive property dictates if attribute values that equal the
+    end point are in the lower interval (end_inclusive is True) or the upper
+    interval (end_inclusive is False).
+
+    .. code::
+
+      #   colors
+      #
+      #    RGB2                         x - - - - ->
+      #
+      #    RGB1                 x - - - o
+      #
+      #    RGB0    <- - - - - - o
+      #
+      #            <------------|--------|------------> attribute values
+      #                          end_points
+    """
 
     schema = "org.omf.v2.colormap.discrete"
 
@@ -334,7 +411,7 @@ class DiscreteColormap(ContentModel):
 
 
 class NumericAttribute(ProjectElementAttribute):
-    """Attribute array with scalar values"""
+    """Attribute with scalar values and optional continuous or discrete colormap"""
 
     schema = "org.omf.v2.attribute.numeric"
 
@@ -351,9 +428,9 @@ class NumericAttribute(ProjectElementAttribute):
 
 
 class VectorAttribute(ProjectElementAttribute):
-    """Attribute array with vector values
+    """Attribute with 2D or 3D vector values
 
-    This Attribute type cannot have a colormap, since you cannot map colormaps
+    This attribute type cannot have a colormap, since you cannot map colormaps
     to vectors.
     """
 
@@ -367,7 +444,11 @@ class VectorAttribute(ProjectElementAttribute):
 
 
 class StringAttribute(ProjectElementAttribute):
-    """Attribute consisting of a list of strings or datetimes"""
+    """Attribute with a list of strings or datetimes
+
+    This attribute type cannot have a colormap; to use colors with strings,
+    use :class:`omf.attribute.CategoryAttribute` instead.
+    """
 
     schema = "org.omf.v2.attribute.string"
 
@@ -380,7 +461,24 @@ class StringAttribute(ProjectElementAttribute):
 
 
 class CategoryColormap(ContentModel):
-    """Legends to be used with CategoryAttribute indices"""
+    """Legends to be used with CategoryAttribute
+
+    Every index in the CategoryAttribute array must correspond to a string
+    value (the "category") and may additionally correspond to a color.
+
+    .. code::
+
+      #  values  colors
+      #
+      #    --     RGB2                          x
+      #
+      #    --     RGB1            x
+      #
+      #    --     RGB0       x
+      #
+      #                      |    |             |   <- attribute values
+      #                          indices
+    """
 
     schema = "org.omf.v2.colormap.category"
 
@@ -400,6 +498,7 @@ class CategoryColormap(ContentModel):
 
     @properties.validator
     def _validate_lengths(self):
+        """Validate indices, values, and colors are all the same length"""
         if len(self.indices) != len(self.values):
             pass
         elif self.colors is None or len(self.colors) == len(self.values):
@@ -410,10 +509,10 @@ class CategoryColormap(ContentModel):
 
 
 class CategoryAttribute(ProjectElementAttribute):
-    """Attribute array of indices linked to category values
+    """Attribute of indices linked to category values
 
-    For no attribute, indices should correspond to a value outside the
-    range of the categories.
+    To specify no data, index value in the array should be any value
+    not present in the categories.
     """
 
     schema = "org.omf.v2.attribute.category"

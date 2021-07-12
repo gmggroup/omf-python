@@ -1,9 +1,7 @@
 .. _surfaces:
 
-Surface
-*******
-
-Transfer geological domains from 3D modelling software to Resource Estimation software.
+Surfaces
+********
 
 .. image:: /images/Surface.png
 
@@ -29,4 +27,4 @@ Attributes is a list of :ref:`attributes <attributes>`. For Surfaces,
 Textures
 --------
 
-Textures are :ref:`ImageTexture <textures>` mapped to the Surface.
+Textures is a list of :ref:`textures` mapped to the Surface.

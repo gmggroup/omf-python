@@ -1,18 +1,11 @@
 .. _projects:
 
-Project
-*******
+Projects
+********
 
-Projects contain a list of :ref:`pointsets`, :ref:`linesets`, :ref:`surfaces`, and
-:ref:`volumes`. Projects can be serialized to file using :code:`OMFWriter`:
-
-.. code:: python
-
-    proj = omf.Project()
-    ...
-    proj.elements = [...]
-    ...
-    OMFWriter(proj, 'outfile.omf')
+Projects contain a list of :ref:`pointsets`, :ref:`linesets`, :ref:`surfaces`,
+:ref:`blockmodels`, and :ref:`composites`. Projects can be serialized and
+deserialized to file using :meth:`omf.fileio.save` and :meth:`omf.fileio.load`.
 
 For more details on how to build a project, see the :ref:`examples`.
 

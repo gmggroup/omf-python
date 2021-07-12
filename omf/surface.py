@@ -1,4 +1,4 @@
-"""surface.py: Surface element and geometry"""
+"""surface.py: Surface element definitions"""
 import numpy as np
 import properties
 
@@ -30,7 +30,7 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
 
 
 class Surface(BaseSurfaceElement):  # pylint: disable=R0901
-    """Contains triangulated surface spatial information and attributes"""
+    """Surface element defined by vertices connected by triangles"""
 
     schema = "org.omf.v2.element.surface"
 
@@ -57,6 +57,7 @@ class Surface(BaseSurfaceElement):  # pylint: disable=R0901
 
     @properties.validator
     def _validate_mesh(self):
+        """Ensure triangles values are valid indices"""
         if np.min(self.triangles.array) < 0:
             raise properties.ValidationError(
                 "Triangles may only have positive integers"
@@ -69,7 +70,7 @@ class Surface(BaseSurfaceElement):  # pylint: disable=R0901
 
 
 class TensorGridSurface(BaseSurfaceElement):  # pylint: disable=R0901
-    """Contains 2D grid spatial information and attributes"""
+    """Surface element defined by grid with variable spacing in both dimensions"""
 
     schema = "org.omf.v2.element.surfacetensorgrid"
 

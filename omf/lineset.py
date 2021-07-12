@@ -1,4 +1,4 @@
-"""lineset.py: LineSet element and geometry"""
+"""lineset.py: LineSet element definition"""
 import numpy as np
 import properties
 
@@ -7,7 +7,7 @@ from .attribute import ArrayInstanceProperty
 
 
 class LineSet(ProjectElement):
-    """Contains line set spatial information and attributes"""
+    """Line set element defined by vertices connected by segments"""
 
     schema = "org.omf.v2.element.lineset"
 

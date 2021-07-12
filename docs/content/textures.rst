@@ -1,7 +1,10 @@
 .. _textures:
 
+Textures
+********
+
 Projected Texture
-*****************
+-----------------
 
 Projected textures are images that exist in space and are mapped to their
 corresponding elements. Unlike attributes, they do not need to correspond to mesh
@@ -21,33 +24,11 @@ This allows the image to be rotated and/or skewed.
 These values are independent of the corresponding Surface; in fact, there is
 nothing requiring the image to actually align with the Surface.
 
-.. code:: python
-
-    >> ...
-    >> my_surface = omf.Surface(...)
-    >> ...
-    >> my_tex_1 = omf.ProjectedTexture(
-           corner=[0.0, 0.0, 0.0],
-           axis_u=[1.0, 0.0, 0.0],
-           axis_v=[0.0, 1.0, 0.0],
-           image='image1.png'
-       )
-    >> my_tex_2 = omf.ProjectedTexture(
-           corner=[0.0, 0.0, 0.0],
-           axis_u=[1.0, 0.0, 0.0],
-           axis_v=[0.0, 0.0, 1.0],
-           image='image2.png'
-       )
-    >> my_surface.textures = [
-           my_tex_1,
-           my_tex_2
-       ]
-
 .. autoclass:: omf.texture.ProjectedTexture
 
 
 UV Mapped Textures
-******************
+------------------
 
 Rather than being projected onto points or a surface, UV Mapped Textures
 are given normalized UV coordinates which correspond to element
@@ -56,6 +37,6 @@ vertices. This allows arbitrary mapping of images to surfaces.
 .. autoclass:: omf.texture.UVMappedTexture
 
 Image
-*****
+-----
 
 .. autoclass:: omf.texture.Image

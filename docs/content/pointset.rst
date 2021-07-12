@@ -1,9 +1,7 @@
 .. _pointsets:
 
-PointSet
-********
-
-Transfering LIDAR point-cloud data from surveying software into 3D modelling software packages.
+PointSets
+*********
 
 .. image:: /images/PointSet.png
     :scale: 80%
@@ -26,4 +24,4 @@ Attributes is a list of :ref:`attributes <attributes>`. For PointSets, only
 Textures
 --------
 
-Textures are :ref:`ImageTexture <textures>` mapped to the PointSets.
+Textures is a list of :ref:`textures` mapped to the PointSet.
