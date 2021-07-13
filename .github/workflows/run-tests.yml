@@ -24,8 +24,7 @@ jobs:
         run: make docker-lint
       - name: docs tests
         run: make docker-docs
-      - run: echo ${PWD}
-      - run: sed -i "s+/usr/src/app+${PWD}+g" ./.coverage
+      - run: sed -i "s+/usr/src/app+/omf+g" ./.coverage
       - name: upload coverage to codecov
         uses: codecov/codecov-action@v1
         with:
