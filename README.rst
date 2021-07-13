@@ -17,10 +17,6 @@ omf
     :target: https://github.com/gmggroup/omf/actions
     :alt: Github actions
 
-.. image:: https://codecov.io/gh/gmggroup/omf/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/gmggroup/omf
-    :alt: Code coverage
-
 
 Version: 2.0.0a0
 
@@ -77,7 +73,7 @@ To install the repository, ensure that you have
 
 .. code::
 
-    pip install omf
+    pip install --pre omf
 
 Or from `github <https://github.com/gmggroup/omf>`_:
 
