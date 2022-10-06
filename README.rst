@@ -10,22 +10,30 @@ omf
     :alt: Documentation
 
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
-    :target: https://github.com/aranzgeo/omf/blob/master/LICENSE
+    :target: https://github.com/GMSGDataExchange/omf/blob/master/LICENSE
     :alt: MIT license
 
-.. image:: https://travis-ci.org/aranzgeo/omf.svg?branch=master
-    :target: https://travis-ci.org/aranzgeo/omf
+.. image:: https://travis-ci.org/GMSGDataExchange/omf.svg?branch=master
+    :target: https://travis-ci.org/GMSGDataExchange/omf
     :alt: Travis tests
 
-.. image:: https://codecov.io/gh/aranzgeo/omf/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/aranzgeo/omf
+.. image:: https://codecov.io/gh/GMSGDataExchange/omf/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/GMSGDataExchange/omf
     :alt: Code coverage
 
 
-Version: 0.9.0
+Version: 0.9.3
 
 API library for Open Mining Format, a new standard for mining data backed by
 the `Global Mining Standards & Guidelines Group <http://www.globalminingstandards.org/>`_.
+
+.. warning::
+    **Pre-Release Notice**
+
+    This is a Beta release of the Open Mining Format (OMF) and the associated
+    Python API. The storage format and libraries might be changed in
+    backward-incompatible ways and are not subject to any SLA or deprecation
+    policy.
 
 Why?
 ----
@@ -57,10 +65,9 @@ used in the mining community.
 Connections
 -----------
 
-This library makes use of the `properties <https://github.com/3ptscience/properties>`_
+This library makes use of the `properties <https://github.com/seequent/properties>`_
 open-source project, which is designed and publicly supported by
-`3point Science <https://www.3ptscience.com>`_, an
-`ARANZ Geo Limited <http://www.aranzgeo.com>`_ company.
+`Seequent <https://seequent.com>`_.
 
 Installation
 ------------
@@ -72,10 +79,10 @@ To install the repository, ensure that you have
 
     pip install omf
 
-Or from `github <https://github.com/aranzgeo/omf>`_:
+Or from `github <https://github.com/GMSGDataExchange/omf>`_:
 
 .. code::
 
-    git clone https://github.com/aranzgeo/omf.git
+    git clone https://github.com/GMSGDataExchange/omf.git
     cd omf
     pip install -e .

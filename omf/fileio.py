@@ -47,12 +47,11 @@ class OMFWriter(object):
         if len(fname) < 4 or fname[-4:] != '.omf':
             fname = fname + '.omf'
         self.fname = fname
-        fopen = open(fname, 'wb')
-        self.initialize_header(fopen, project.uid)
-        self.project_json = project.serialize(open_file=fopen)
-        self.update_header(fopen)
-        fopen.write(json.dumps(self.project_json).encode('utf-8'))
-        fopen.close()
+        with open(fname, 'wb') as fopen:
+            self.initialize_header(fopen, project.uid)
+            self.project_json = project.serialize(open_file=fopen)
+            self.update_header(fopen)
+            fopen.write(json.dumps(self.project_json).encode('utf-8'))
 
     @staticmethod
     def initialize_header(fopen, uid):
@@ -81,37 +80,78 @@ class OMFWriter(object):
 
 
 class OMFReader(object):
-    """OMFReader takes a filename and returns an OMF project
+    """OMFReader deserializes an OMF file.
 
     .. code::
 
-        proj = omf.OMFReader('infile.omf')
+        # Read all elements
+        reader = omf.OMFReader('infile.omf')
+        project = reader.get_project()
+
+        # Read all PointSets:
+        reader = omf.OMFReader('infile.omf')
+        project = reader.get_project_overview()
+        uids_to_import = [element.uid for element in project.elements
+                          if isinstance(element, omf.PointSetElement)]
+        filtered_project = reader.get_project(uids_to_import)
 
     """
 
-    def __new__(cls, fopen):
-        """Project serialization is performed on OMFWriter init"""
+    def __init__(self, fopen):
         if isinstance(fopen, string_types):
             fopen = open(fopen, 'rb')
-            opened_on_start = True
-        else:
-            opened_on_start = False
+        self._fopen = fopen
         fopen.seek(0, 0)
-        uid, json_start = cls.read_header(fopen)
-        project_json = cls.read_json(fopen, json_start)
-        project = UidModel.deserialize(
-            uid=uid, registry=project_json, open_file=fopen
-        )
-        if opened_on_start:
-            fopen.close()
+        self._uid, self._json_start = self.read_header()
+        self._project_json = self.read_json()
+
+    def __del__(self):
+        self._fopen.close()
+
+    def get_project(self, element_uids=None):
+        """Fully loads project elements.
+        Elements can be filtered by specifying their UUIDs.
+
+        :param element_uids: a list of element UUIDs to load, default: all
+        :return: a omf.base.Project containing the specified elements
+        """
+        project_json = self._project_json.copy()
+        if element_uids is not None:
+            project_elements = project_json[self._uid]
+            # update the root element list
+            filtered_elements = [uid for uid in project_elements['elements']
+                                 if uid in element_uids]
+            project_elements['elements'] = filtered_elements
+
+        project = UidModel.deserialize(uid=self._uid,
+                                       registry=project_json,
+                                       open_file=self._fopen)
         return project
 
-    @staticmethod
-    def read_header(fopen):
+    def get_project_overview(self):
+        """Loads all project elements without loading their data.
+
+        :return: a omf.base.Project
+        """
+        project_elements = self._project_json[self._uid]
+        element_uids = project_elements['elements']
+        filtered_json = {self._uid: project_elements}
+        for uid in element_uids:
+            element = self._project_json[uid].copy()
+            for prop in ('data', 'geometry', 'textures'):
+                if prop in element:
+                    del element[prop]
+            filtered_json[uid] = element
+        project = UidModel.deserialize(uid=self._uid,
+                                       registry=filtered_json,
+                                       open_file=self._fopen)
+        return project
+
+    def read_header(self):
         """Checks magic number and version; gets project uid and json start"""
-        if fopen.read(4) != b'\x84\x83\x82\x81':
+        if self._fopen.read(4) != b'\x84\x83\x82\x81':
             raise ValueError('Invalid OMF file')
-        file_version = struct.unpack('<32s', fopen.read(32))[0]
+        file_version = struct.unpack('<32s', self._fopen.read(32))[0]
         file_version = file_version[0:len(__version__)]
         if file_version != __version__:
             raise ValueError(
@@ -121,12 +161,11 @@ class OMFReader(object):
                     rv=__version__
                 )
             )
-        uid = str(uuid.UUID(bytes=struct.unpack('<16s', fopen.read(16))[0]))
-        json_start = struct.unpack('<Q', fopen.read(8))[0]
-        return uid, json_start
+        uid = uuid.UUID(bytes=struct.unpack('<16s', self._fopen.read(16))[0])
+        json_start = struct.unpack('<Q', self._fopen.read(8))[0]
+        return str(uid), json_start
 
-    @staticmethod
-    def read_json(fopen, json_start):
-        """Gets json dictionary from utf-8 encoded string"""
-        fopen.seek(json_start, 0)
-        return json.loads(fopen.read().decode('utf-8'))
+    def read_json(self):
+        """Gets json dictionary from project file"""
+        self._fopen.seek(self._json_start, 0)
+        return json.loads(self._fopen.read().decode('utf-8'))

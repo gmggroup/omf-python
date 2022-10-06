@@ -44,24 +44,28 @@ class UidModel(properties.HasProperties):
             ):
                 self._backend['date_modified'] = val.date_modified
 
-    def serialize(self, include_class=True, registry=None, **kwargs):
+    def serialize(self, include_class=True, registry=None,                     #pylint: disable=arguments-differ
+                  skip_validation=False, **kwargs):
         """Serialize nested UidModels to a flat dictionary with pointers"""
         if registry is None:
-            self._uid_registry = dict()                                        #pylint: disable=attribute-defined-outside-init
-            registry = self._uid_registry
-        if self.uid in registry:
-            return
-        registry.update({
-            str(self.uid): super(UidModel, self).serialize(
-                include_class, registry=registry, **kwargs
-            )
-        })
-        if getattr(self, '_uid_registry', None) is registry:
-            return self._uid_registry
+            if not skip_validation:
+                self.validate()
+            registry = dict()
+            root = True
+        else:
+            root = False
+        if str(self.uid) not in registry:
+            registry.update({
+                str(self.uid): super(UidModel, self).serialize(
+                    include_class, registry=registry, **kwargs
+                )
+            })
+        if root:
+            return registry
         return str(self.uid)
 
     @classmethod
-    def deserialize(cls, uid, trusted=True, registry=None, **kwargs):
+    def deserialize(cls, uid, trusted=True, registry=None, **kwargs):          #pylint: disable=arguments-differ
         """Deserialize nested UidModels from flat pointer dictionary"""
         if registry is None:
             raise ValueError('no registry provided')
@@ -70,11 +74,11 @@ class UidModel(properties.HasProperties):
         if not isinstance(registry[uid], UidModel):
             date_created = registry[uid]['date_created']
             date_modified = registry[uid]['date_modified']
+            kwargs.update({'verbose': False})
             new_model = super(UidModel, cls).deserialize(
                 value=registry[uid],
                 registry=registry,
                 trusted=trusted,
-                verbose=False,
                 **kwargs
             )
             new_model._backend.update({
@@ -146,7 +150,8 @@ class ProjectElement(ContentModel):
     data = properties.List(
         'Data defined on the element',
         prop=ProjectElementData,
-        required=False
+        required=False,
+        default=list,
     )
     color = properties.Color(
         'Solid color',
@@ -200,7 +205,8 @@ class Project(ContentModel):
     )
     elements = properties.List(
         'Project Elements',
-        prop=ProjectElement
+        prop=ProjectElement,
+        default=list,
     )
     origin = properties.Vector3(
         'Origin point for all elements in the project',
