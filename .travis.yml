@@ -1,15 +1,11 @@
 language: python
 python:
   - 2.7
-  - 3.3
   - 3.4
   - 3.5
+  - 3.6
 
 sudo: false
-
-env:
-  matrix:
-    - MODE=tests
 
 addons:
   apt:
@@ -20,7 +16,8 @@ install:
   - pip install -r requirements_dev.txt
 
 script:
-  - make $MODE
+  - make tests
+  - make test-docs
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

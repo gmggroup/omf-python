@@ -18,7 +18,7 @@ class PointSetGeometry(ProjectElementGeometry):
         Vector3Array
     )
 
-    _valid_locations = ('vertices')
+    _valid_locations = ('vertices',)
 
     def location_length(self, location):
         """Return correct data length based on location"""
@@ -44,7 +44,8 @@ class PointSetElement(ProjectElement):
     textures = properties.List(
         'Images mapped on the element',
         prop=ImageTexture,
-        required=False
+        required=False,
+        default=list,
     )
     subtype = properties.StringChoice(
         'Category of PointSet',

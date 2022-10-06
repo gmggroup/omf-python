@@ -6,12 +6,15 @@ from __future__ import unicode_literals
 
 from .base import Project
 
-from .data import (ColorArray, ColorData, DateTimeArray, DateTimeData,
-                   Legend, MappedData, ScalarArray, ScalarData,
-                   StringArray, StringData, Vector2Array, Vector2Data,
-Vector3Array, Vector3Data)
 from omf.fileio.geoh5 import GeoH5Writer
 
+from .data import (ColorArray, ColorData,
+                   DateTimeArray, DateTimeColormap, DateTimeData,
+                   Legend, MappedData,
+                   ScalarArray, ScalarColormap, ScalarData,
+                   StringArray, StringData,
+                   Vector2Array, Vector2Data,
+                   Vector3Array, Vector3Data)
 
 from .lineset import LineSetGeometry, LineSetElement
 from .pointset import PointSetGeometry, PointSetElement
@@ -21,7 +24,7 @@ from .volume import VolumeGridGeometry, VolumeElement
 
 from omf.fileio.fileio import OMFReader, OMFWriter
 
-__version__ = '0.9.0'
-__author__ = 'ARANZ Geo Ltd.'
+__version__ = '0.9.3'
+__author__ = 'Global Mining Standards and Guidelines Group'
 __license__ = 'MIT License'
-__copyright__ = 'Copyright 2016 ARANZ Geo Ltd.'
+__copyright__ = 'Copyright 2017 Global Mining Standards and Guidelines Group'
