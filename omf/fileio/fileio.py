@@ -10,7 +10,8 @@ import uuid
 
 from six import string_types
 
-from .base import UidModel
+from omf.base import UidModel
+from omf.fileio.geoh5 import GeoH5Writer
 
 __version__ = b'OMF-v0.9.0'
 
@@ -44,15 +45,18 @@ class OMFWriter(object):
 
         Binary data is written during project serialization
         """
-        if len(fname) < 4 or fname[-4:] != '.omf':
-            fname = fname + '.omf'
-        self.fname = fname
-        fopen = open(fname, 'wb')
-        self.initialize_header(fopen, project.uid)
-        self.project_json = project.serialize(open_file=fopen)
-        self.update_header(fopen)
-        fopen.write(json.dumps(self.project_json).encode('utf-8'))
-        fopen.close()
+        if fname.endswith("geoh5"):
+            GeoH5Writer(project, fname)
+        else:
+            if not fname.endswith('.omf'):
+                fname = fname + '.omf'
+
+            self.fname = fname
+            with open(fname, 'wb') as fopen:
+                self.initialize_header(fopen, project.uid)
+                self.project_json = project.serialize(open_file=fopen)
+                self.update_header(fopen)
+                fopen.write(json.dumps(self.project_json).encode('utf-8'))
 
     @staticmethod
     def initialize_header(fopen, uid):
@@ -130,3 +134,4 @@ class OMFReader(object):
         """Gets json dictionary from utf-8 encoded string"""
         fopen.seek(json_start, 0)
         return json.loads(fopen.read().decode('utf-8'))
+
