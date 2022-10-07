@@ -64,13 +64,6 @@ repos:
         types: [text]
         types_or: [python, pyi]
         exclude: (devtools|docs)/
-    -   id: check-copyright
-        name: Check copyright
-        entry: python devtools/check-copyright.py
-        language: python
-        types: [text]
-        types_or: [python, pyi]
-        exclude: ^(devtools/|docs/|setup.py)
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.2.1
     hooks:
