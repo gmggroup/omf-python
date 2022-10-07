@@ -1,4 +1,3 @@
-import warnings
 
 from abc import ABC, abstractmethod
 
@@ -42,10 +41,10 @@ class GeoH5Writer(object):
 
     @entity.setter
     def entity(self, element):
-        if type(element) not in MAP:
+        if type(element) not in _CLASS_MAP:
             raise ValueError("Element of type {type(element)} currently not implemented.")
 
-        converter = MAP[type(element)](element, self.file)
+        converter = _CLASS_MAP[type(element)](element, self.file)
         self._entity = converter.from_omf()
 
 
@@ -106,7 +105,7 @@ class BaseConversion(ABC):
                 prop = getattr(self.element, key, None)
 
                 if isinstance(prop, UidModel):
-                    converter = MAP[type(prop)](prop, workspace)
+                    converter = _CLASS_MAP[type(prop)](prop, workspace)
                     prop = converter.from_omf()
 
                 kwargs[alias] = prop
@@ -141,7 +140,7 @@ class PointsConversion(BaseConversion):
     def process_dependents(self, workspace):
         if getattr(self.element, "data", None):
             for child in self.element.data:
-                converter = MAP[type(child)](child, workspace)
+                converter = _CLASS_MAP[type(child)](child, workspace)
                 converter.from_omf(parent=self.entity)
 
 
@@ -175,7 +174,7 @@ class DataConversion(BaseConversion):
             for key, alias in self._attribute_map.items():
                 prop = getattr(self.element, key, None)
                 if isinstance(prop, UidModel):
-                    converter = MAP[type(prop)](prop, workspace)
+                    converter = _CLASS_MAP[type(prop)](prop, workspace)
                     prop = converter.from_omf()
 
                 kwargs[alias] = prop
@@ -226,7 +225,7 @@ def fetch_h5_handle(file: str | Workspace | Path, mode: str = "a") -> Workspace:
             h5file.close()
 
 
-MAP = {
+_CLASS_MAP = {
     PointSetElement: PointsConversion,
     PointSetGeometry: VerticesConversion,
     ScalarData: DataConversion,
