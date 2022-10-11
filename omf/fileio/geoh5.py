@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 from geoh5py.data import Data
-from geoh5py.objects import Curve, Grid2D, Points, Surface
+from geoh5py.objects import BlockModel, Curve, Grid2D, Points, Surface
 from geoh5py.shared import Entity
 from geoh5py.workspace import Workspace
 
@@ -15,6 +15,7 @@ from omf.data import ScalarArray, ScalarData
 from omf.lineset import LineSetElement, LineSetGeometry
 from omf.pointset import PointSetElement, PointSetGeometry
 from omf.surface import SurfaceElement, SurfaceGeometry, SurfaceGridGeometry
+from omf.volume import VolumeElement, VolumeGridGeometry
 
 
 class GeoH5Writer:
@@ -207,6 +208,16 @@ class SurfaceConversion(ElementConversion):
         return self._entity
 
 
+class VolumeConversion(ElementConversion):
+    """
+    Conversion between :obj:`omf.volume.VolumeElement` and
+    :obj:`geoh5py.objects.BlockModel`
+    """
+
+    omf_type = VolumeElement
+    geoh5_type = BlockModel
+
+
 class PointSetGeometryConversion(BaseConversion):
     """
     Conversion between :obj:`omf.pointset.PointSetGeometry` and
@@ -320,6 +331,44 @@ class SurfaceGridGeometryConversion(BaseConversion):
         """TODO Convert geoh5 entity to omg element."""
 
 
+class VolumeGridGeometryConversion(BaseConversion):
+    """
+    Conversion between :obj:`omf.lineset.LineSetElement` and
+    :obj:`geoh5py.objects.Curve` `vertices` and `cells`
+    """
+
+    omf_type = VolumeGridGeometry
+    geoh5_type = np.ndarray
+    _attribute_map: dict = {}
+
+    def from_omf(self, **kwargs) -> dict:
+
+        if not np.allclose(np.cross(self.element.axis_w, [0, 0, 1]), [0, 0, 0]):
+            raise UserWarning(
+                "Cannot perform the conversion from OMF to geoh5 for "
+                "VolumeGridGeometry with 3D rotation."
+            )
+
+        for axs in ["u", "v", "w"]:
+            tensor = getattr(self.element, f"tensor_{axs}")
+            cell_delimiter = np.r_[0, np.cumsum(tensor)]
+            kwargs.update({f"{axs.replace('w', 'z')}_cell_delimiters": cell_delimiter})
+
+        azimuth = (
+            450 - np.rad2deg(np.arctan2(self.element.axis_v[1], self.element.axis_v[0]))
+        ) % 360
+
+        if azimuth != 0:
+            kwargs.update({"rotation": azimuth})
+
+        kwargs.update({"origin": np.r_[self.element.origin]})
+
+        return kwargs
+
+    def from_geoh5(self) -> UidModel:
+        """TODO Convert geoh5 entity to omg element."""
+
+
 class DataConversion(BaseConversion):
     """
     Conversion between :obj:`omf.data.ScalarData` and
@@ -408,4 +457,6 @@ _CLASS_MAP = {
     SurfaceElement: SurfaceConversion,
     SurfaceGeometry: SurfaceGeometryConversion,
     SurfaceGridGeometry: SurfaceGridGeometryConversion,
+    VolumeElement: VolumeConversion,
+    VolumeGridGeometry: VolumeGridGeometryConversion,
 }
