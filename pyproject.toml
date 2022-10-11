@@ -24,20 +24,19 @@ classifiers = [
 python = "^3.7.2,<3.11"
 
 ## pip dependencies
-geoh5py = {version = "0.4.0", source ="pypi"}
-numpy = {version = "^1.7", source = "pypi"}
-properties = {version = "0.4.0", source = "pypi"}
-pypng = {version = "^0.20220715", source = "pypi"}
-six = {version = "^1.16", source = "pypi"}
-vectormath = {version = "^0.2.0", source = "pypi"}
-setuptools = {version = "63.4.1", source = "pypi"}
+geoh5py = {version = "0.4.0"}
+numpy = {version = "^1.7"}
+properties = {version = "0.4.0"}
+pypng = {version = "^0.20220715"}
+six = {version = "^1.16"}
+vectormath = {version = "^0.2.0"}
+setuptools = {version = "63.4.1"}
 
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.4"
 pytest = "^7.1.2"
 pytest-cov = "^3.0.0"
-requests = "^2.27.1" # for tests only
 
 [tool.conda-lock]
 platforms = ['win-64', 'osx-64', 'linux-64']
@@ -48,6 +47,7 @@ libblas = "*=*mkl"
 
 [tool.isort]
 # settings for compatibility between ``isort`` and ``black`` formatting
+known_third_party = ["docutils", "geoh5py", "numpy", "properties", "six", "sphinx"]
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
@@ -56,14 +56,6 @@ line_length = 88
 
 [tool.black]
 # defaults are just fine
-
-[tool.poetry2conda]
-name = "geoapps"
-## usage of poetry2conda
-# As poetry2conda does not support url sources for pip dependencies,
-# temporarily edit this file and use git sources instead, with 'tag=' indifferently whether it is actually a branch or rev.
-#> poetry2conda pyproject.toml -E full environment.yml
-#> poetry2conda pyproject.toml -E full --dev environment-dev.yml
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "setuptools"]
