@@ -20,7 +20,7 @@ from omf.surface import SurfaceElement, SurfaceGeometry, SurfaceGridGeometry
 from omf.volume import VolumeElement, VolumeGridGeometry
 
 
-class OMFtoGeoh5Implementation(Exception):
+class OMFtoGeoh5NotImplemented(Exception):
     """Custom error message for rotation not implemented by geoh5."""
 
     def __init__(
