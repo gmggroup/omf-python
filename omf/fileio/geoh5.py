@@ -40,7 +40,7 @@ class GeoH5Writer:  # pylint: disable=R0903
     OMF to geoh5 class converter
     """
 
-    def __init__(self, element, file_name: str | Path):
+    def __init__(self, element: UidModel, file_name: str | Path):
 
         if not isinstance(file_name, (str, Path)):
             raise TypeError("Input 'file' must be of str or Path.")
@@ -135,11 +135,11 @@ class BaseConversion(ABC):
 
     @abstractmethod
     def from_omf(self, **kwargs) -> Entity | None:
-        """Convert omg element to geoh5 entity."""
+        """Convert omf element to geoh5 entity."""
 
     @abstractmethod
     def from_geoh5(self) -> UidModel:
-        """TODO Convert geoh5 entity to omg element."""
+        """TODO Convert geoh5 entity to omf element."""
 
 
 class DataConversion(BaseConversion):
@@ -171,7 +171,7 @@ class DataConversion(BaseConversion):
         return self._entity
 
     def from_geoh5(self) -> UidModel:
-        """TODO Convert geoh5 entity to omg element."""
+        """TODO Convert geoh5 entity to omf element."""
         raise NotImplementedError
 
 
@@ -193,7 +193,7 @@ class ElementConversion(BaseConversion):
         self.geoh5_type = _CLASS_MAP[type(self.element.geometry)]
 
     def from_omf(self, **kwargs) -> Entity | None:
-        """Convert omg element to geoh5 entity."""
+        """Convert omf element to geoh5 entity."""
         with fetch_h5_handle(self.geoh5) as workspace:
             try:
                 kwargs = self.collect_attributes(**kwargs)
@@ -215,7 +215,7 @@ class ElementConversion(BaseConversion):
                 converter.from_omf(parent=self.entity)
 
     def from_geoh5(self) -> UidModel:
-        """TODO Convert geoh5 entity to omg element."""
+        """TODO Convert geoh5 entity to omf element."""
         raise NotImplementedError
 
 
@@ -225,7 +225,7 @@ class GeometryConversion(BaseConversion):
         return kwargs
 
     def from_geoh5(self) -> UidModel:
-        """TODO Convert geoh5 entity to omg element."""
+        """TODO Convert geoh5 entity to omf element."""
         raise NotImplementedError
 
 
@@ -238,7 +238,7 @@ class ProjectConversion(BaseConversion):
     geoh5_type = RootGroup
 
     def from_omf(self, **kwargs) -> Entity:
-        """Convert omg element to geoh5 entity."""
+        """Convert omf element to geoh5 entity."""
         with fetch_h5_handle(self.geoh5) as workspace:
             kwargs = self.collect_attributes(**kwargs)
             self._entity = workspace.root
@@ -257,7 +257,7 @@ class ProjectConversion(BaseConversion):
                 converter.from_omf(parent=self.entity)
 
     def from_geoh5(self) -> UidModel:
-        """TODO Convert geoh5 entity to omg element."""
+        """TODO Convert geoh5 entity to omf element."""
         raise NotImplementedError
 
 
@@ -275,7 +275,7 @@ class ValuesConversion(BaseConversion):
         return np.r_[self.element]
 
     def from_geoh5(self) -> UidModel:
-        """TODO Convert geoh5 entity to omg element."""
+        """TODO Convert geoh5 entity to omf element."""
         raise NotImplementedError
 
 
@@ -292,7 +292,7 @@ class ArrayConversion(BaseConversion):
         return np.c_[self.element]
 
     def from_geoh5(self) -> UidModel:
-        """TODO Convert geoh5 entity to omg element."""
+        """TODO Convert geoh5 entity to omf element."""
         raise NotImplementedError
 
 
