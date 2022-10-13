@@ -20,14 +20,14 @@ from omf.surface import SurfaceElement, SurfaceGeometry, SurfaceGridGeometry
 from omf.volume import VolumeElement, VolumeGridGeometry
 
 
-class OMFtoGeoh5NotImplemented(Exception):
-    """Custom error message for rotation not implemented by geoh5."""
+class OMFtoGeoh5NotImplemented(NotImplementedError):
+    """Custom error message for attributes not implemented by geoh5."""
 
     def __init__(
         self,
         name: str,
     ):
-        super().__init__(OMFtoGeoh5Implementation.message(name))
+        super().__init__(OMFtoGeoh5NotImplemented.message(name))
 
     @staticmethod
     def message(info):
@@ -64,8 +64,8 @@ class GeoH5Writer:
     @entity.setter
     def entity(self, element):
         if type(element) not in _CONVERSION_MAP:
-            raise ValueError(
-                "Element of type {type(element)} currently not implemented."
+            raise OMFtoGeoh5NotImplemented(
+                f"Element of type {type(element)} currently not implemented."
             )
 
         converter: BaseConversion = _CONVERSION_MAP[type(element)](element, self.file)
@@ -95,7 +95,7 @@ class BaseConversion(ABC):
         elif isinstance(obj, self.geoh5_type):
             self.entity = obj
         else:
-            raise ValueError(
+            raise TypeError(
                 f"Input object should be an instance of {self.omf_type} or {self.geoh5_type}"
             )
 
@@ -143,7 +143,7 @@ class BaseConversion(ABC):
         with fetch_h5_handle(self.geoh5) as workspace:
             try:
                 kwargs = self.collect_attributes(**kwargs)
-            except OMFtoGeoh5Implementation as error:
+            except OMFtoGeoh5NotImplemented as error:
                 warnings.warn(error.args[0])
                 return None
 
@@ -339,14 +339,14 @@ class SurfaceGridGeometryConversion(BaseConversion):
     def from_omf(self, **kwargs) -> dict:
 
         if self.element.axis_v[-1] != 0:
-            raise OMFtoGeoh5Implementation(
+            raise OMFtoGeoh5NotImplemented(
                 f"{SurfaceGridGeometry} with 3D rotation axes."
             )
 
         for axs in ["u", "v"]:
             tensor = getattr(self.element, f"tensor_{axs}")
             if len(np.unique(tensor)) > 1:
-                raise OMFtoGeoh5Implementation(
+                raise OMFtoGeoh5NotImplemented(
                     f"{SurfaceGridGeometry} with variable cell sizes along the {axs} axis."
                 )
 
@@ -384,7 +384,7 @@ class VolumeGridGeometryConversion(BaseConversion):
     def from_omf(self, **kwargs) -> dict:
 
         if not np.allclose(np.cross(self.element.axis_w, [0, 0, 1]), [0, 0, 0]):
-            raise OMFtoGeoh5Implementation(
+            raise OMFtoGeoh5NotImplemented(
                 f"{VolumeGridGeometry} with 3D rotation axes."
             )
 
