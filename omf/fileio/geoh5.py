@@ -377,23 +377,28 @@ class SurfaceGridGeometryConversion(GeometryConversion):
 
     omf_type = SurfaceGridGeometry
     geoh5_type = None
-    _attribute_map: dict = {}
+    _attribute_map: dict = {
+        "u": "u",
+        "v": "v",
+    }
 
-    def from_omf(self, **kwargs) -> dict:
-
+    def collect_attributes(self, **kwargs):
+        """Convert attributes from omf to geoh5."""
         if self.element.axis_v[-1] != 0:
             raise OMFtoGeoh5NotImplemented(
                 f"{SurfaceGridGeometry} with 3D rotation axes."
             )
 
-        for axs in ["u", "v"]:
-            tensor = getattr(self.element, f"tensor_{axs}")
+        for key, alias in self._attribute_map.items():
+            tensor = getattr(self.element, f"tensor_{key}")
             if len(np.unique(tensor)) > 1:
                 raise OMFtoGeoh5NotImplemented(
-                    f"{SurfaceGridGeometry} with variable cell sizes along the {axs} axis."
+                    f"{SurfaceGridGeometry} with variable cell sizes along the {key} axis."
                 )
 
-            kwargs.update({f"{axs}_cell_size": tensor[0], f"{axs}_count": len(tensor)})
+            kwargs.update(
+                {f"{alias}_cell_size": tensor[0], f"{alias}_count": len(tensor)}
+            )
 
         azimuth = (
             450 - np.rad2deg(np.arctan2(self.element.axis_v[1], self.element.axis_v[0]))
@@ -419,19 +424,19 @@ class VolumeGridGeometryConversion(GeometryConversion):
 
     omf_type = VolumeGridGeometry
     geoh5_type = None
-    _attribute_map: dict = {}
+    _attribute_map: dict = {"u": "u", "v": "v", "w": "z"}
 
-    def from_omf(self, **kwargs) -> dict:
+    def collect_attributes(self, **kwargs) -> dict:
 
         if not np.allclose(np.cross(self.element.axis_w, [0, 0, 1]), [0, 0, 0]):
             raise OMFtoGeoh5NotImplemented(
                 f"{VolumeGridGeometry} with 3D rotation axes."
             )
 
-        for axs in ["u", "v", "w"]:
-            tensor = getattr(self.element, f"tensor_{axs}")
+        for key, alias in self._attribute_map.items():
+            tensor = getattr(self.element, f"tensor_{key}")
             cell_delimiter = np.r_[0, np.cumsum(tensor)]
-            kwargs.update({f"{axs.replace('w', 'z')}_cell_delimiters": cell_delimiter})
+            kwargs.update({f"{alias}_cell_delimiters": cell_delimiter})
 
         azimuth = (
             450 - np.rad2deg(np.arctan2(self.element.axis_v[1], self.element.axis_v[0]))
