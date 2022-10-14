@@ -2,11 +2,11 @@
 name = "omf"
 version = "3.0.0-alpha"
 description = "API Library for Open Mining Format"
-repository = "http://github.com/GMSGDataExchange/omf"
 authors = [
     "Mira Geoscience <dominiquef@mirageoscience.com>",
     "Global Mining Standards and Guidelines Group <it@seequent.com>",
 ]
+repository = "https://github.com/MiraGeoscience/omf"
 homepage = "http://www.globalminingstandards.org/"
 readme = "README.rst"
 keywords = ["geology", "geophysics", "earth sciences"]
