@@ -1,8 +1,4 @@
 """fileio.py: OMF Writer and Reader for serializing to and from .omf files"""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import json
 import struct
@@ -13,10 +9,10 @@ from six import string_types
 from omf.base import UidModel
 from omf.fileio.geoh5 import GeoH5Writer
 
-__version__ = b'OMF-v0.9.0'
+__version__ = b"OMF-v0.9.0"
 
 
-class OMFWriter(object):
+class OMFWriter:
     """OMFWriter serializes a OMF project to a file
 
     .. code::
@@ -48,16 +44,15 @@ class OMFWriter(object):
         if fname.endswith("geoh5"):
             GeoH5Writer(project, fname)
         else:
-            if not fname.endswith('.omf'):
-                fname = fname + '.omf'
+            if not fname.endswith(".omf"):
+                fname = fname + ".omf"
 
             self.fname = fname
-            with open(fname, 'wb') as fopen:
+            with open(fname, "wb") as fopen:
                 self.initialize_header(fopen, project.uid)
                 self.project_json = project.serialize(open_file=fopen)
                 self.update_header(fopen)
-                fopen.write(json.dumps(self.project_json).encode('utf-8'))
-
+                fopen.write(json.dumps(self.project_json).encode("utf-8"))
 
     @staticmethod
     def initialize_header(fopen, uid):
@@ -71,9 +66,9 @@ class OMFWriter(object):
         + 8 (JSON start, written later)
         """
         fopen.seek(0, 0)
-        fopen.write(b'\x84\x83\x82\x81')
-        fopen.write(struct.pack('<32s', __version__.ljust(32, b'\x00')))
-        fopen.write(struct.pack('<16s', uid.bytes))
+        fopen.write(b"\x84\x83\x82\x81")
+        fopen.write(struct.pack("<32s", __version__.ljust(32, b"\x00")))
+        fopen.write(struct.pack("<16s", uid.bytes))
         fopen.seek(8, 1)
 
     @staticmethod
@@ -81,11 +76,11 @@ class OMFWriter(object):
         """Return to header and write the correct JSON start location"""
         json_start = fopen.tell()
         fopen.seek(52, 0)
-        fopen.write(struct.pack('<Q', json_start))
+        fopen.write(struct.pack("<Q", json_start))
         fopen.seek(json_start)
 
 
-class OMFReader(object):
+class OMFReader:
     """OMFReader deserializes an OMF file.
 
     .. code::
@@ -104,8 +99,8 @@ class OMFReader(object):
     """
 
     def __init__(self, fopen):
-        if isinstance(fopen, string_types):
-            fopen = open(fopen, 'rb')
+        if isinstance(fopen, str):
+            fopen = open(fopen, "rb")
         self._fopen = fopen
         fopen.seek(0, 0)
         self._uid, self._json_start = self.read_header()
@@ -125,13 +120,14 @@ class OMFReader(object):
         if element_uids is not None:
             project_elements = project_json[self._uid]
             # update the root element list
-            filtered_elements = [uid for uid in project_elements['elements']
-                                 if uid in element_uids]
-            project_elements['elements'] = filtered_elements
+            filtered_elements = [
+                uid for uid in project_elements["elements"] if uid in element_uids
+            ]
+            project_elements["elements"] = filtered_elements
 
-        project = UidModel.deserialize(uid=self._uid,
-                                       registry=project_json,
-                                       open_file=self._fopen)
+        project = UidModel.deserialize(
+            uid=self._uid, registry=project_json, open_file=self._fopen
+        )
         return project
 
     def get_project_overview(self):
@@ -140,39 +136,35 @@ class OMFReader(object):
         :return: a omf.base.Project
         """
         project_elements = self._project_json[self._uid]
-        element_uids = project_elements['elements']
+        element_uids = project_elements["elements"]
         filtered_json = {self._uid: project_elements}
         for uid in element_uids:
             element = self._project_json[uid].copy()
-            for prop in ('data', 'geometry', 'textures'):
+            for prop in ("data", "geometry", "textures"):
                 if prop in element:
                     del element[prop]
             filtered_json[uid] = element
-        project = UidModel.deserialize(uid=self._uid,
-                                       registry=filtered_json,
-                                       open_file=self._fopen)
+        project = UidModel.deserialize(
+            uid=self._uid, registry=filtered_json, open_file=self._fopen
+        )
         return project
 
     def read_header(self):
         """Checks magic number and version; gets project uid and json start"""
-        if self._fopen.read(4) != b'\x84\x83\x82\x81':
-            raise ValueError('Invalid OMF file')
-        file_version = struct.unpack('<32s', self._fopen.read(32))[0]
-        file_version = file_version[0:len(__version__)]
+        if self._fopen.read(4) != b"\x84\x83\x82\x81":
+            raise ValueError("Invalid OMF file")
+        file_version = struct.unpack("<32s", self._fopen.read(32))[0]
+        file_version = file_version[0 : len(__version__)]
         if file_version != __version__:
             raise ValueError(
-                'Version mismatch: file version {fv!r}, '
-                'reader version {rv!r}'.format(
-                    fv=file_version,
-                    rv=__version__
-                )
+                "Version mismatch: file version {fv!r}, "
+                "reader version {rv!r}".format(fv=file_version, rv=__version__)
             )
-        uid = uuid.UUID(bytes=struct.unpack('<16s', self._fopen.read(16))[0])
-        json_start = struct.unpack('<Q', self._fopen.read(8))[0]
+        uid = uuid.UUID(bytes=struct.unpack("<16s", self._fopen.read(16))[0])
+        json_start = struct.unpack("<Q", self._fopen.read(8))[0]
         return str(uid), json_start
 
     def read_json(self):
         """Gets json dictionary from project file"""
         self._fopen.seek(self._json_start, 0)
-        return json.loads(self._fopen.read().decode('utf-8'))
-
+        return json.loads(self._fopen.read().decode("utf-8"))

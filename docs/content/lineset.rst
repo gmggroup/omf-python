@@ -27,4 +27,3 @@ Data
 
 Data is a list of :ref:`data <data>`. For Lines, :code:`location='vertices'`
 and :code:`location='segments'` are valid.
-
