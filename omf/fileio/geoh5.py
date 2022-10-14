@@ -35,7 +35,7 @@ class OMFtoGeoh5NotImplemented(NotImplementedError):
         return f"Cannot perform the conversion from OMF to geoh5. {info}"
 
 
-class GeoH5Writer:  # pylint: disable=R0903
+class GeoH5Writer:  # pylint: disable=too-few-public-methods
     """
     OMF to geoh5 class converter
     """
