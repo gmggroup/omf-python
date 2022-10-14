@@ -5,7 +5,7 @@ description = "API Library for Open Mining Format"
 authors = ["Global Mining Standards and Guidelines Group <it@seequent.com>"]
 repository = "http://github.com/GMSGDataExchange/omf"
 homepage = "http://www.globalminingstandards.org/"
-readme = "README.md"
+readme = "README.rst"
 keywords = ["geology", "geophysics", "earth sciences"]
 classifiers = [
     'Development Status :: 4 - Beta',
