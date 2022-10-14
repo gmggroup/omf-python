@@ -47,12 +47,14 @@ libblas = "*=*mkl"
 
 [tool.isort]
 # settings for compatibility between ``isort`` and ``black`` formatting
-known_third_party = ["docutils", "geoh5py", "numpy", "properties", "six", "sphinx"]
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 88
+# auto-updated by seed-isort-config
+
+known_third_party = ["docutils", "geoh5py", "numpy", "properties", "six", "sphinx"]
 
 [tool.black]
 # defaults are just fine
