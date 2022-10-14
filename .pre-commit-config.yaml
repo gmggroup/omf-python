@@ -51,7 +51,7 @@ repos:
     rev: v0.971
     hooks:
     -   id: mypy
-        additional_dependencies: [types-toml]
+        additional_dependencies: [types-six]
         args: [--ignore-missing-imports, --scripts-are-modules, --show-error-context,
                --show-column-numbers]
 -   repo: local
