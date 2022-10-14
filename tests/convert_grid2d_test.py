@@ -36,9 +36,6 @@ def test_grid2d_to_geoh5(tmp_path):
 
     with Workspace(file) as workspace:
         grid2d = workspace.get_entity("gridsurf")[0]
-        # np.testing.assert_array_almost_equal(
-        #     np.r_[grid.geometry.vertices.array], grid2d.vertices
-        # )
 
         data = grid2d.get_entity("rand vert data")[0]
         np.testing.assert_array_almost_equal(np.r_[grid.data[0].array], data.values)
