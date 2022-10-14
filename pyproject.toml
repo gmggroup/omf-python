@@ -22,16 +22,12 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.7.2,<3.11"
-
-## pip dependencies
-geoh5py = {version = "0.4.0"}
-numpy = {version = "^1.7"}
-properties = {version = "0.4.0"}
-pypng = {version = "^0.20220715"}
-six = {version = "^1.16"}
-vectormath = {version = "^0.2.0"}
-setuptools = {version = "63.4.1"}
-
+geoh5py = "~0.4.0"
+numpy = "^1.7"
+properties = "~0.4.0"
+pypng = "^0.20220715"
+six = "^1.16"
+vectormath = "~0.2.0"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.4"
