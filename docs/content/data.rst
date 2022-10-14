@@ -24,24 +24,24 @@ the surface contains a mesh with 9 vertices and 4 faces (ie a 2x2 square grid).
 
 .. code:: python
 
-    >> ...
-    >> my_surface = omf.Surface(...)
-    >> ...
-    >> my_node_data = omf.ScalarData(
-           name='Nine Numbers',
-           array=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
-           location='vertices',
-           order='c'  # Default
-       )
-    >> my_face_data = omf.ScalarData(
-           name='Four Numbers',
-           array=[0.0, 1.0, 2.0, 3.0],
-           location='faces'
-       )
-    >> my_surface.data = [
-           my_face_data,
-           my_node_data
-       ]
+    ...
+    my_surface = omf.Surface(...)
+    ...
+    my_node_data = omf.ScalarData(
+        name='Nine Numbers',
+        array=[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+        location='vertices',
+        order='c'  # Default
+    )
+    my_face_data = omf.ScalarData(
+        name='Four Numbers',
+        array=[0.0, 1.0, 2.0, 3.0],
+        location='faces'
+    )
+    my_surface.data = [
+        my_face_data,
+        my_node_data
+    ]
 
 ScalarData
 ----------

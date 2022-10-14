@@ -16,24 +16,24 @@ list of textures.
 
 .. code:: python
 
-    >> ...
-    >> my_surface = omf.SurfaceElement(...)
-    >> ...
-    >> my_tex_1 = omf.ImageTexture(
-           O=[0.0, 0.0, 0.0],
-           U=[1.0, 0.0, 0.0],
-           V=[0.0, 1.0, 0.0],
-           image='image1.png'
-       )
-    >> my_tex_2 = omf.ImageTexture(
-           O=[0.0, 0.0, 0.0],
-           U=[1.0, 0.0, 0.0],
-           V=[0.0, 0.0, 1.0],
-           image='image2.png'
-       )
-    >> my_surface.textures = [
-           my_tex_1,
-           my_tex_2
-       ]
+    ...
+    my_surface = omf.SurfaceElement(...)
+    ...
+    my_tex_1 = omf.ImageTexture(
+        O=[0.0, 0.0, 0.0],
+        U=[1.0, 0.0, 0.0],
+        V=[0.0, 1.0, 0.0],
+        image='image1.png'
+    )
+    my_tex_2 = omf.ImageTexture(
+        O=[0.0, 0.0, 0.0],
+        U=[1.0, 0.0, 0.0],
+        V=[0.0, 0.0, 1.0],
+        image='image2.png'
+    )
+    my_surface.textures = [
+        my_tex_1,
+        my_tex_2
+    ]
 
 .. autoclass:: omf.texture.ImageTexture
