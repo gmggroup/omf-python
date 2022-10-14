@@ -161,8 +161,8 @@ class OMFReader(object):
         file_version = file_version[0:len(__version__)]
         if file_version != __version__:
             raise ValueError(
-                'Version mismatch: file version {fv}, '
-                'reader version {rv}'.format(
+                'Version mismatch: file version {fv!r}, '
+                'reader version {rv!r}'.format(
                     fv=file_version,
                     rv=__version__
                 )
