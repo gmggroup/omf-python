@@ -94,6 +94,7 @@ repos:
     hooks:
     -   id: rstcheck
         additional_dependencies: [sphinx]
+        exclude: ^docs/index.rst$ # has AttributeError on include directive (!??)
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.9.0
     hooks:
