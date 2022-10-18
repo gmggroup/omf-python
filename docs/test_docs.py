@@ -12,17 +12,17 @@ class TestDoc(unittest.TestCase):
     def setUp(self):
         self.build_dir = os.path.sep.join(self.docs_dir.split(os.path.sep) + ["_build"])
         if not os.path.isdir(self.build_dir):
-            subprocess.call(["mkdir", f"{self.build_dir}"])
+            os.makedirs(f"{self.build_dir}")
 
         self.doctrees_dir = os.path.sep.join(
             self.build_dir.split(os.path.sep) + ["doctrees"]
         )
         if not os.path.isdir(self.doctrees_dir):
-            subprocess.call(["mkdir", f"{self.doctrees_dir}"])
+            os.makedirs(f"{self.doctrees_dir}")
 
         self.html_dir = os.path.sep.join(self.build_dir.split(os.path.sep) + ["html"])
         if not os.path.isdir(self.html_dir):
-            subprocess.call(["mkdir", f"{self.html_dir}"])
+            os.makedirs(f"{self.html_dir}")
 
     def test_html(self):
         check = subprocess.call(
