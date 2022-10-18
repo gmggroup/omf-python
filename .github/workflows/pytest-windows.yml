@@ -58,7 +58,7 @@ jobs:
     - name: Install dependencies
       run: poetry install -vvv
     - name: pytest
-      run: poetry run pytest --cov-report=xml --cov=omf --cov-branch --cov-fail-under=85
+      run: poetry run pytest --cov-report=xml --cov=omf --cov-branch --cov-fail-under=80
     - name: Codecov
       if: ${{ success() && matrix.python_ver == '3.7' }}
       uses: codecov/codecov-action@v1
