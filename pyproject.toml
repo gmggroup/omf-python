@@ -31,7 +31,7 @@ properties = "~0.4.0"
 pypng = "^0.20220715"
 six = "^1.16"
 vectormath = "~0.2.0"
-sphinx = "^5.0"
+sphinx = "~5.0.2"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.4"
