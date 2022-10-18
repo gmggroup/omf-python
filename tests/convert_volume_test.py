@@ -20,7 +20,7 @@ def test_volume_to_geoh5(tmp_path):
             omf.ScalarData(
                 name="Random Data",
                 location="cells",
-                array=np.arange(10 * 15 * 20).flatten().astype(int),
+                array=np.arange(10 * 15 * 20).flatten().astype(np.int32),
             )
         ],
     )
