@@ -75,13 +75,13 @@ Installation
 To install the repository, ensure that you have
 `pip installed <https://pip.pypa.io/en/stable/installing/>`_ and run:
 
-.. code::
+.. code:: bash
 
     pip install omf
 
 Or from `github <https://github.com/GMSGDataExchange/omf>`_:
 
-.. code::
+.. code:: bash
 
     git clone https://github.com/GMSGDataExchange/omf.git
     cd omf

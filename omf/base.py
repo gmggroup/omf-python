@@ -1,4 +1,5 @@
 """base.py: OMF Project and base classes for its components"""
+from __future__ import annotations
 
 import datetime
 
@@ -116,7 +117,7 @@ class ProjectElementData(ContentModel):
 class ProjectElementGeometry(UidModel):
     """Base class for all ProjectElement meshes"""
 
-    _valid_locations = None
+    _valid_locations: tuple[str, ...] | None = None
 
     origin = properties.Vector3(
         "Origin of the Mesh relative to origin of the Project", default=[0.0, 0.0, 0.0]

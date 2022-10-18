@@ -2,10 +2,13 @@
 name = "omf"
 version = "3.0.0-alpha"
 description = "API Library for Open Mining Format"
-authors = ["Global Mining Standards and Guidelines Group <it@seequent.com>"]
-repository = "http://github.com/GMSGDataExchange/omf"
+authors = [
+    "Mira Geoscience <dominiquef@mirageoscience.com>",
+    "Global Mining Standards and Guidelines Group <it@seequent.com>",
+]
+repository = "https://github.com/MiraGeoscience/omf"
 homepage = "http://www.globalminingstandards.org/"
-readme = "README.md"
+readme = "README.rst"
 keywords = ["geology", "geophysics", "earth sciences"]
 classifiers = [
     'Development Status :: 4 - Beta',
@@ -22,37 +25,29 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.7.2,<3.11"
-
-## pip dependencies
-geoh5py = {version = "0.4.0"}
-numpy = {version = "^1.7"}
-properties = {version = "0.4.0"}
-pypng = {version = "^0.20220715"}
-six = {version = "^1.16"}
-vectormath = {version = "^0.2.0"}
-setuptools = {version = "63.4.1"}
-
+geoh5py = "~0.4.0"
+numpy = "^1.7"
+properties = "~0.4.0"
+pypng = "^0.20220715"
+six = "^1.16"
+vectormath = "~0.2.0"
+sphinx = "^5.3"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.4"
 pytest = "^7.1.2"
 pytest-cov = "^3.0.0"
 
-[tool.conda-lock]
-platforms = ['win-64', 'osx-64', 'linux-64']
-channels = ['conda-forge', 'defaults']
-
-[tool.conda-lock.dependencies]
-libblas = "*=*mkl"
-
 [tool.isort]
 # settings for compatibility between ``isort`` and ``black`` formatting
-known_third_party = ["docutils", "geoh5py", "numpy", "properties", "six", "sphinx"]
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 88
+# auto-updated by seed-isort-config
+
+known_third_party = ["docutils", "geoh5py", "numpy", "properties", "pytest", "six", "sphinx"]
 
 [tool.black]
 # defaults are just fine

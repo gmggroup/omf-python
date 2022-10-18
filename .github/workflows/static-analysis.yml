@@ -1,0 +1,64 @@
+name: static analysis
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+      - release/**
+      - feature/**
+      - hotfix/**
+  push:
+    branches:
+      - develop
+      - main
+      - release/**
+      - feature/**
+      - hotfix/**
+
+jobs:
+  pylint:
+    name: pylint
+    runs-on: ubuntu-latest
+    env:
+      POETRY_VIRTUALENVS_CREATE: true
+      POETRY_VIRTUALENVS_IN_PROJECT: true
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python version
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Get full Python version
+      id: full-python-version
+      shell: bash
+      run: echo ::set-output name=version::$(python -c "import sys; print('-'.join(str(v) for v in sys.version_info))")
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | POETRY_HOME=$HOME/.poetry python -
+        echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+    - name: Set up cache
+      uses: actions/cache@v2
+      id: cache
+      env:
+        # Increase this value to reset cache if poetry.lock has not changed
+        CACHE_NUMBER: 1
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}-{{ env.CACHE_NUMBER }}
+    - name: Ensure cache is healthy
+      if: steps.cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: timeout 10s poetry run pip --version || rm -rf .venv
+    - name: Install dependencies
+      run: poetry install -vvv
+    - name: Run pylint on modified files
+      if: github.event_name == 'pull_request'
+      run: >-
+        poetry run pylint $(
+        git diff --diff-filter=AM --name-only refs/remotes/origin/${{github.base_ref}}... | grep -E '^(omf|tests)/.*\.py$'
+        || echo 'omf/__init__.py'
+        )
+    - name: Run pylint on all files
+      if: github.event_name == 'push'
+      run: poetry run pylint omf tests
