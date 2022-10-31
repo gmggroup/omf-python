@@ -31,12 +31,12 @@ properties = "~0.4.0"
 pypng = "^0.20220715"
 six = "^1.16"
 vectormath = "~0.2.0"
-sphinx = "^5.3"
 
 [tool.poetry.dev-dependencies]
-pylint = "^2.14.4"
-pytest = "^7.1.2"
-pytest-cov = "^3.0.0"
+pylint = "*"
+pytest = "*"
+pytest-cov = "*"
+sphinx = "^5.3"
 
 [tool.isort]
 # settings for compatibility between ``isort`` and ``black`` formatting
