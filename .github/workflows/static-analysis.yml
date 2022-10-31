@@ -70,4 +70,4 @@ jobs:
         run: poetry run pylint $FILES_PARAM
       - name: Run pylint on all files
         if: github.event_name == 'push'
-        run: poetry run pylint $source_dir tests
+        run: poetry run pylint $source_dir/fileio/geoh5* tests

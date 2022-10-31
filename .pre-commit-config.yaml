@@ -54,7 +54,7 @@ repos:
         types: [text]
         types_or: [python, pyi]
         exclude: (devtools|docs)/
-        files: ^omf/fileio/geoh5*
+        files: ^(omf/fileio/geoh5|tests/)
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.2.1
     hooks:
