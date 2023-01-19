@@ -25,8 +25,8 @@ setup(
     version="2.0.0a0",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
-        "numpy>=1.7",
-        "properties==0.6.0b0",
+        "numpy>=1.20",
+        "properties==0.6.1",
         "pypng",
         "vectormath>=0.2.0",
     ],

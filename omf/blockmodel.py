@@ -269,7 +269,7 @@ class RegularBlockModel(BaseBlockModel):
         if not self.block_count:
             raise ValueError("cannot reset cbc until block_count is set")
         cbc_len = np.prod(self.block_count)
-        self.cbc = np.ones(cbc_len, dtype=np.bool)
+        self.cbc = np.ones(cbc_len, dtype=bool)
 
 
 class RegularSubBlockModel(BaseBlockModel):
@@ -388,7 +388,7 @@ class RegularSubBlockModel(BaseBlockModel):
     def location_length(self, location):
         """Return correct attribute length based on location"""
         if location == "parent_blocks":
-            return np.sum(self.cbc.array.astype(np.bool))
+            return np.sum(self.cbc.array.astype(bool))
         return self.num_cells
 
     def reset_cbc(self):
@@ -526,7 +526,7 @@ class OctreeSubBlockModel(BaseBlockModel):
     def location_length(self, location):
         """Return correct attribute length based on location"""
         if location == "parent_blocks":
-            return np.sum(self.cbc.array.astype(np.bool))
+            return np.sum(self.cbc.array.astype(bool))
         return self.num_cells
 
     def reset_cbc(self):
@@ -875,7 +875,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
     def location_length(self, location):
         """Return correct attribute length based on location"""
         if location == "parent_blocks":
-            return np.sum(self.cbc.array.astype(np.bool))
+            return np.sum(self.cbc.array.astype(bool))
         return self.num_cells
 
     def reset_cbc(self):
