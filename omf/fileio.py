@@ -5,6 +5,7 @@ import os
 import zipfile
 
 from .base import Project
+from . import compat
 
 __version__ = "2.0.0a0"
 OMF_VERSION = "2.0"
@@ -36,10 +37,10 @@ def save(project, filename, mode="x"):
     serial_dict = project.serialize(binary_dict=binary_dict, include_class=False)
     serial_dict["version"] = OMF_VERSION
     with zipfile.ZipFile(
-        file=filename,
-        mode="w",
-        compression=zipfile.ZIP_DEFLATED,
-        allowZip64=True,
+            file=filename,
+            mode="w",
+            compression=zipfile.ZIP_DEFLATED,
+            allowZip64=True,
     ) as zip_file:
         serial_info = zipfile.ZipInfo(
             filename="project.json",
@@ -57,7 +58,37 @@ def save(project, filename, mode="x"):
     return filename
 
 
-def load(filename, include_binary=True, project_json=None):
+class Reader(compat.IOMFReader):
+    def __init__(self, filename: str):
+        self._filename = filename
+
+    def load(self, include_binary: bool = True, project_json: str = None) -> Project:
+        project_dict = {}
+        binary_dict = {}
+        project_version = None
+
+        try:
+            with zipfile.ZipFile(file=self._filename, mode="r") as zip_file:
+                for info in zip_file.infolist():
+                    with zip_file.open(info, mode="r") as file:
+                        if info.filename == "project.json":
+                            project_dict = json.load(file)
+                            project_version = project_dict.pop("version")
+                        elif include_binary:
+                            binary_dict[info.filename] = file.read()
+
+        except Exception as exc:
+            raise compat.InvalidOMFFile(exc)
+
+        if project_version is None:
+            raise compat.InvalidOMFFile(f'Unsupported format: {self._filename}')
+        if project_version != OMF_VERSION:
+            raise compat.InvalidOMFFile("Unsupported file version: {}".format(project_version))
+
+        return Project.deserialize(value=project_dict, binary_dict=binary_dict, trusted=True)
+
+
+def load(filename: str, include_binary: bool = True, project_json: str = None) -> Project:
     """Deserialize an OMF file into a project
 
     **Inputs:**
@@ -86,35 +117,12 @@ def load(filename, include_binary=True, project_json=None):
         ...  # Mutate proj_no_bin to include only the desired elements/attributes
         proj = omf.load('my_project.omf', project_json=proj_no_bin.serialize())
     """
-    with zipfile.ZipFile(
-        file=filename,
-        mode="r",
-    ) as zip_file:
-        binary_dict = {}
-        for info in zip_file.infolist():
-            with zip_file.open(info, mode="r") as file:
-                if info.filename == "project.json":
-                    serial_dict = json.load(file)
-                elif include_binary:
-                    binary_dict[info.filename] = file.read()
-        if project_json:
-            serial_dict = project_json
-    file_version = serial_dict.pop("version", None)
-    if not check_omf_version(file_version):
-        raise ValueError("Unsupported file version: {}".format(file_version))
-    project = Project.deserialize(
-        value=serial_dict,
-        binary_dict=binary_dict,
-        trusted=True,
-    )
-    return project
 
-
-def check_omf_version(file_version):
-    """Validate file version compatibility against the current OMF version
-
-    This logic may become more complex with future releases.
-    """
-    if file_version is None:
-        return True
-    return file_version == OMF_VERSION
+    for reader_cls in [Reader] + compat.compatible_omf_readers:
+        try:
+            reader = reader_cls(filename)
+            return reader.load(include_binary=include_binary, project_json=project_json)
+        except compat.InvalidOMFFile:
+            continue
+    else:
+        raise compat.InvalidOMFFile(f"Unsupported format: {filename}")

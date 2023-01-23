@@ -62,6 +62,7 @@ def test_doc_ex():
             "color": "green",
         },
     )
+
     lin = omf.LineSet(
         name="Random Line",
         vertices=np.random.rand(100, 3),
@@ -154,9 +155,21 @@ def test_doc_ex():
     assert proj.validate()
     omf.save(proj, serialfile)
     omf.base.BaseModel._INSTANCES = {}  # pylint: disable=W0212
-    omf.load(serialfile, include_binary=False)
+    project_without_binary = omf.load(serialfile, include_binary=False)
+
+    assert len(project_without_binary.elements) == len(proj.elements)
+    for a, b in zip(project_without_binary.elements, proj.elements):
+        assert type(a) == type(b)
+    assert project_without_binary.elements[0].vertices.array is None
+
     omf.base.BaseModel._INSTANCES = {}  # pylint: disable=W0212
-    new_proj = omf.load(serialfile)
-    assert new_proj.validate()
+    project_with_binary = omf.load(serialfile)
+    assert project_with_binary.validate()
+
+    assert len(project_with_binary.elements) == len(proj.elements)
+    for a, b in zip(project_with_binary.elements, proj.elements):
+        assert type(a) == type(b)
+    assert project_with_binary.elements[0].vertices.array is not None
+
     os.remove(pngfile)
     os.remove(serialfile)

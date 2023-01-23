@@ -1,4 +1,6 @@
 black
+jupyter
+matplotlib
 mock
 nose
 pylint
