@@ -10,7 +10,7 @@ class BaseMetadata(properties.HasProperties):
 
 
 class BaseOrientation(properties.HasProperties):
-    corner = properties.Vector3(
+    origin = properties.Vector3(
         "Origin of the block model, where axes extend from",
         default="ZERO",
     )

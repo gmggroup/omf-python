@@ -46,14 +46,14 @@ def test_doc_ex():
             omf.ProjectedTexture(
                 name="test image",
                 image=pngfile,
-                corner=[0, 0, 0],
+                origin=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 1, 0],
             ),
             omf.ProjectedTexture(
                 name="test image",
                 image=pngfile,
-                corner=[0, 0, 0],
+                origin=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 0, 1],
             ),
@@ -107,7 +107,7 @@ def test_doc_ex():
         name="gridsurf",
         tensor_u=np.ones(10).astype(float),
         tensor_v=np.ones(15).astype(float),
-        corner=[50.0, 50.0, 50.0],
+        origin=[50.0, 50.0, 50.0],
         axis_u=[1.0, 0, 0],
         axis_v=[0, 0, 1.0],
         offset_w=np.random.rand(11 * 16),
@@ -127,7 +127,7 @@ def test_doc_ex():
             omf.ProjectedTexture(
                 name="test image",
                 image=pngfile,
-                corner=[2.0, 2.0, 2.0],
+                origin=[2.0, 2.0, 2.0],
                 axis_u=[5.0, 0, 0],
                 axis_v=[0, 2.0, 5.0],
             ),
@@ -138,7 +138,7 @@ def test_doc_ex():
         tensor_u=np.ones(10).astype(float),
         tensor_v=np.ones(15).astype(float),
         tensor_w=np.ones(20).astype(float),
-        corner=[10.0, 10.0, -10],
+        origin=[10.0, 10.0, -10],
         attributes=[
             omf.NumericAttribute(
                 name="random attr", location="cells", array=np.random.rand(10 * 15 * 20)

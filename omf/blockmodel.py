@@ -24,7 +24,7 @@ class BaseBlockModel(ProjectElement):
         default="Z",
         length=1,
     )
-    corner = properties.Vector3(
+    origin = properties.Vector3(
         "Corner of the block model relative to Project coordinate reference system",
         default=[0.0, 0.0, 0.0],
     )
@@ -674,6 +674,7 @@ class OctreeSubBlockModel(BaseBlockModel):
 
 class ArbitrarySubBlockModel(BaseBlockModel):
     """Block model with arbitrary, variable sub-blocks"""
+    schema = "org.omf.v2.elements.blockmodel.arbitrary"
 
     parent_block_count = properties.List(
         "Number of parent blocks along u, v, and w axes",

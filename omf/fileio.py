@@ -83,7 +83,7 @@ class Reader(compat.IOMFReader):
         if project_version is None:
             raise compat.InvalidOMFFile(f'Unsupported format: {self._filename}')
         if project_version != OMF_VERSION:
-            raise compat.InvalidOMFFile("Unsupported file version: {}".format(project_version))
+            raise compat.InvalidOMFFile(f"Unsupported file version: {project_version}")
 
         return Project.deserialize(value=project_dict, binary_dict=binary_dict, trusted=True)
 

@@ -92,10 +92,11 @@ class MyModelWithInt(omf.base.BaseModel):
     my_int = properties.Integer("")
 
 
-class MyModelWithIntAndInstance(MyModelWithInt):
+class MyModelWithIntAndInstance(omf.base.BaseModel):
     """Test class with an integer property and an instance property"""
 
     schema = "my.model.with.int.and.instance"
+    my_int = properties.Integer("")
     my_model = properties.Instance("", omf.base.BaseModel)
 
 
@@ -148,12 +149,13 @@ def test_deserialize():
 
 class MockArray(omf.base.BaseModel):
     """Test array class"""
-
+    schema = "test.base.mock.array"
     array = np.array([1, 2, 3])
 
 
 class MockAttribute(omf.base.ProjectElementAttribute):
     """Test attribute class"""
+    schema = "test.mock.attribute"
 
     array = MockArray()
 

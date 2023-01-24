@@ -9,7 +9,9 @@ import omf
 class BlockModelTester(omf.blockmodel.BaseBlockModel):
     """Dummy Block Model class for overriding parent_block_count"""
 
+    schema = 'test.blockmodel.blockmodeltester'
     parent_block_count = None
+
 
     def location_length(self, location):
         return 0
@@ -17,6 +19,7 @@ class BlockModelTester(omf.blockmodel.BaseBlockModel):
 
 class MockArray(omf.base.BaseModel):
     """Test array class"""
+    schema = "test.blockmodel.mock.array"
 
     array = np.array([1, 2, 3])
 

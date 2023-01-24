@@ -11,6 +11,11 @@ class LineSet(ProjectElement):
 
     schema = "org.omf.v2.element.lineset"
 
+    origin = properties.Vector3(
+        "Origin of the LineSet relative to Project coordinate reference system",
+        default=[0.0, 0.0, 0.0],
+    )
+
     vertices = ArrayInstanceProperty(
         "Spatial coordinates of line vertices relative to project origin",
         shape=("*", 3),

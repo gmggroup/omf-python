@@ -12,6 +12,11 @@ class BaseSurfaceElement(ProjectElement, HasTexturesMixin):
 
     _valid_locations = ("vertices", "faces")
 
+    origin = properties.Vector3(
+        "Origin of the Mesh relative to Project coordinate reference system",
+        default=[0.0, 0.0, 0.0],
+    )
+
     def location_length(self, location):
         """Return correct attribute length based on location"""
         if location == "faces":
@@ -39,6 +44,7 @@ class Surface(BaseSurfaceElement):  # pylint: disable=R0901
         shape=("*", 3),
         dtype=float,
     )
+
     triangles = ArrayInstanceProperty(
         "Vertex indices of surface triangles",
         shape=("*", 3),
@@ -99,10 +105,6 @@ class TensorGridSurface(BaseSurfaceElement):  # pylint: disable=R0901
         shape=("*",),
         dtype=float,
         required=False,
-    )
-    corner = properties.Vector3(
-        "Corner (origin) of the Mesh relative to Project coordinate reference system",
-        default=[0.0, 0.0, 0.0],
     )
 
     @property

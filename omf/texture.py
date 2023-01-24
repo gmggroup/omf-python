@@ -79,8 +79,8 @@ class ProjectedTexture(ContentModel):
 
     schema = "org.omf.v2.texture.projected"
 
-    corner = properties.Vector3(
-        "Corner (origin) point of the texture",
+    origin = properties.Vector3(
+        "Origin point of the texture",
         default=[0.0, 0.0, 0.0],
     )
     axis_u = properties.Vector3(
@@ -99,6 +99,8 @@ class ProjectedTexture(ContentModel):
 
 class UVMappedTexture(ContentModel):
     """Image mapped to surface where uv coordinates correspond to vertices"""
+
+    schema = "org.omf.v2.texture.uv_mapped"
 
     image = properties.Instance(
         "PNG image file",

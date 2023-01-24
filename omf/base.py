@@ -21,7 +21,7 @@ class BaseModel(properties.HasProperties):
 
     @classmethod
     def deserialize(
-        cls, value, trusted=False, strict=False, assert_valid=False, **kwargs
+            cls, value, trusted=False, strict=False, assert_valid=False, **kwargs
     ):
         schema = value.pop("schema", "")
         for class_name, class_value in cls._REGISTRY.items():
@@ -283,8 +283,14 @@ class Project(ContentModel):
         prop=ProjectElement,
         default=list,
     )
+
     metadata = ArbitraryMetadataDict(
         "Project metadata",
         metadata_class=ProjectMetadata,
         default=dict,
+    )
+
+    origin = properties.Vector3(
+        "Origin for all elements in the project relative to the coordinate reference system",
+        default=[0.0, 0.0, 0.0],
     )
