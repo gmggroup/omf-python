@@ -6,6 +6,7 @@ nose
 pylint
 pytest
 pytest-cov
+pytest-rst
 sphinx
 sphinx_rtd_theme
 -e .
