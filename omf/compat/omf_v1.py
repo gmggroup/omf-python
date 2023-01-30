@@ -187,7 +187,7 @@ class Reader(IOMFReader):
 
     # textures
     def _copy_textures(self, src, dst):
-        texture_uuids = self.__get_attr(src, 'textures')
+        texture_uuids = self.__get_attr(src, 'textures', optional=True, default=[])
         dst.textures = [self._copy_texture(texture_uuid) for texture_uuid in texture_uuids]
 
     # data columns
@@ -220,9 +220,7 @@ class Reader(IOMFReader):
         return data
 
     def _copy_data(self, src, dst, valid_locations):
-        data_uuids = self.__get_attr(src, 'data', optional=True)
-        if data_uuids is None:
-            return
+        data_uuids = self.__get_attr(src, 'data', optional=True, default=[])
         dst.attributes = [self._copy_project_element_data(data_uuid, valid_locations) for data_uuid in data_uuids]
 
     # points
