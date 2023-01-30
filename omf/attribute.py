@@ -483,7 +483,7 @@ class CategoryColormap(ContentModel):
     schema = "org.omf.v2.colormap.category"
 
     indices = properties.List(
-        "indices corresponding to CateogryAttribute array values",
+        "indices corresponding to CategoryAttribute array values",
         properties.Integer(""),
     )
     values = properties.List(

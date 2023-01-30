@@ -7,7 +7,7 @@ import zlib
 
 from .interface import IOMFReader, InvalidOMFFile
 
-from .. import base, pointset, texture
+from .. import attribute, base, lineset, pointset, texture
 
 COMPATIBILITY_VERSION = b'OMF-v0.9.0'
 _default = object()
@@ -29,6 +29,10 @@ class Reader(IOMFReader):
             self._project = self._read_json(json_start)
             return self._copy_project(project_uuid)
 
+    def _test_data_needed(self, *args, **kwargs):
+        # temporary placeholder
+        raise InvalidOMFFile('Test data required')
+
     def _read_header(self):
         """Checks magic number and version; gets project uid and json start"""
         self._f.seek(0)
@@ -47,8 +51,8 @@ class Reader(IOMFReader):
         return json.loads(self._f.read().decode('utf-8'))
 
     # Safe access to attributes
-    @staticmethod
-    def __get_attr(src, attr, optional=False, converter=None, default=_default):
+    @classmethod
+    def __get_attr(cls, src, attr, optional=False, converter=None, default=_default):
         if attr not in src:
             if not optional:
                 raise InvalidOMFFile(f"Attribute {attr} missing")
@@ -67,8 +71,8 @@ class Reader(IOMFReader):
         if value != required_value:
             raise InvalidOMFFile(f"Invalid attribute {attr}. Expected: {required_value}, actual: {value}")
 
-    @staticmethod
-    def __copy_attr(src, src_attr, dst, dst_attr=None,
+    @classmethod
+    def __copy_attr(cls, src, src_attr, dst, dst_attr=None,
                     optional_src=False, optional_dst=False, converter=None, default=_default):
         if dst_attr is None:
             dst_attr = src_attr
@@ -91,14 +95,29 @@ class Reader(IOMFReader):
         else:
             setattr(dst, dst_attr, value)
 
-    # reading numpy arrays
+    # reading arrays
     def _load_array(self, scalar_array):
         scalar_class = self.__get_attr(scalar_array, '__class__')
-        shape_lookup = {'Vector3Array': ('*', 3),
-                        }
+        converter_lookup = {
+            'StringArray': self._test_data_needed,
+            'DateTimeArray': self._test_data_needed,
+            'ColorArray': self._test_data_needed,
+        }
+        shape_lookup = {
+            'ScalarArray': ('*',),
+            'Int2Array': ('*', 2),
+            'Int3Array': ('*', 3),
+            'Vector2Array': ('*', 2),
+            'Vector3Array': ('*', 3),
+        }
+        converter = self.__get_attr(converter_lookup, scalar_class, optional=True)
+        if converter is not None:
+            return converter(scalar_array)
+
         shape = self.__get_attr(shape_lookup, scalar_class)
         shape = tuple(-1 if s == '*' else s for s in shape)
         base_vector = self.__get_attr(scalar_array, 'array')
+
         start = self.__get_attr(base_vector, 'start')
         length = self.__get_attr(base_vector, 'length')
         dtype = self.__get_attr(base_vector, 'dtype')
@@ -168,8 +187,31 @@ class Reader(IOMFReader):
         dst.textures = [self._copy_texture(texture_uuid) for texture_uuid in texture_uuids]
 
     # data columns
-    def _copy_data(self, src, dst):
-        pass
+    def _copy_scalar_data(self, data_v1):
+        data = attribute.NumericAttribute()
+        self._copy_scalar_array(data_v1, 'array', data)
+        if self.__get_attr(data_v1, 'colormap', optional=True) is not None:
+            self._test_data_needed(data_v1, data)
+        return data
+
+    def _copy_project_element_data(self, data_uuid, valid_locations):
+        data_v1 = self.__get_attr(self._project, data_uuid)
+        data_class = self.__get_attr(data_v1, '__class__')
+
+        converters = {'ScalarData': self._copy_scalar_data}
+        converter = self.__get_attr(converters, data_class)
+        data = converter(data_v1)
+        location = self.__get_attr(data_v1, 'location')
+        if location not in valid_locations:
+            raise InvalidOMFFile(f'Invalid data location: {location}')
+        self._copy_content_model(data_v1, data)
+        return data
+
+    def _copy_data(self, src, dst, valid_locations):
+        data_uuids = self.__get_attr(src, 'data', optional=True)
+        if data_uuids is None:
+            return
+        dst.attributes = [self._copy_project_element_data(data_uuid, valid_locations) for data_uuid in data_uuids]
 
     # points
     def _copy_pointset_element(self, points_v1):
@@ -185,17 +227,35 @@ class Reader(IOMFReader):
         valid_locations = ('vertices',)
         return points, valid_locations
 
+    # line sets
+    def _copy_lineset_element(self, lines_v1):
+        geometry_uuid = self.__get_attr(lines_v1, 'geometry')
+        geometry_v1 = self.__get_attr(self._project, geometry_uuid)
+
+        lines = lineset.LineSet()
+        self.__copy_attr(lines_v1, 'subtype', lines.metadata)
+        self._copy_project_element_geometry(geometry_v1, lines)
+        self._copy_scalar_array(geometry_v1, 'vertices', lines)
+        self._copy_scalar_array(geometry_v1, 'segments', lines)
+
+        valid_locations = ('vertices', 'segments')
+        return lines, valid_locations
+
     # element list
     def _copy_project_element(self, element_uuid):
         element_v1 = self.__get_attr(self._project, element_uuid)
         element_class = self.__get_attr(element_v1, '__class__')
 
-        converters = {'PointSetElement': self._copy_pointset_element}
+        converters = {'PointSetElement': self._copy_pointset_element,
+                      'LineSetElement': self._copy_lineset_element,
+                      'SurfaceElement': self._test_data_needed,
+                      'VolumeElement': self._test_data_needed,
+                      }
         converter = self.__get_attr(converters, element_class)
         element, valid_locations = converter(element_v1)
 
         self._copy_content_model(element_v1, element)
-        self._copy_data(element_v1, element)
+        self._copy_data(element_v1, element, valid_locations)
         self.__copy_attr(element_v1, 'color', element.metadata)
         return element
 
