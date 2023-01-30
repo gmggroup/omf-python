@@ -1,13 +1,14 @@
 import io
 import json
 import numpy as np
+import properties
 import struct
 import uuid
 import zlib
 
-from .interface import IOMFReader, InvalidOMFFile
+from .interface import IOMFReader, InvalidOMFFile, WrongVersionError
 
-from .. import attribute, base, lineset, pointset, texture
+from .. import attribute, base, blockmodel, lineset, pointset, surface, texture
 
 COMPATIBILITY_VERSION = b'OMF-v0.9.0'
 _default = object()
@@ -27,7 +28,10 @@ class Reader(IOMFReader):
         with open(self._filename, 'rb') as self._f:
             project_uuid, json_start = self._read_header()
             self._project = self._read_json(json_start)
-            return self._copy_project(project_uuid)
+            try:
+                return self._copy_project(project_uuid)
+            except properties.ValidationError as exc:
+                raise InvalidOMFFile(exc)
 
     def _test_data_needed(self, *args, **kwargs):
         # temporary placeholder
@@ -37,11 +41,11 @@ class Reader(IOMFReader):
         """Checks magic number and version; gets project uid and json start"""
         self._f.seek(0)
         if self._f.read(4) != b'\x84\x83\x82\x81':
-            raise InvalidOMFFile(f'Unsupported format: {self._filename}')
+            raise WrongVersionError(f'Unsupported format: {self._filename}')
         file_version = struct.unpack('<32s', self._f.read(32))[0]
         file_version = file_version[0:len(COMPATIBILITY_VERSION)]
         if file_version != COMPATIBILITY_VERSION:
-            raise InvalidOMFFile("Unsupported file version: {}".format(file_version))
+            raise WrongVersionError("Unsupported file version: {}".format(file_version))
         project_uuid = uuid.UUID(bytes=struct.unpack('<16s', self._f.read(16))[0])
         json_start = struct.unpack('<Q', self._f.read(8))[0]
         return str(project_uuid), json_start
@@ -98,7 +102,7 @@ class Reader(IOMFReader):
     # reading arrays
     def _load_array(self, scalar_array):
         scalar_class = self.__get_attr(scalar_array, '__class__')
-        converter_lookup = {
+        converters = {
             'StringArray': self._test_data_needed,
             'DateTimeArray': self._test_data_needed,
             'ColorArray': self._test_data_needed,
@@ -110,7 +114,7 @@ class Reader(IOMFReader):
             'Vector2Array': ('*', 2),
             'Vector3Array': ('*', 3),
         }
-        converter = self.__get_attr(converter_lookup, scalar_class, optional=True)
+        converter = self.__get_attr(converters, scalar_class, optional=True)
         if converter is not None:
             return converter(scalar_array)
 
@@ -198,12 +202,20 @@ class Reader(IOMFReader):
         data_v1 = self.__get_attr(self._project, data_uuid)
         data_class = self.__get_attr(data_v1, '__class__')
 
-        converters = {'ScalarData': self._copy_scalar_data}
+        converters = {
+            'ColorData': self._test_data_needed,
+            'DateTimeData': self._test_data_needed,
+            'MappedData': self._test_data_needed,
+            'ScalarData': self._copy_scalar_data,
+            'StringData': self._test_data_needed,
+            'Vector2Data': self._test_data_needed,
+            'Vector3Data': self._test_data_needed,
+        }
         converter = self.__get_attr(converters, data_class)
         data = converter(data_v1)
-        location = self.__get_attr(data_v1, 'location')
-        if location not in valid_locations:
-            raise InvalidOMFFile(f'Invalid data location: {location}')
+        self.__copy_attr(data_v1, 'location', data)
+        if data.location not in valid_locations:
+            raise InvalidOMFFile(f'Invalid data location: {data.location}')
         self._copy_content_model(data_v1, data)
         return data
 
@@ -217,6 +229,7 @@ class Reader(IOMFReader):
     def _copy_pointset_element(self, points_v1):
         geometry_uuid = self.__get_attr(points_v1, 'geometry')
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
+        self.__require_attr(geometry_v1, '__class__', 'PointSetGeometry')
 
         points = pointset.PointSet()
         self._copy_textures(points_v1, points)
@@ -231,6 +244,7 @@ class Reader(IOMFReader):
     def _copy_lineset_element(self, lines_v1):
         geometry_uuid = self.__get_attr(lines_v1, 'geometry')
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
+        self.__require_attr(geometry_v1, '__class__', 'LineSetGeometry')
 
         lines = lineset.LineSet()
         self.__copy_attr(lines_v1, 'subtype', lines.metadata)
@@ -241,16 +255,71 @@ class Reader(IOMFReader):
         valid_locations = ('vertices', 'segments')
         return lines, valid_locations
 
+    # surfaces - triangulated or gridded
+    def _copy_surface_geometry(self, geometry_v1):
+        surface_ = surface.Surface()
+        self._copy_project_element_geometry(geometry_v1, surface_)
+        self._copy_scalar_array(geometry_v1, 'vertices', surface_)
+        self._copy_scalar_array(geometry_v1, 'triangles', surface_)
+
+        valid_locations = ('vertices', 'faces')
+        return surface_, valid_locations
+
+    def _copy_surface_grid_geometry(self, geometry_v1):
+        surface_ = surface.TensorGridSurface()
+        self._copy_project_element_geometry(geometry_v1, surface_)
+        self.__copy_attr(geometry_v1, 'tensor_u', surface_)
+        self.__copy_attr(geometry_v1, 'tensor_v', surface_)
+        self.__copy_attr(geometry_v1, 'axis_u', surface_)
+        self.__copy_attr(geometry_v1, 'axis_v', surface_)
+
+        valid_locations = ('vertices', 'faces')
+        return surface_, valid_locations
+
+    def _copy_surface_element(self, surface_v1):
+        geometry_uuid = self.__get_attr(surface_v1, 'geometry')
+        geometry_v1 = self.__get_attr(self._project, geometry_uuid)
+        geometry_class = self.__get_attr(geometry_v1, '__class__')
+        converters = {
+            'SurfaceGeometry': self._copy_surface_geometry,
+            'SurfaceGridGeometry': self._copy_surface_grid_geometry,
+        }
+        converter = self.__get_attr(converters, geometry_class)
+        surface_, valid_locations = converter(geometry_v1)
+        self.__copy_attr(surface_v1, 'subtype', surface_.metadata)
+        self._copy_textures(surface_v1, surface_)
+
+        return surface_, valid_locations
+
+    # volumes
+    def _copy_volume_element(self, volume_v1):
+        geometry_uuid = self.__get_attr(volume_v1, 'geometry')
+        geometry_v1 = self.__get_attr(self._project, geometry_uuid)
+        self.__require_attr(geometry_v1, '__class__', 'VolumeGridGeometry')
+        volume = blockmodel.TensorGridBlockModel()
+        self.__copy_attr(volume_v1, 'subtype', volume.metadata)
+        self._copy_project_element_geometry(geometry_v1, volume)
+        self.__copy_attr(geometry_v1, 'tensor_u', volume)
+        self.__copy_attr(geometry_v1, 'tensor_v', volume)
+        self.__copy_attr(geometry_v1, 'tensor_w', volume)
+        self.__copy_attr(geometry_v1, 'axis_u', volume)
+        self.__copy_attr(geometry_v1, 'axis_v', volume)
+        self.__copy_attr(geometry_v1, 'axis_w', volume)
+
+        valid_locations = ('vertices', 'cells')
+        return volume, valid_locations
+
     # element list
     def _copy_project_element(self, element_uuid):
         element_v1 = self.__get_attr(self._project, element_uuid)
         element_class = self.__get_attr(element_v1, '__class__')
 
-        converters = {'PointSetElement': self._copy_pointset_element,
-                      'LineSetElement': self._copy_lineset_element,
-                      'SurfaceElement': self._test_data_needed,
-                      'VolumeElement': self._test_data_needed,
-                      }
+        converters = {
+            'PointSetElement': self._copy_pointset_element,
+            'LineSetElement': self._copy_lineset_element,
+            'SurfaceElement': self._copy_surface_element,
+            'VolumeElement': self._copy_volume_element,
+        }
         converter = self.__get_attr(converters, element_class)
         element, valid_locations = converter(element_v1)
 

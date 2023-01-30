@@ -1,4 +1,4 @@
-from .interface import IOMFReader, InvalidOMFFile
+from .interface import IOMFReader, InvalidOMFFile, WrongVersionError
 from . import omf_v1
 
 compatible_omf_readers = [

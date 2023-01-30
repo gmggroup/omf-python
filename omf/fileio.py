@@ -77,13 +77,16 @@ class Reader(compat.IOMFReader):
                         elif include_binary:
                             binary_dict[info.filename] = file.read()
 
+        except zipfile.BadZipFile as exc:
+            raise compat.WrongVersionError(exc)
+
         except Exception as exc:
             raise compat.InvalidOMFFile(exc)
 
         if project_version is None:
             raise compat.InvalidOMFFile(f'Unsupported format: {self._filename}')
         if project_version != OMF_VERSION:
-            raise compat.InvalidOMFFile(f"Unsupported file version: {project_version}")
+            raise compat.WrongVersionError(f"Unsupported file version: {project_version}")
 
         return Project.deserialize(value=project_dict, binary_dict=binary_dict, trusted=True)
 
@@ -122,7 +125,7 @@ def load(filename: str, include_binary: bool = True, project_json: str = None) -
         try:
             reader = reader_cls(filename)
             return reader.load(include_binary=include_binary, project_json=project_json)
-        except compat.InvalidOMFFile:
+        except compat.WrongVersionError:
             continue
     else:
-        raise compat.InvalidOMFFile(f"Unsupported format: {filename}")
+        raise compat.InvalidOMFFile(f"Unsupported file: {filename}")

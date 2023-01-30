@@ -3,8 +3,12 @@ import abc
 from ..base import Project
 
 
+class WrongVersionError(ValueError):
+    """Raised if the initial version check failed"""
+
+
 class InvalidOMFFile(ValueError):
-    pass
+    """Raised if loading the file failed"""
 
 
 class IOMFReader(abc.ABC):
