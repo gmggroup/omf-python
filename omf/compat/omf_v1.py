@@ -1,3 +1,4 @@
+import contextlib
 import io
 import json
 import numpy as np
@@ -16,26 +17,28 @@ _default = object()
 
 class Reader(IOMFReader):
     def __init__(self, filename: str):
+        self._reset()
         self._filename = filename
+
+    def load(self, include_binary: bool = True, project_json: bool = None):
+        self._include_binary = include_binary
+        try:
+            with open(self._filename, 'rb') as self._f:
+                project_uuid, json_start = self._read_header()
+                self._project = self._read_json(json_start)
+                try:
+                    return self._copy_project(project_uuid)
+                except properties.ValidationError as exc:
+                    raise InvalidOMFFile(exc)
+        finally:
+            self._reset()
+
+    def _reset(self):
         self._f = None
         self._project = None
         self._include_binary = True
         self._attribute_bucket = dict()
-
-    def load(self, include_binary: bool = True, project_json: bool = None):
-        self._include_binary = include_binary
-
-        with open(self._filename, 'rb') as self._f:
-            project_uuid, json_start = self._read_header()
-            self._project = self._read_json(json_start)
-            try:
-                return self._copy_project(project_uuid)
-            except properties.ValidationError as exc:
-                raise InvalidOMFFile(exc)
-
-    def _test_data_needed(self, *args, **kwargs):
-        # temporary placeholder
-        raise InvalidOMFFile('Test data required')
+        self.__cache = {}  # uuid -> reusable item
 
     def _read_header(self):
         """Checks magic number and version; gets project uid and json start"""
@@ -100,12 +103,29 @@ class Reader(IOMFReader):
             setattr(dst, dst_attr, value)
 
     # reading arrays
+    @contextlib.contextmanager
+    def _override_include_binary(self, temporary_value=True):
+        old_value, self._include_binary = self._include_binary, temporary_value
+        try:
+            yield
+        finally:
+            self._include_binary = old_value
+
+    def _load_gradient(self, gradient_uuid):
+        if gradient_uuid not in self.__cache:
+            gradient_v1 = self.__get_attr(self._project, gradient_uuid)
+            self.__cache[gradient_uuid] = self._load_array_list(gradient_v1)
+        return self.__cache[gradient_uuid]
+
+    def _load_array_list(self, scalar_array):
+        return self.__get_attr(scalar_array, 'array')
+
     def _load_array(self, scalar_array):
         scalar_class = self.__get_attr(scalar_array, '__class__')
         converters = {
-            'StringArray': self._test_data_needed,
-            'DateTimeArray': self._test_data_needed,
-            'ColorArray': self._test_data_needed,
+            'StringArray': self._load_array_list,
+            'DateTimeArray': self._load_array_list,
+            'ColorArray': self._load_array_list,
         }
         shape_lookup = {
             'ScalarArray': ('*',),
@@ -191,37 +211,130 @@ class Reader(IOMFReader):
         dst.textures = [self._copy_texture(texture_uuid) for texture_uuid in texture_uuids]
 
     # data columns
+    def _copy_colormap(self, colormap_uuid):
+        colormap_v1 = self.__get_attr(self._project, colormap_uuid)
+        self.__require_attr(colormap_v1, '__class__', 'ScalarColormap')
+        gradient_uuid = self.__get_attr(colormap_v1, 'gradient')
+
+        colormap = attribute.ContinuousColormap()
+        colormap.gradient = self._load_gradient(gradient_uuid)
+        self.__copy_attr(colormap_v1, 'limits', colormap)
+        self._copy_content_model(colormap_v1, colormap)
+        return colormap
+
     def _copy_scalar_data(self, data_v1):
         data = attribute.NumericAttribute()
         self._copy_scalar_array(data_v1, 'array', data)
-        if self.__get_attr(data_v1, 'colormap', optional=True) is not None:
-            self._test_data_needed(data_v1, data)
-        return data
+        colormap_uuid = self.__get_attr(data_v1, 'colormap', optional=True)
+        if colormap_uuid is not None:
+            data.colormap = self._copy_colormap(colormap_uuid)
+        return [data]
 
-    def _copy_project_element_data(self, data_uuid, valid_locations):
+    def _copy_vector_data(self, data_v1):
+        data = attribute.VectorAttribute()
+        self._copy_scalar_array(data_v1, 'array', data)
+        return [data]
+
+    def _copy_string_data(self, data_v1):
+        data = attribute.StringAttribute()
+        self._copy_scalar_array(data_v1, 'array', data)
+        return [data]
+
+    def _mapped_column_to_category_attribute(self, legend_v1, data_v1, data_column, color_column):
+        colormap = attribute.CategoryColormap()
+
+        length = len(data_column)
+        colormap.indices = list(range(length))
+        colormap.values = data_column
+        if color_column is not None:
+            colormap.colors = color_column
+        self._copy_content_model(legend_v1, colormap)
+
+        catgory_attribute = attribute.CategoryAttribute()
+        self._copy_scalar_array(data_v1, 'array', catgory_attribute)
+        catgory_attribute.categories = colormap
+
+        return catgory_attribute
+
+    def _copy_mapped_data(self, data_v1):
+        # This is messy because of changes from V1 to V2.
+        # V1's MappedData contains an index array and an arbitrary list of Legends
+        # V2's CategoryAttribute contains the same index array but only allows one CategoryColormap.
+        # The CategoryColormap can hold one value column (strings) and optionally one color column.
+        # To complicate things further, V1 did not enforce that all Legends in MappedData have the same length.
+        # This function attempts to preserve data/color groups:
+        # - it splits the Legends into colors and other columns
+        # - for each 'other' column, it creates a CategoryAttribute with a CategoryColormap
+        # - CategoryColormap.indices will be filled with a default range (0..N) because this did not exist in V1
+        # - it takes the first available color column with the same length and adds it to that CategoryColormap
+        # - if no matching color column is available, the color attribute of the CategoryColormap remains unset
+        # - any leftover color columns will be turned into data columns - rendering them effectively useless since
+        #   data columns only support string data, e.g. these will turn into "255,255,255" for a white color.
+
+        # Step 1: load all legends and split them into 'color' and 'other' columns.
+        color_columns, other_columns = [], []
+
+        for legend_uuid in self.__get_attr(data_v1, 'legends'):
+            legend_v1 = self.__get_attr(self._project, legend_uuid)
+            self.__require_attr(legend_v1, '__class__', 'Legend')
+
+            values_uuid = self.__get_attr(legend_v1, 'values')
+            array_v1 = self.__get_attr(self._project, values_uuid)
+            array_class = self.__get_attr(array_v1, '__class__')
+
+            with self._override_include_binary(temporary_value=True):
+                column = self._load_array(array_v1)
+
+            if array_class == 'ColorArray':
+                color_columns.append((legend_v1, column))
+            else:
+                other_columns.append((legend_v1, column, array_class))
+
+        # process 'other' columns and add a color column if possible
+        for legend_v1, column, array_class in other_columns:
+            length = len(column)
+
+            # find a matching color column
+            color_column = None
+            matching_color_column = next(((lgd, col) for lgd, col in color_columns if len(col) == length), None)
+            if matching_color_column is not None:
+                color_columns.remove(matching_color_column)
+                _, color_column = matching_color_column
+
+            yield self._mapped_column_to_category_attribute(legend_v1, data_v1, column, color_column)
+
+        # process remaining color columns
+        for legend_v1, color_column in color_columns:
+            # convert color to text but preserve the color column - this gives pretty colored colors.
+            column = [','.join(map(str, color)) for color in color_column]
+            yield self._mapped_column_to_category_attribute(legend_v1, data_v1, column, color_column)
+
+    def _copy_project_element_data(self, data_uuid, valid_locations, attributes):
         data_v1 = self.__get_attr(self._project, data_uuid)
         data_class = self.__get_attr(data_v1, '__class__')
 
         converters = {
-            'ColorData': self._test_data_needed,
-            'DateTimeData': self._test_data_needed,
-            'MappedData': self._test_data_needed,
+            'ColorData': self._copy_vector_data,
+            'DateTimeData': self._copy_string_data,
+            'MappedData': self._copy_mapped_data,
             'ScalarData': self._copy_scalar_data,
-            'StringData': self._test_data_needed,
-            'Vector2Data': self._test_data_needed,
-            'Vector3Data': self._test_data_needed,
+            'StringData': self._copy_string_data,
+            'Vector2Data': self._copy_vector_data,
+            'Vector3Data': self._copy_vector_data,
         }
         converter = self.__get_attr(converters, data_class)
-        data = converter(data_v1)
-        self.__copy_attr(data_v1, 'location', data)
-        if data.location not in valid_locations:
-            raise InvalidOMFFile(f'Invalid data location: {data.location}')
-        self._copy_content_model(data_v1, data)
-        return data
+        location = self.__get_attr(data_v1, 'location')
+        if location not in valid_locations:
+            raise InvalidOMFFile(f'Invalid data location: {location}')
+        for data in converter(data_v1):
+            data.location = location
+            self._copy_content_model(data_v1, data)
+            attributes.append(data)
 
     def _copy_data(self, src, dst, valid_locations):
         data_uuids = self.__get_attr(src, 'data', optional=True, default=[])
-        dst.attributes = [self._copy_project_element_data(data_uuid, valid_locations) for data_uuid in data_uuids]
+        for data_uuid in data_uuids:
+            self._copy_project_element_data(data_uuid, valid_locations, dst.attributes)
 
     # points
     def _copy_pointset_element(self, points_v1):
