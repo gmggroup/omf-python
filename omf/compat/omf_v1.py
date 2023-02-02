@@ -27,7 +27,7 @@ class Reader(IOMFReader):
                 project_uuid, json_start = self._read_header()
                 self._project = self._read_json(json_start)
                 try:
-                    return self._copy_project(project_uuid)
+                    return self._convert_project(project_uuid)
                 except properties.ValidationError as exc:
                     raise InvalidOMFFile(exc)
         finally:
@@ -59,17 +59,17 @@ class Reader(IOMFReader):
 
     # Safe access to attributes
     @classmethod
-    def __get_attr(cls, src, attr, optional=False, converter=None, default=_default):
-        if attr not in src:
+    def __get_attr(cls, src, attr, optional=False, default=_default):
+        try:
+            value = src[attr]
+        except TypeError:
+            raise InvalidOMFFile(f"Attribute {attr} missing")
+        except KeyError:
             if not optional:
                 raise InvalidOMFFile(f"Attribute {attr} missing")
             if default is _default:
                 return None
             value = default
-        else:
-            value = src[attr]
-            if converter:
-                value = converter(value)
         return value
 
     @classmethod
@@ -80,19 +80,19 @@ class Reader(IOMFReader):
 
     @classmethod
     def __copy_attr(cls, src, src_attr, dst, dst_attr=None,
-                    optional_src=False, optional_dst=False, converter=None, default=_default):
+                    optional_src=False, optional_dst=False, default=_default):
         if dst_attr is None:
             dst_attr = src_attr
-        if src_attr not in src:
+        try:
+            value = src[src_attr]
+        except TypeError:
+            raise InvalidOMFFile(f"Attribute {src_attr} missing")
+        except KeyError:
             if not optional_src:
                 raise InvalidOMFFile(f"Attribute {src_attr} missing")
             if default is _default:
                 return
             value = default
-        else:
-            value = src[src_attr]
-            if converter:
-                value = converter(value)
 
         if optional_dst and default is not _default and value == default:
             return
@@ -160,7 +160,7 @@ class Reader(IOMFReader):
         array = self._load_array(scalar_array)
         setattr(dst, dst_attr, array)
 
-    def _load_image(self, image_png):
+    def _convert_image(self, image_png):
         start = self.__get_attr(image_png, 'start')
         length = self.__get_attr(image_png, 'length')
         self.__require_attr(image_png, 'dtype', 'image/png')
@@ -176,7 +176,7 @@ class Reader(IOMFReader):
         if dst_attr is None:
             dst_attr = src_attr
         image_png = self.__get_attr(src, src_attr)
-        image = self._load_image(image_png)
+        image = self._convert_image(image_png)
         setattr(dst, dst_attr, image)
 
     # base-class handlers
@@ -193,7 +193,7 @@ class Reader(IOMFReader):
         self.__copy_attr(src, 'origin', dst)
         # do not copy uid-model stuff - date-created and date-modified are taken from content-model.
 
-    def _copy_texture(self, texture_uuid):
+    def _convert_texture(self, texture_uuid):
         texture_v1 = self.__get_attr(self._project, texture_uuid)
         texture_ = texture.ProjectedTexture()
 
@@ -208,10 +208,10 @@ class Reader(IOMFReader):
     # textures
     def _copy_textures(self, src, dst):
         texture_uuids = self.__get_attr(src, 'textures', optional=True, default=[])
-        dst.textures = [self._copy_texture(texture_uuid) for texture_uuid in texture_uuids]
+        dst.textures = [self._convert_texture(texture_uuid) for texture_uuid in texture_uuids]
 
     # data columns
-    def _copy_colormap(self, colormap_uuid):
+    def _convert_colormap(self, colormap_uuid):
         colormap_v1 = self.__get_attr(self._project, colormap_uuid)
         self.__require_attr(colormap_v1, '__class__', 'ScalarColormap')
         gradient_uuid = self.__get_attr(colormap_v1, 'gradient')
@@ -222,20 +222,20 @@ class Reader(IOMFReader):
         self._copy_content_model(colormap_v1, colormap)
         return colormap
 
-    def _copy_scalar_data(self, data_v1):
+    def _convert_scalar_data(self, data_v1):
         data = attribute.NumericAttribute()
         self._copy_scalar_array(data_v1, 'array', data)
         colormap_uuid = self.__get_attr(data_v1, 'colormap', optional=True)
         if colormap_uuid is not None:
-            data.colormap = self._copy_colormap(colormap_uuid)
+            data.colormap = self._convert_colormap(colormap_uuid)
         return [data]
 
-    def _copy_vector_data(self, data_v1):
+    def _convert_vector_data(self, data_v1):
         data = attribute.VectorAttribute()
         self._copy_scalar_array(data_v1, 'array', data)
         return [data]
 
-    def _copy_string_data(self, data_v1):
+    def _convert_string_data(self, data_v1):
         data = attribute.StringAttribute()
         self._copy_scalar_array(data_v1, 'array', data)
         return [data]
@@ -256,7 +256,7 @@ class Reader(IOMFReader):
 
         return catgory_attribute
 
-    def _copy_mapped_data(self, data_v1):
+    def _convert_mapped_data(self, data_v1):
         # This is messy because of changes from V1 to V2.
         # V1's MappedData contains an index array and an arbitrary list of Legends
         # V2's CategoryAttribute contains the same index array but only allows one CategoryColormap.
@@ -314,13 +314,13 @@ class Reader(IOMFReader):
         data_class = self.__get_attr(data_v1, '__class__')
 
         converters = {
-            'ColorData': self._copy_vector_data,
-            'DateTimeData': self._copy_string_data,
-            'MappedData': self._copy_mapped_data,
-            'ScalarData': self._copy_scalar_data,
-            'StringData': self._copy_string_data,
-            'Vector2Data': self._copy_vector_data,
-            'Vector3Data': self._copy_vector_data,
+            'ColorData': self._convert_vector_data,
+            'DateTimeData': self._convert_string_data,
+            'MappedData': self._convert_mapped_data,
+            'ScalarData': self._convert_scalar_data,
+            'StringData': self._convert_string_data,
+            'Vector2Data': self._convert_vector_data,
+            'Vector3Data': self._convert_vector_data,
         }
         converter = self.__get_attr(converters, data_class)
         location = self.__get_attr(data_v1, 'location')
@@ -337,7 +337,7 @@ class Reader(IOMFReader):
             self._copy_project_element_data(data_uuid, valid_locations, dst.attributes)
 
     # points
-    def _copy_pointset_element(self, points_v1):
+    def _convert_pointset_element(self, points_v1):
         geometry_uuid = self.__get_attr(points_v1, 'geometry')
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, '__class__', 'PointSetGeometry')
@@ -352,7 +352,7 @@ class Reader(IOMFReader):
         return points, valid_locations
 
     # line sets
-    def _copy_lineset_element(self, lines_v1):
+    def _convert_lineset_element(self, lines_v1):
         geometry_uuid = self.__get_attr(lines_v1, 'geometry')
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, '__class__', 'LineSetGeometry')
@@ -367,7 +367,7 @@ class Reader(IOMFReader):
         return lines, valid_locations
 
     # surfaces - triangulated or gridded
-    def _copy_surface_geometry(self, geometry_v1):
+    def _convert_surface_geometry(self, geometry_v1):
         surface_ = surface.Surface()
         self._copy_project_element_geometry(geometry_v1, surface_)
         self._copy_scalar_array(geometry_v1, 'vertices', surface_)
@@ -376,7 +376,7 @@ class Reader(IOMFReader):
         valid_locations = ('vertices', 'faces')
         return surface_, valid_locations
 
-    def _copy_surface_grid_geometry(self, geometry_v1):
+    def _convert_surface_grid_geometry(self, geometry_v1):
         surface_ = surface.TensorGridSurface()
         self._copy_project_element_geometry(geometry_v1, surface_)
         self.__copy_attr(geometry_v1, 'tensor_u', surface_)
@@ -387,13 +387,13 @@ class Reader(IOMFReader):
         valid_locations = ('vertices', 'faces')
         return surface_, valid_locations
 
-    def _copy_surface_element(self, surface_v1):
+    def _convert_surface_element(self, surface_v1):
         geometry_uuid = self.__get_attr(surface_v1, 'geometry')
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         geometry_class = self.__get_attr(geometry_v1, '__class__')
         converters = {
-            'SurfaceGeometry': self._copy_surface_geometry,
-            'SurfaceGridGeometry': self._copy_surface_grid_geometry,
+            'SurfaceGeometry': self._convert_surface_geometry,
+            'SurfaceGridGeometry': self._convert_surface_grid_geometry,
         }
         converter = self.__get_attr(converters, geometry_class)
         surface_, valid_locations = converter(geometry_v1)
@@ -403,7 +403,7 @@ class Reader(IOMFReader):
         return surface_, valid_locations
 
     # volumes
-    def _copy_volume_element(self, volume_v1):
+    def _convert_volume_element(self, volume_v1):
         geometry_uuid = self.__get_attr(volume_v1, 'geometry')
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, '__class__', 'VolumeGridGeometry')
@@ -421,15 +421,15 @@ class Reader(IOMFReader):
         return volume, valid_locations
 
     # element list
-    def _copy_project_element(self, element_uuid):
+    def _convert_project_element(self, element_uuid):
         element_v1 = self.__get_attr(self._project, element_uuid)
         element_class = self.__get_attr(element_v1, '__class__')
 
         converters = {
-            'PointSetElement': self._copy_pointset_element,
-            'LineSetElement': self._copy_lineset_element,
-            'SurfaceElement': self._copy_surface_element,
-            'VolumeElement': self._copy_volume_element,
+            'PointSetElement': self._convert_pointset_element,
+            'LineSetElement': self._convert_lineset_element,
+            'SurfaceElement': self._convert_surface_element,
+            'VolumeElement': self._convert_volume_element,
         }
         converter = self.__get_attr(converters, element_class)
         element, valid_locations = converter(element_v1)
@@ -440,7 +440,7 @@ class Reader(IOMFReader):
         return element
 
     # main project
-    def _copy_project(self, project_uuid):
+    def _convert_project(self, project_uuid):
         project_v1 = self.__get_attr(self._project, project_uuid)
         project = base.Project()
 
@@ -451,5 +451,6 @@ class Reader(IOMFReader):
         self.__copy_attr(project_v1, 'units', self._attribute_bucket)  # units have moved to elements.
         self.__copy_attr(project_v1, 'origin', project)
 
-        project.elements = [self._copy_project_element(element) for element in self.__get_attr(project_v1, 'elements')]
+        project.elements = [self._convert_project_element(element) for element in
+                            self.__get_attr(project_v1, 'elements')]
         return project
