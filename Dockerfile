@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.10
 MAINTAINER "Franklin Koch <franklin.koch@seequent.com>"
 
 RUN apt-get update && apt-get -y install vim
