@@ -4,9 +4,9 @@ matplotlib
 mock
 nose
 pylint
-pytest
-pytest-cov
-pytest-rst
+pytest==7.2.1
+pytest-cov==4.0.0
+pytest-rst==0.1.5
 sphinx
 sphinx_rtd_theme
 -e .
