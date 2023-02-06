@@ -25,7 +25,7 @@ class BaseBlockModel(ProjectElement):
         length=1,
     )
     origin = properties.Vector3(
-        "Corner of the block model relative to Project coordinate reference system",
+        "Origin of the block model relative to Project coordinate reference system",
         default=[0.0, 0.0, 0.0],
     )
 

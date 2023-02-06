@@ -37,7 +37,6 @@ class Reader(IOMFReader):
         self._f = None
         self._project = None
         self._include_binary = True
-        self._attribute_bucket = dict()
         self.__cache = {}  # uuid -> reusable item
 
     def _read_header(self):
@@ -448,7 +447,7 @@ class Reader(IOMFReader):
         self.__copy_attr(project_v1, 'author', project.metadata, optional_dst=True, default='')
         self.__copy_attr(project_v1, 'revision', project.metadata, optional_dst=True, default='')
         self.__copy_attr(project_v1, 'date', project.metadata, optional_src=True)
-        self.__copy_attr(project_v1, 'units', self._attribute_bucket)  # units have moved to elements.
+        self.__copy_attr(project_v1, 'units', project.metadata, 'spacial_units', optional_dst=True, default='')
         self.__copy_attr(project_v1, 'origin', project)
 
         project.elements = [self._convert_project_element(element) for element in
