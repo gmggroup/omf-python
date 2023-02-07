@@ -272,7 +272,7 @@ def test_category_data():
 
 
 def test_basemodel_schema():
-    """ Checks for a unique schema name """
+    """Checks for a unique schema name"""
     classes_to_check = {omf.base.BaseModel}
     classes_with_subclasses = {}
     while classes_to_check:
@@ -290,4 +290,3 @@ def test_basemodel_schema():
             schemas_seen.add(klass.schema)
         else:
             assert klass.schema == ""
-

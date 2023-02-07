@@ -37,10 +37,10 @@ def save(project, filename, mode="x"):
     serial_dict = project.serialize(binary_dict=binary_dict, include_class=False)
     serial_dict["version"] = OMF_VERSION
     with zipfile.ZipFile(
-            file=filename,
-            mode="w",
-            compression=zipfile.ZIP_DEFLATED,
-            allowZip64=True,
+        file=filename,
+        mode="w",
+        compression=zipfile.ZIP_DEFLATED,
+        allowZip64=True,
     ) as zip_file:
         serial_info = zipfile.ZipInfo(
             filename="project.json",
@@ -84,14 +84,20 @@ class Reader(compat.IOMFReader):
             raise compat.InvalidOMFFile(exc)
 
         if project_version is None:
-            raise compat.InvalidOMFFile(f'Unsupported format: {self._filename}')
+            raise compat.InvalidOMFFile(f"Unsupported format: {self._filename}")
         if project_version != OMF_VERSION:
-            raise compat.WrongVersionError(f"Unsupported file version: {project_version}")
+            raise compat.WrongVersionError(
+                f"Unsupported file version: {project_version}"
+            )
 
-        return Project.deserialize(value=project_dict, binary_dict=binary_dict, trusted=True)
+        return Project.deserialize(
+            value=project_dict, binary_dict=binary_dict, trusted=True
+        )
 
 
-def load(filename: str, include_binary: bool = True, project_json: str = None) -> Project:
+def load(
+    filename: str, include_binary: bool = True, project_json: str = None
+) -> Project:
     """Deserialize an OMF file into a project
 
     **Inputs:**

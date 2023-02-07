@@ -21,7 +21,7 @@ class BaseModel(properties.HasProperties):
 
     @classmethod
     def deserialize(
-            cls, value, trusted=False, strict=False, assert_valid=False, **kwargs
+        cls, value, trusted=False, strict=False, assert_valid=False, **kwargs
     ):
         schema = value.pop("schema", "")
         for class_name, class_value in cls._REGISTRY.items():

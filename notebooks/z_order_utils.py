@@ -47,7 +47,7 @@ def get_index(pointer, level):
 
 
 def get_pointer(index):
-    level = index & (2 ** level_bits - 1)
+    level = index & (2**level_bits - 1)
     index = index >> level_bits
 
     pointer = [0] * dimension

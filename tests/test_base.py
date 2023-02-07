@@ -149,12 +149,14 @@ def test_deserialize():
 
 class MockArray(omf.base.BaseModel):
     """Test array class"""
+
     schema = "test.base.mock.array"
     array = np.array([1, 2, 3])
 
 
 class MockAttribute(omf.base.ProjectElementAttribute):
     """Test attribute class"""
+
     schema = "test.mock.attribute"
 
     array = MockArray()

@@ -484,7 +484,7 @@ class OctreeSubBlockModel(BaseBlockModel):
                 instance=self,
                 reason="invalid",
             )
-        if np.max(value.array) > 8 ** 8 or np.min(value.array) < 0:
+        if np.max(value.array) > 8**8 or np.min(value.array) < 0:
             raise properties.ValidationError(
                 "cbc must have values between 0 and 8^8",
                 prop="cbc",
@@ -604,7 +604,7 @@ class OctreeSubBlockModel(BaseBlockModel):
 
         Level comes from the last 4 bits, with values between 0 and 8
         """
-        return curve_value & (2 ** cls.level_bits - 1)
+        return curve_value & (2**cls.level_bits - 1)
 
     @classmethod
     def level_width(cls, level):
@@ -648,8 +648,8 @@ class OctreeSubBlockModel(BaseBlockModel):
             )
         new_width = self.level_width(level + refinements)
 
-        new_pointers = np.indices([2 ** refinements] * 3)
-        new_pointers = new_pointers.reshape(3, (2 ** refinements) ** 3).T
+        new_pointers = np.indices([2**refinements] * 3)
+        new_pointers = new_pointers.reshape(3, (2**refinements) ** 3).T
         new_pointers = new_pointers * new_width
 
         pointer = self.get_pointer(curve_value)
@@ -674,6 +674,7 @@ class OctreeSubBlockModel(BaseBlockModel):
 
 class ArbitrarySubBlockModel(BaseBlockModel):
     """Block model with arbitrary, variable sub-blocks"""
+
     schema = "org.omf.v2.elements.blockmodel.arbitrary"
 
     parent_block_count = properties.List(
