@@ -6,9 +6,7 @@ import omf
 
 
 class TestAssets:
-    search_dir = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "assets")
-    )
+    search_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
 
     @classmethod
     def pytest_generate_tests(cls, metafunc):

@@ -107,9 +107,7 @@ class TestRegularBlockModel:
 
     bm_class = omf.RegularBlockModel
 
-    @pytest.mark.parametrize(
-        "block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
-    )
+    @pytest.mark.parametrize("block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5]))
     def test_bad_block_count(self, block_count):
         """Test mismatched block_count"""
         block_model = self.bm_class(block_size=[1.0, 2.0, 3.0])
@@ -117,9 +115,7 @@ class TestRegularBlockModel:
             block_model.block_count = block_count
             block_model.validate()
 
-    @pytest.mark.parametrize(
-        "block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
-    )
+    @pytest.mark.parametrize("block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2]))
     def test_bad_block_size(self, block_size):
         """Test mismatched block_size"""
         block_model = self.bm_class(block_count=[2, 2, 2])
@@ -182,10 +178,7 @@ class TestRegularBlockModel:
         block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype="int8"))
         block_model.cbc.array[0] = 0
-        assert np.all(
-            block_model.cbi
-            == np.r_[np.array([0], dtype="int8"), np.array(range(8), dtype="int8")]
-        )
+        assert np.all(block_model.cbi == np.r_[np.array([0], dtype="int8"), np.array(range(8), dtype="int8")])
 
 
 class TestRegularSubBlockModel:
@@ -193,9 +186,7 @@ class TestRegularSubBlockModel:
 
     bm_class = omf.RegularSubBlockModel
 
-    @pytest.mark.parametrize(
-        "block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
-    )
+    @pytest.mark.parametrize("block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5]))
     @pytest.mark.parametrize("attr", ("parent_block_count", "sub_block_count"))
     def test_bad_block_count(self, block_count, attr):
         """Test mismatched block_count"""
@@ -204,9 +195,7 @@ class TestRegularSubBlockModel:
             setattr(block_model, attr, block_count)
             block_model.validate()
 
-    @pytest.mark.parametrize(
-        "block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
-    )
+    @pytest.mark.parametrize("block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2]))
     def test_bad_block_size(self, block_size):
         """Test mismatched block_size"""
         block_model = self.bm_class(parent_block_count=[2, 2, 2])
@@ -279,17 +268,9 @@ class TestRegularSubBlockModel:
         block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype="int8"))
         block_model.cbc.array[0] = 0
-        assert np.all(
-            block_model.cbi
-            == np.r_[np.array([0], dtype="int8"), np.array(range(8), dtype="int8")]
-        )
+        assert np.all(block_model.cbi == np.r_[np.array([0], dtype="int8"), np.array(range(8), dtype="int8")])
         block_model.refine([1, 0, 0])
-        assert np.all(
-            block_model.cbi
-            == np.r_[
-                np.array([0, 0], dtype="int8"), np.array(range(60, 67), dtype="int8")
-            ]
-        )
+        assert np.all(block_model.cbi == np.r_[np.array([0, 0], dtype="int8"), np.array(range(60, 67), dtype="int8")])
 
     def test_location_length(self):
         """Ensure location length updates as expected with block refinement"""
@@ -311,9 +292,7 @@ class TestOctreeSubBlockModel:
 
     bm_class = omf.OctreeSubBlockModel
 
-    @pytest.mark.parametrize(
-        "block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
-    )
+    @pytest.mark.parametrize("block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5]))
     def test_bad_block_count(self, block_count):
         """Test mismatched block_count"""
         block_model = self.bm_class(parent_block_size=[1.0, 2.0, 3.0])
@@ -321,9 +300,7 @@ class TestOctreeSubBlockModel:
             block_model.parent_block_size = block_count
             block_model.validate()
 
-    @pytest.mark.parametrize(
-        "block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
-    )
+    @pytest.mark.parametrize("block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2]))
     def test_bad_block_size(self, block_size):
         """Test mismatched block_size"""
         block_model = self.bm_class(parent_block_count=[2, 2, 2])
@@ -393,12 +370,7 @@ class TestOctreeSubBlockModel:
         block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype=np.uint64))
         block_model.cbc.array[0] = 0
-        assert np.all(
-            block_model.cbi
-            == np.r_[
-                np.array([0], dtype=np.uint64), np.array(range(8), dtype=np.uint64)
-            ]
-        )
+        assert np.all(block_model.cbi == np.r_[np.array([0], dtype=np.uint64), np.array(range(8), dtype=np.uint64)])
 
     def test_zoc(self):
         """Test z-order curves"""
@@ -499,9 +471,7 @@ class TestArbitrarySubBlockModel:
 
     bm_class = omf.ArbitrarySubBlockModel
 
-    @pytest.mark.parametrize(
-        "block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5])
-    )
+    @pytest.mark.parametrize("block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5]))
     def test_bad_block_count(self, block_count):
         """Test mismatched block_count"""
         block_model = self.bm_class(parent_block_size=[1.0, 2.0, 3.0])
@@ -509,9 +479,7 @@ class TestArbitrarySubBlockModel:
             block_model.parent_block_size = block_count
             block_model.validate()
 
-    @pytest.mark.parametrize(
-        "block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
-    )
+    @pytest.mark.parametrize("block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2]))
     def test_bad_block_size(self, block_size):
         """Test mismatched block_size"""
         block_model = self.bm_class(parent_block_count=[2, 2, 2])
@@ -589,12 +557,7 @@ class TestArbitrarySubBlockModel:
         block_model.reset_cbc()
         assert np.all(block_model.cbi == np.array(range(9), dtype=np.uint64))
         block_model.cbc.array[0] = 0
-        assert np.all(
-            block_model.cbi
-            == np.r_[
-                np.array([0], dtype=np.uint64), np.array(range(8), dtype=np.uint64)
-            ]
-        )
+        assert np.all(block_model.cbi == np.r_[np.array([0], dtype=np.uint64), np.array(range(8), dtype=np.uint64)])
 
     def test_validate_sub_block_attrs(self):
         """Test sub block attribute validation"""
@@ -626,9 +589,7 @@ class TestArbitrarySubBlockModel:
         with pytest.raises(properties.ValidationError):
             block_model.sub_block_sizes = np.r_[np.ones((7, 3)), [[1.0, 1.0, 0]]]
         block_model.sub_block_sizes = np.ones((8, 3))
-        assert np.array_equal(
-            block_model.sub_block_sizes_absolute, np.array([[1.0, 2.0, 3.0]] * 8)
-        )
+        assert np.array_equal(block_model.sub_block_sizes_absolute, np.array([[1.0, 2.0, 3.0]] * 8))
         assert block_model.sub_block_centroids is None
         assert block_model.sub_block_centroids_absolute is None
         with pytest.raises(properties.ValidationError):
@@ -676,18 +637,10 @@ class TestArbitrarySubBlockModel:
         assert block_model.validate()
         assert block_model.location_length("parent_blocks") == 1
         assert block_model.location_length("") == 1
-        assert np.array_equal(
-            block_model.sub_block_centroids, np.array([[-0.25, 2.25, 1]])
-        )
-        assert np.array_equal(
-            block_model.sub_block_corners_absolute, np.array([[-0.5, 4, 0]])
-        )
-        assert np.array_equal(
-            block_model.sub_block_sizes_absolute, np.array([[0.5, 1, 6]])
-        )
-        assert np.array_equal(
-            block_model.sub_block_centroids_absolute, np.array([[-0.25, 4.5, 3]])
-        )
+        assert np.array_equal(block_model.sub_block_centroids, np.array([[-0.25, 2.25, 1]]))
+        assert np.array_equal(block_model.sub_block_corners_absolute, np.array([[-0.5, 4, 0]]))
+        assert np.array_equal(block_model.sub_block_sizes_absolute, np.array([[0.5, 1, 6]]))
+        assert np.array_equal(block_model.sub_block_centroids_absolute, np.array([[-0.25, 4.5, 3]]))
         assert block_model.validate()
 
 

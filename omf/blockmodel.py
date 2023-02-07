@@ -66,9 +66,7 @@ class BaseBlockModel(ProjectElement):
         if not np.array_equal(ijk_array, ijk_array.astype(np.uint32)):
             raise ValueError("ijk values must be non-negative integers")
         if np.any(np.max(ijk_array, axis=0) >= blocks):
-            raise ValueError(
-                "ijk must be less than parent_block_count in each dimension"
-            )
+            raise ValueError("ijk must be less than parent_block_count in each dimension")
         index = np.ravel_multi_index(
             multi_index=ijk_array.T,
             dims=blocks,
@@ -84,9 +82,7 @@ class BaseBlockModel(ProjectElement):
         """Return an array of ijk triples for an array of indices"""
         blocks = self.parent_block_count
         if not blocks:
-            raise AttributeError(
-                "parent_block_count is required to calculate ijk values"
-            )
+            raise AttributeError("parent_block_count is required to calculate ijk values")
         if not isinstance(indices, (list, tuple, np.ndarray)):
             raise ValueError("indices must be a list of index values")
         indices = np.array(indices)
@@ -144,11 +140,7 @@ class TensorGridBlockModel(BaseBlockModel):
         """Number of nodes (vertices)"""
         if not self._tensors_defined():
             return None
-        nodes = (
-            (len(self.tensor_u) + 1)
-            * (len(self.tensor_v) + 1)
-            * (len(self.tensor_w) + 1)
-        )
+        nodes = (len(self.tensor_u) + 1) * (len(self.tensor_v) + 1) * (len(self.tensor_w) + 1)
         return nodes
 
     @property
@@ -365,11 +357,7 @@ class RegularSubBlockModel(BaseBlockModel):
             )
         if not self.sub_block_count:
             pass
-        elif np.any(
-            (value.array != 1)
-            & (value.array != 0)
-            & (value.array != np.prod(self.sub_block_count))
-        ):
+        elif np.any((value.array != 1) & (value.array != 0) & (value.array != np.prod(self.sub_block_count))):
             raise properties.ValidationError(
                 "cbc must have only values of prod(sub_block_count), 1, or 0",
                 prop="cbc",
@@ -401,10 +389,7 @@ class RegularSubBlockModel(BaseBlockModel):
     def refine(self, ijk):
         """Refine parent blocks at a single ijk or a list of multiple ijks"""
         if self.cbc is None or not self.sub_block_count:
-            raise ValueError(
-                "Cannot refine sub block model without specifying number "
-                "of parent and sub blocks"
-            )
+            raise ValueError("Cannot refine sub block model without specifying number of parent and sub blocks")
         try:
             inds = self.ijk_array_to_indices(ijk)
         except ValueError:
@@ -643,9 +628,7 @@ class OctreeSubBlockModel(BaseBlockModel):
         curve_value = self.zoc[index]
         level = self.get_level(curve_value)
         if not 0 <= refinements <= self.max_level - level:
-            raise ValueError(
-                "refinements must be between 0 and {}".format(self.max_level - level)
-            )
+            raise ValueError("refinements must be between 0 and {}".format(self.max_level - level))
         new_width = self.level_width(level + refinements)
 
         new_pointers = np.indices([2**refinements] * 3)
@@ -655,12 +638,7 @@ class OctreeSubBlockModel(BaseBlockModel):
         pointer = self.get_pointer(curve_value)
         new_pointers = new_pointers + pointer
 
-        new_curve_values = sorted(
-            [
-                self.get_curve_value(pointer, level + refinements)
-                for pointer in new_pointers
-            ]
-        )
+        new_curve_values = sorted([self.get_curve_value(pointer, level + refinements) for pointer in new_pointers])
 
         self.cbc.array[parent_index] += len(new_curve_values) - 1
         self.zoc = np.concatenate(
@@ -839,8 +817,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
             return value
         if len(value) != cbi[-1]:
             raise properties.ValidationError(
-                "{} attributes must have length equal to "
-                "total number of sub blocks".format(prop_name),
+                "{} attributes must have length equal to " "total number of sub blocks".format(prop_name),
                 prop=prop_name,
                 instance=self,
                 reason="invalid",
@@ -850,9 +827,7 @@ class ArbitrarySubBlockModel(BaseBlockModel):
     @properties.validator("sub_block_corners")
     def _validate_sub_block_corners(self, change):
         """Validate sub block corners array is correct length"""
-        change["value"] = self.validate_sub_block_attributes(
-            change["value"], "sub_block_corners"
-        )
+        change["value"] = self.validate_sub_block_attributes(change["value"], "sub_block_corners")
 
     @properties.validator("sub_block_sizes")
     def _validate_sub_block_sizes(self, change):

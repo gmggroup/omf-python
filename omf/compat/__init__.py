@@ -1,3 +1,4 @@
+"""compat: Readers for older file versions"""
 from .interface import IOMFReader, InvalidOMFFile, WrongVersionError
 from . import omf_v1
 

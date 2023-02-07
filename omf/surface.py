@@ -65,13 +65,9 @@ class Surface(BaseSurfaceElement):  # pylint: disable=R0901
     def _validate_mesh(self):
         """Ensure triangles values are valid indices"""
         if np.min(self.triangles.array) < 0:
-            raise properties.ValidationError(
-                "Triangles may only have positive integers"
-            )
+            raise properties.ValidationError("Triangles may only have positive integers")
         if np.max(self.triangles.array) >= len(self.vertices.array):
-            raise properties.ValidationError(
-                "Triangles expects more vertices than provided"
-            )
+            raise properties.ValidationError("Triangles expects more vertices than provided")
         return True
 
 

@@ -47,12 +47,8 @@ def test_invalid_string_list():
     assert arr.data_type is None
     assert arr.shape is None
     assert arr.size is None
-    assert isinstance(
-        omf.attribute.StringList.deserialize(""), omf.attribute.StringList
-    )
-    assert isinstance(
-        omf.attribute.StringList.deserialize({}), omf.attribute.StringList
-    )
+    assert isinstance(omf.attribute.StringList.deserialize(""), omf.attribute.StringList)
+    assert isinstance(omf.attribute.StringList.deserialize({}), omf.attribute.StringList)
 
 
 def test_boolean_array():

@@ -1,11 +1,12 @@
 import contextlib
 import io
 import json
-import numpy as np
-import properties
 import struct
 import uuid
 import zlib
+
+import numpy as np
+import properties
 
 from .interface import IOMFReader, InvalidOMFFile, WrongVersionError
 
@@ -15,10 +16,14 @@ COMPATIBILITY_VERSION = b"OMF-v0.9.0"
 _default = object()
 
 
+# pylint: disable=too-few-public-methods
 class Reader(IOMFReader):
     def __init__(self, filename: str):
-        self._reset()
         self._filename = filename
+        self._f = None
+        self._include_binary = True
+        self._project = None
+        self.__cache = {}  # uuid -> reusable item
 
     def load(self, include_binary: bool = True, project_json: bool = None):
         self._include_binary = include_binary
@@ -29,7 +34,7 @@ class Reader(IOMFReader):
                 try:
                     return self._convert_project(project_uuid)
                 except properties.ValidationError as exc:
-                    raise InvalidOMFFile(exc)
+                    raise InvalidOMFFile(exc) from exc
         finally:
             self._reset()
 
@@ -61,11 +66,11 @@ class Reader(IOMFReader):
     def __get_attr(cls, src, attr, optional=False, default=_default):
         try:
             value = src[attr]
-        except TypeError:
-            raise InvalidOMFFile(f"Attribute {attr} missing")
-        except KeyError:
+        except TypeError as exc:
+            raise InvalidOMFFile(f"Attribute {attr} missing") from exc
+        except KeyError as exc:
             if not optional:
-                raise InvalidOMFFile(f"Attribute {attr} missing")
+                raise InvalidOMFFile(f"Attribute {attr} missing") from exc
             if default is _default:
                 return None
             value = default
@@ -75,11 +80,10 @@ class Reader(IOMFReader):
     def __require_attr(cls, src, attr, required_value):
         value = cls.__get_attr(src, attr)
         if value != required_value:
-            raise InvalidOMFFile(
-                f"Invalid attribute {attr}. Expected: {required_value}, actual: {value}"
-            )
+            raise InvalidOMFFile(f"Invalid attribute {attr}. Expected: {required_value}, actual: {value}")
 
     @classmethod
+    # pylint: disable=too-many-arguments
     def __copy_attr(
         cls,
         src,
@@ -94,11 +98,11 @@ class Reader(IOMFReader):
             dst_attr = src_attr
         try:
             value = src[src_attr]
-        except TypeError:
-            raise InvalidOMFFile(f"Attribute {src_attr} missing")
-        except KeyError:
+        except TypeError as exc:
+            raise InvalidOMFFile(f"Attribute {src_attr} missing") from exc
+        except KeyError as exc:
             if not optional_src:
-                raise InvalidOMFFile(f"Attribute {src_attr} missing")
+                raise InvalidOMFFile(f"Attribute {src_attr} missing") from exc
             if default is _default:
                 return
             value = default
@@ -217,9 +221,7 @@ class Reader(IOMFReader):
     # textures
     def _copy_textures(self, src, dst):
         texture_uuids = self.__get_attr(src, "textures", optional=True, default=[])
-        dst.textures = [
-            self._convert_texture(texture_uuid) for texture_uuid in texture_uuids
-        ]
+        dst.textures = [self._convert_texture(texture_uuid) for texture_uuid in texture_uuids]
 
     # data columns
     def _convert_colormap(self, colormap_uuid):
@@ -251,9 +253,7 @@ class Reader(IOMFReader):
         self._copy_scalar_array(data_v1, "array", data)
         return [data]
 
-    def _mapped_column_to_category_attribute(
-        self, legend_v1, data_v1, data_column, color_column
-    ):
+    def _mapped_column_to_category(self, legend_v1, data_v1, data_column, color_column):
         colormap = attribute.CategoryColormap()
 
         length = len(data_column)
@@ -309,24 +309,18 @@ class Reader(IOMFReader):
 
             # find a matching color column
             color_column = None
-            matching_color_column = next(
-                ((lgd, col) for lgd, col in color_columns if len(col) == length), None
-            )
+            matching_color_column = next(((lgd, col) for lgd, col in color_columns if len(col) == length), None)
             if matching_color_column is not None:
                 color_columns.remove(matching_color_column)
                 _, color_column = matching_color_column
 
-            yield self._mapped_column_to_category_attribute(
-                legend_v1, data_v1, column, color_column
-            )
+            yield self._mapped_column_to_category(legend_v1, data_v1, column, color_column)
 
         # process remaining color columns
         for legend_v1, color_column in color_columns:
             # convert color to text but preserve the color column - this gives pretty colored colors.
             column = [",".join(map(str, color)) for color in color_column]
-            yield self._mapped_column_to_category_attribute(
-                legend_v1, data_v1, column, color_column
-            )
+            yield self._mapped_column_to_category(legend_v1, data_v1, column, color_column)
 
     def _copy_project_element_data(self, data_uuid, valid_locations, attributes):
         data_v1 = self.__get_attr(self._project, data_uuid)
@@ -464,12 +458,8 @@ class Reader(IOMFReader):
         project = base.Project()
 
         self._copy_content_model(project_v1, project)
-        self.__copy_attr(
-            project_v1, "author", project.metadata, optional_dst=True, default=""
-        )
-        self.__copy_attr(
-            project_v1, "revision", project.metadata, optional_dst=True, default=""
-        )
+        self.__copy_attr(project_v1, "author", project.metadata, optional_dst=True, default="")
+        self.__copy_attr(project_v1, "revision", project.metadata, optional_dst=True, default="")
         self.__copy_attr(project_v1, "date", project.metadata, optional_src=True)
         self.__copy_attr(
             project_v1,
@@ -482,7 +472,6 @@ class Reader(IOMFReader):
         self.__copy_attr(project_v1, "origin", project)
 
         project.elements = [
-            self._convert_project_element(element)
-            for element in self.__get_attr(project_v1, "elements")
+            self._convert_project_element(element) for element in self.__get_attr(project_v1, "elements")
         ]
         return project

@@ -21,9 +21,7 @@ DATA_TYPE_LOOKUP_TO_NUMPY = {
     "Float64Array": np.dtype("float64"),
     "BooleanArray": np.dtype("bool"),
 }
-DATA_TYPE_LOOKUP_TO_STRING = {
-    value: key for key, value in DATA_TYPE_LOOKUP_TO_NUMPY.items()
-}
+DATA_TYPE_LOOKUP_TO_STRING = {value: key for key, value in DATA_TYPE_LOOKUP_TO_NUMPY.items()}
 
 
 class Array(BaseModel):
@@ -69,9 +67,7 @@ class Array(BaseModel):
             )
         return True
 
-    @properties.StringChoice(
-        "Array data type string", choices=list(DATA_TYPE_LOOKUP_TO_NUMPY)
-    )
+    @properties.StringChoice("Array data type string", choices=list(DATA_TYPE_LOOKUP_TO_NUMPY))
     def data_type(self):
         """Array type descriptor, determined directly from the array"""
         if self.array is None:
@@ -98,9 +94,7 @@ class Array(BaseModel):
         return self.array.size * self.array.itemsize
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super().serialize(
-            include_class=include_class, save_dynamic=True, **kwargs
-        )
+        output = super().serialize(include_class=include_class, save_dynamic=True, **kwargs)
         binary_dict = kwargs.get("binary_dict", None)
         if binary_dict is not None:
             array_uid = str(uuid.uuid4())
@@ -113,9 +107,7 @@ class Array(BaseModel):
         return output
 
     @classmethod
-    def deserialize(
-        cls, value, trusted=False, strict=False, assert_valid=False, **kwargs
-    ):
+    def deserialize(cls, value, trusted=False, strict=False, assert_valid=False, **kwargs):
         binary_dict = kwargs.get("binary_dict", {})
         if not isinstance(value, dict):
             pass
@@ -151,9 +143,7 @@ class ArrayInstanceProperty(properties.Instance):
 
     def __init__(self, doc, **kwargs):
         if "instance_class" in kwargs:
-            raise AttributeError(
-                "ArrayInstanceProperty does not allow custom instance_class"
-            )
+            raise AttributeError("ArrayInstanceProperty does not allow custom instance_class")
         self.validator_prop = properties.Array(
             "",
             shape={("*",), ("*", "*")},
@@ -227,9 +217,7 @@ class StringList(BaseModel):
     def __getitem__(self, i):
         return self.array.__getitem__(i)
 
-    @properties.StringChoice(
-        "List data type string", choices=["DateTimeArray", "StringArray"]
-    )
+    @properties.StringChoice("List data type string", choices=["DateTimeArray", "StringArray"])
     def data_type(self):
         """Array type descriptor, determined directly from the array"""
         if self.array is None:
@@ -260,9 +248,7 @@ class StringList(BaseModel):
         return len(json.dumps(self.array))
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super().serialize(
-            include_class=include_class, save_dynamic=True, **kwargs
-        )
+        output = super().serialize(include_class=include_class, save_dynamic=True, **kwargs)
         binary_dict = kwargs.get("binary_dict", None)
         if binary_dict is not None:
             array_uid = str(uuid.uuid4())
@@ -271,9 +257,7 @@ class StringList(BaseModel):
         return output
 
     @classmethod
-    def deserialize(
-        cls, value, trusted=False, strict=False, assert_valid=False, **kwargs
-    ):
+    def deserialize(cls, value, trusted=False, strict=False, assert_valid=False, **kwargs):
         binary_dict = kwargs.get("binary_dict", {})
         if not isinstance(value, dict):
             pass
@@ -309,8 +293,7 @@ class ContinuousColormap(ContentModel):
     schema = "org.omf.v2.colormap.scalar"
 
     gradient = ArrayInstanceProperty(
-        "N x 3 Array of RGB values between 0 and 255 which defines "
-        "the color gradient",
+        "N x 3 Array of RGB values between 0 and 255 which defines the color gradient",
         shape=("*", 3),
         dtype=int,
     )
@@ -323,20 +306,18 @@ class ContinuousColormap(ContentModel):
     )
 
     @properties.validator("gradient")
-    def _check_gradient_values(self, change):  # pylint: disable=R0201
+    def _check_gradient_values(self, change):
         """Ensure gradient values are all between 0 and 255"""
         arr = change["value"].array
         if arr is None:
             return
         arr_uint8 = arr.astype("uint8")
         if not np.array_equal(arr, arr_uint8):
-            raise properties.ValidationError(
-                "Gradient must be an array of RGB values between 0 and 255"
-            )
+            raise properties.ValidationError("Gradient must be an array of RGB values between 0 and 255")
         change["value"].array = arr_uint8
 
     @properties.validator("limits")
-    def _check_limits_on_change(self, change):  # pylint: disable=R0201
+    def _check_limits_on_change(self, change):
         """Ensure limits are valid"""
         if change["value"][0] > change["value"][1]:
             raise properties.ValidationError("Colormap limits[0] must be <= limits[1]")
@@ -377,8 +358,7 @@ class DiscreteColormap(ContentModel):
         default=properties.undefined,
     )
     end_inclusive = properties.List(
-        "True if corresponding end_point is included in lower interval; "
-        "False if end_point is in upper interval",
+        "True if corresponding end_point is included in lower interval; False if end_point is in upper interval",
         prop=properties.Boolean(""),
         default=properties.undefined,
     )
@@ -396,18 +376,15 @@ class DiscreteColormap(ContentModel):
         elif len(self.colors) == len(self.end_points) + 1:
             return True
         raise properties.ValidationError(
-            "Discrete colormap colors length must be one greater than "
-            "end_points and end_inclusive values"
+            "Discrete colormap colors length must be one greater than end_points and end_inclusive values"
         )
 
     @properties.validator("end_points")
-    def _validate_end_points_monotonic(self, change):  # pylint: disable=R0201
+    def _validate_end_points_monotonic(self, change):
         for i in range(len(change["value"]) - 1):
             diff = change["value"][i + 1] - change["value"][i]
             if diff < 0:
-                raise properties.ValidationError(
-                    "end_points must be monotonically increasing"
-                )
+                raise properties.ValidationError("end_points must be monotonically increasing")
 
 
 class NumericAttribute(ProjectElementAttribute):
@@ -416,8 +393,7 @@ class NumericAttribute(ProjectElementAttribute):
     schema = "org.omf.v2.attribute.numeric"
 
     array = ArrayInstanceProperty(
-        "Numeric values at locations on a mesh (see location parameter); "
-        "these values must be scalars",
+        "Numeric values at locations on a mesh (see location parameter); these values must be scalars",
         shape=("*",),
     )
     colormap = properties.Union(
@@ -437,8 +413,7 @@ class VectorAttribute(ProjectElementAttribute):
     schema = "org.omf.v2.attribute.vector"
 
     array = ArrayInstanceProperty(
-        "Numeric vectors at locations on a mesh (see location parameter); "
-        "these vectors may be 2D or 3D",
+        "Numeric vectors at locations on a mesh (see location parameter); these vectors may be 2D or 3D",
         shape={("*", 2), ("*", 3)},
     )
 
@@ -503,9 +478,7 @@ class CategoryColormap(ContentModel):
             pass
         elif self.colors is None or len(self.colors) == len(self.values):
             return True
-        raise properties.ValidationError(
-            "Legend colors and values must be the same length"
-        )
+        raise properties.ValidationError("Legend colors and values must be the same length")
 
 
 class CategoryAttribute(ProjectElementAttribute):

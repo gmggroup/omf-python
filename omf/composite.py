@@ -57,9 +57,7 @@ class Composite(ProjectElement):
 
 
 composite_props = Composite._props["elements"].prop.props  # pylint: disable=E1101
-Composite._props["elements"].prop.props = composite_props + (  # pylint: disable=E1101
-    Composite,
-)
+Composite._props["elements"].prop.props = composite_props + (Composite,)  # pylint: disable=E1101
 
 
 class Composite(Composite):  # pylint: disable=E0102

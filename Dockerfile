@@ -8,7 +8,7 @@ RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
 # Copy resources
-COPY setup.py requirements.txt requirements_dev.txt Makefile README.rst /usr/src/app/
+COPY pyproject.toml Makefile README.rst /usr/src/app/
 
 # Install requirements
-RUN pip install -r requirements_dev.txt
+RUN pip install .[docs,lint,test]

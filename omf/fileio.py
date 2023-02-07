@@ -58,7 +58,8 @@ def save(project, filename, mode="x"):
     return filename
 
 
-class Reader(compat.IOMFReader):
+# pylint: disable=too-few-public-methods
+class _Reader(compat.IOMFReader):
     def __init__(self, filename: str):
         self._filename = filename
 
@@ -86,18 +87,12 @@ class Reader(compat.IOMFReader):
         if project_version is None:
             raise compat.InvalidOMFFile(f"Unsupported format: {self._filename}")
         if project_version != OMF_VERSION:
-            raise compat.WrongVersionError(
-                f"Unsupported file version: {project_version}"
-            )
+            raise compat.WrongVersionError(f"Unsupported file version: {project_version}")
 
-        return Project.deserialize(
-            value=project_dict, binary_dict=binary_dict, trusted=True
-        )
+        return Project.deserialize(value=project_dict, binary_dict=binary_dict, trusted=True)
 
 
-def load(
-    filename: str, include_binary: bool = True, project_json: str = None
-) -> Project:
+def load(filename: str, include_binary: bool = True, project_json: str = None) -> Project:
     """Deserialize an OMF file into a project
 
     **Inputs:**
@@ -127,11 +122,10 @@ def load(
         proj = omf.load('my_project.omf', project_json=proj_no_bin.serialize())
     """
 
-    for reader_cls in [Reader] + compat.compatible_omf_readers:
+    for reader_cls in [_Reader] + compat.compatible_omf_readers:
         try:
             reader = reader_cls(filename)
             return reader.load(include_binary=include_binary, project_json=project_json)
         except compat.WrongVersionError:
             continue
-    else:
-        raise compat.InvalidOMFFile(f"Unsupported file: {filename}")
+    raise compat.InvalidOMFFile(f"Unsupported file: {filename}")

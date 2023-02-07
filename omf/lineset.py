@@ -58,7 +58,5 @@ class LineSet(ProjectElement):
         if np.min(self.segments.array) < 0:
             raise properties.ValidationError("Segments may only have positive integers")
         if np.max(self.segments.array) >= len(self.vertices.array):
-            raise properties.ValidationError(
-                "Segments expects more vertices than provided"
-            )
+            raise properties.ValidationError("Segments expects more vertices than provided")
         return True

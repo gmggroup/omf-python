@@ -4,7 +4,7 @@ APP=omf
 .PHONY: install docs lint test-docs tests docker-build docker-tests docker-lint docker-docs publish
 
 install:
-	python setup.py install
+	pip install .
 
 docs:
 	cd docs && make html
