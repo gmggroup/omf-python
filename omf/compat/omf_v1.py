@@ -1,3 +1,4 @@
+"""omf_v1.py: Reader for OMF V1 files."""
 import contextlib
 import io
 import json
@@ -18,6 +19,8 @@ _default = object()
 
 # pylint: disable=too-few-public-methods
 class Reader(IOMFReader):
+    """Reader for OMF V1 files."""
+
     def __init__(self, filename: str):
         self._filename = filename
         self._f = None
