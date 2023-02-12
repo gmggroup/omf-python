@@ -11,6 +11,11 @@ class LineSet(ProjectElement):
 
     schema = "org.omf.v2.element.lineset"
 
+    origin = properties.Vector3(
+        "Origin of the LineSet relative to Project coordinate reference system",
+        default=[0.0, 0.0, 0.0],
+    )
+
     vertices = ArrayInstanceProperty(
         "Spatial coordinates of line vertices relative to project origin",
         shape=("*", 3),
@@ -53,7 +58,5 @@ class LineSet(ProjectElement):
         if np.min(self.segments.array) < 0:
             raise properties.ValidationError("Segments may only have positive integers")
         if np.max(self.segments.array) >= len(self.vertices.array):
-            raise properties.ValidationError(
-                "Segments expects more vertices than provided"
-            )
+            raise properties.ValidationError("Segments expects more vertices than provided")
         return True

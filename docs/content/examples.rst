@@ -10,10 +10,26 @@ with no arguments, and properties can be set one-by-one (see code snippet at
 bottom of page).
 
 .. code:: python
+    :name: test_doc
 
     import datetime
     import numpy as np
+    import os
+    import png
     import omf
+
+    # setup sample files
+    dir = os.getcwd()
+    png_file = os.path.join(dir, "example.png")
+    omf_file = os.path.join(dir, "example.omf")
+    for f in (png_file, omf_file):
+        if os.path.exists(f):
+            os.remove(f)
+    img = ["110010010011", "101011010100", "110010110101", "100010010011"]
+    img = [[int(val) for val in value] for value in img]
+    writer = png.Writer(len(img[0]), len(img), greyscale=True, bitdepth=16)
+    with open(png_file, "wb") as file:
+        writer.write(file, img)
 
     proj = omf.Project(
         name="Test project",
@@ -38,15 +54,15 @@ bottom of page).
         textures=[
             omf.ProjectedTexture(
                 name="test image",
-                image="image.png",
-                corner=[0, 0, 0],
+                image=png_file,
+                origin=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 1, 0],
             ),
             omf.ProjectedTexture(
                 name="test image",
-                image="image.png",
-                corner=[0, 0, 0],
+                image=png_file,
+                origin=[0, 0, 0],
                 axis_u=[1, 0, 0],
                 axis_v=[0, 0, 1],
             ),
@@ -99,7 +115,7 @@ bottom of page).
         name="gridsurf",
         tensor_u=np.ones(10).astype(float),
         tensor_v=np.ones(15).astype(float),
-        corner=[50.0, 50.0, 50.0],
+        origin=[50.0, 50.0, 50.0],
         axis_u=[1.0, 0, 0],
         axis_v=[0, 0, 1.0],
         offset_w=np.random.rand(11 * 16),
@@ -118,8 +134,8 @@ bottom of page).
         textures=[
             omf.ProjectedTexture(
                 name="test image",
-                image="image.png",
-                corner=[2.0, 2.0, 2.0],
+                image=png_file,
+                origin=[2.0, 2.0, 2.0],
                 axis_u=[5.0, 0, 0],
                 axis_v=[0, 2.0, 5.0],
             ),
@@ -130,7 +146,7 @@ bottom of page).
         tensor_u=np.ones(10).astype(float),
         tensor_v=np.ones(15).astype(float),
         tensor_w=np.ones(20).astype(float),
-        corner=[10.0, 10.0, -10],
+        origin=[10.0, 10.0, -10],
         attributes=[
             omf.NumericAttribute(
                 name="random attr", location="cells", array=np.random.rand(10 * 15 * 20)
@@ -149,7 +165,7 @@ bottom of page).
 
     assert proj.validate()
 
-    omf.save(proj, "output.omf")
+    omf.save(proj, omf_file)
 
 
 Piecewise building example:

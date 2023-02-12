@@ -10,7 +10,7 @@ class BaseMetadata(properties.HasProperties):
 
 
 class BaseOrientation(properties.HasProperties):
-    corner = properties.Vector3(
+    origin = properties.Vector3(
         "Origin of the block model, where axes extend from",
         default="ZERO",
     )
@@ -32,15 +32,9 @@ class RegularBlockModel(BaseMetadata, BaseOrientation):
 
 
 class TensorBlockModel(BaseMetadata, BaseOrientation):
-    tensor_u = properties.Array(
-        "Tensor cell widths, u-direction", shape=("*",), dtype=float
-    )
-    tensor_v = properties.Array(
-        "Tensor cell widths, v-direction", shape=("*",), dtype=float
-    )
-    tensor_w = properties.Array(
-        "Tensor cell widths, w-direction", shape=("*",), dtype=float
-    )
+    tensor_u = properties.Array("Tensor cell widths, u-direction", shape=("*",), dtype=float)
+    tensor_v = properties.Array("Tensor cell widths, v-direction", shape=("*",), dtype=float)
+    tensor_w = properties.Array("Tensor cell widths, w-direction", shape=("*",), dtype=float)
 
     @property
     def block_count(self):
@@ -86,13 +80,9 @@ class BaseCompressedBlockStorage(properties.HasProperties):
     @property
     def compressed_block_index(self):
         # Need the block counts to exist
-        assert self._props["parent_block_count"].assert_valid(
-            self, self.parent_block_count
-        )
+        assert self._props["parent_block_count"].assert_valid(self, self.parent_block_count)
         if "sub_block_count" in self._props:
-            assert self._props["sub_block_count"].assert_valid(
-                self, self.sub_block_count
-            )
+            assert self._props["sub_block_count"].assert_valid(self, self.sub_block_count)
         # Note: We could have some warnings here, if the above change
         #       It is probably less relevant as these are not targeted
         #       to be used in a dynamic context?
@@ -106,9 +96,7 @@ class BaseCompressedBlockStorage(properties.HasProperties):
     def _get_parent_index(self, ijk):
         pbc = self.parent_block_count
         assert len(ijk) == 3  # Should be a 3 length integer tuple/list
-        assert (
-            (0 <= ijk[0] < pbc[0]) & (0 <= ijk[1] < pbc[1]) & (0 <= ijk[2] < pbc[2])
-        ), "Must be valid ijk index"
+        assert (0 <= ijk[0] < pbc[0]) & (0 <= ijk[1] < pbc[1]) & (0 <= ijk[2] < pbc[2]), "Must be valid ijk index"
 
         (parent_index,) = np.ravel_multi_index(
             [[ijk[0]], [ijk[1]], [ijk[2]]],  # Index into the block model
@@ -209,10 +197,7 @@ class ArbitrarySubBlockModel(BaseMetadata, BaseOrientation, BaseCompressedBlockS
         if not hasattr(self, "_lists"):
             # Do your part for the planet:
             # Plant trees in every parent block.
-            self._lists = [
-                (np.zeros((0, 3)), np.zeros((0, 3)))
-                for _ in range(self.num_parent_blocks)
-            ]
+            self._lists = [(np.zeros((0, 3)), np.zeros((0, 3))) for _ in range(self.num_parent_blocks)]
         return self._lists
 
     def _add_sub_blocks(self, ijk, new_centroids, new_sizes):
@@ -228,11 +213,7 @@ class ArbitrarySubBlockModel(BaseMetadata, BaseOrientation, BaseCompressedBlockS
             new_sizes = np.array(new_sizes)
         new_sizes = new_sizes.reshape((-1, 3))
 
-        assert (
-            (new_centroids.size % 3 == 0)
-            & (new_sizes.size % 3 == 0)
-            & (new_centroids.size == new_sizes.size)
-        )
+        assert (new_centroids.size % 3 == 0) & (new_sizes.size % 3 == 0) & (new_centroids.size == new_sizes.size)
 
         # TODO: Check that the centroid exists in the block
 
