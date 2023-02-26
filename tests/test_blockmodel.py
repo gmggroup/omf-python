@@ -661,7 +661,7 @@ class TestArbitrarySubBlockModel:
         assert block_model.validate()
         assert block_model.location_length("parent_blocks") == 8
         assert block_model.location_length("") == 8
-        block_model.cbc = np.array([1] + [0] * 7, dtype=np.int)
+        block_model.cbc = np.array([1] + [0] * 7, dtype=int)
         with pytest.raises(properties.ValidationError):
             block_model.validate()
         block_model.sub_block_corners = np.array([[-0.5, 2, 0]])
