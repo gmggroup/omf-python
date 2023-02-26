@@ -94,3 +94,6 @@ ENV/
 deps/
 
 cover/
+
+# VSCode project settings
+.vscode/
