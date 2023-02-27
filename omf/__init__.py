@@ -1,11 +1,14 @@
 """omf: API library for Open Mining Format file interchange format"""
 from .base import Project
 from .blockmodel import (
-    ArbitrarySubBlockModel,
-    OctreeSubBlockModel,
+    FreeformSubblockDefinition,
+    FreeformSubblockedModel,
+    OctreeSubblockDefinition,
     RegularBlockModel,
-    RegularSubBlockModel,
+    RegularSubblockDefinition,
+    SubblockedModel,
     TensorGridBlockModel,
+    VariableZSubblockDefinition,
 )
 from .composite import Composite
 from .attribute import (
