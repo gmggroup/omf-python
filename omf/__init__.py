@@ -1,16 +1,4 @@
 """omf: API library for Open Mining Format file interchange format"""
-from .base import Project
-from .blockmodel import (
-    FreeformSubblockDefinition,
-    FreeformSubblockedModel,
-    OctreeSubblockDefinition,
-    RegularBlockModel,
-    RegularSubblockDefinition,
-    SubblockedModel,
-    TensorGridBlockModel,
-    VariableZSubblockDefinition,
-)
-from .composite import Composite
 from .attribute import (
     Array,
     CategoryAttribute,
@@ -21,12 +9,22 @@ from .attribute import (
     StringAttribute,
     VectorAttribute,
 )
+from .base import Project
+from .blockmodel.regular import RegularBlockModel
+from .blockmodel.subblocked import SubblockedModel, FreeformSubblockedModel
+from .blockmodel.subblock_definition import (
+    FreeformSubblockDefinition,
+    OctreeSubblockDefinition,
+    RegularSubblockDefinition,
+    VariableZSubblockDefinition,
+)
+from .blockmodel.tensor import TensorGridBlockModel
+from .composite import Composite
+from .fileio import load, save, __version__
 from .lineset import LineSet
 from .pointset import PointSet
 from .surface import Surface, TensorGridSurface
 from .texture import ProjectedTexture, UVMappedTexture
-
-from .fileio import load, save, __version__
 
 __author__ = "Global Mining Guidelines Group"
 __license__ = "MIT License"

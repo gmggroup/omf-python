@@ -2,12 +2,9 @@
 import properties
 
 from .base import ProjectElement
-from .blockmodel import (
-    FreeformSubblockedModel,
-    RegularBlockModel,
-    SubblockedModel,
-    TensorGridBlockModel,
-)
+from .blockmodel.regular import RegularBlockModel
+from .blockmodel.subblocked import FreeformSubblockedModel, SubblockedModel
+from .blockmodel.tensor import TensorGridBlockModel
 from .lineset import LineSet
 from .pointset import PointSet
 from .surface import Surface, TensorGridSurface

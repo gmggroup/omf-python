@@ -7,9 +7,7 @@ import omf
 
 
 def _make_regular(count):
-    return omf.blockmodel.RegularBlockModel(
-        block_count=count, block_size=[1.0, 1.0, 1.0]
-    )
+    return omf.RegularBlockModel(block_count=count, block_size=[1.0, 1.0, 1.0])
 
 
 class MockArray(omf.base.BaseModel):
