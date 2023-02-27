@@ -2,7 +2,7 @@
 import numpy as np
 import properties
 
-from .base import ProjectElement
+from ..base import ProjectElement
 
 
 def _shrink_uint(obj, attr):
