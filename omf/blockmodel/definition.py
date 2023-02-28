@@ -1,33 +1,24 @@
 import numpy as np
 import properties
 
-from ..base import ProjectElement
-from ._properties import BlockCount, BlockSize
+from ._properties import BlockCount, BlockSize, TensorArray
 
 
-class BaseBlockModel(ProjectElement):
-    """Basic orientation properties and indexing for all block models"""
-
+class _BaseBlockModelDefinition(properties.HasProperties):
     axis_u = properties.Vector3(
-        "Vector orientation of u-direction",
-        default="X",
-        length=1,
+        "Vector orientation of u-direction", default="X", length=1
     )
     axis_v = properties.Vector3(
-        "Vector orientation of v-direction",
-        default="Y",
-        length=1,
+        "Vector orientation of v-direction", default="Y", length=1
     )
     axis_w = properties.Vector3(
-        "Vector orientation of w-direction",
-        default="Z",
-        length=1,
+        "Vector orientation of w-direction", default="Z", length=1
     )
     corner = properties.Vector3(
         "Corner of the block model relative to Project coordinate reference system",
         default="zero",
     )
-    _valid_locations = ("cells", "parent_blocks")
+    block_count = None
 
     @properties.validator
     def _validate_axes(self):
@@ -38,19 +29,11 @@ class BaseBlockModel(ProjectElement):
             and np.abs(self.axis_w.dot(self.axis_u) < 1e-6)
         ):
             raise ValueError("axis_u, axis_v, and axis_w must be orthogonal")
-        return True
-
-    @property
-    def parent_block_count(self):
-        """Computed property for number of parent blocks
-
-        This is required for ijk indexing. For tensor and regular block
-        models, all the blocks are considered parent blocks.
-        """
-        raise NotImplementedError()
 
     def ijk_to_index(self, ijk):
         """Map IJK triples to flat indices for a singoe triple or an array, preseving shape."""
+        if self.block_count is None:
+            raise ValueError("block_count is not set")
         arr = np.asarray(ijk)
         if arr.dtype.kind not in "ui":
             raise TypeError(f"'ijk' must be integer typed, found {arr.dtype}")
@@ -61,7 +44,7 @@ class BaseBlockModel(ProjectElement):
                 raise ValueError(
                     "'ijk' must have 3 elements or be an array with shape (*_, 3)"
                 )
-        count = self.parent_block_count
+        count = self.block_count
         if (shaped < 0).any() or (shaped >= count).any():
             raise IndexError(f"0 <= ijk < ({count[0]}, {count[1]}, {count[2]}) failed")
         indices = np.ravel_multi_index(multi_index=shaped.T, dims=count, order="F")
@@ -72,40 +55,59 @@ class BaseBlockModel(ProjectElement):
 
     def index_to_ijk(self, index):
         """Map flat indices to IJK triples for a singoe index or an array, preserving shape."""
+        if self.block_count is None:
+            raise ValueError("block_count is not set")
         arr = np.asarray(index)
         if arr.dtype.kind not in "ui":
             raise TypeError(f"'index' must be integer typed, found {arr.dtype}")
         output_shape = arr.shape + (3,)
         shaped = arr.reshape(-1)
-        count = self.parent_block_count
+        count = self.block_count
         if (shaped < 0).any() or (shaped >= np.prod(count)).any():
             raise IndexError(f"0 <= index < {np.prod(count)} failed")
         ijk = np.unravel_index(indices=shaped, shape=count, order="F")
         return np.c_[ijk[0], ijk[1], ijk[2]].reshape(output_shape)
 
 
-class RegularBlockModel(BaseBlockModel):
-    """Block model with constant spacing in each dimension."""
+class RegularBlockModelDefinition(_BaseBlockModelDefinition):
+    """Defines the block structure of a regular block model.
 
-    schema = "org.omf.v2.elements.blockmodel.regular"
+    If used on a sub-blocked model then everything here applies to the parent blocks only.
+    """
 
-    block_count = BlockCount("Number of blocks along u, v, and w axes")
-    block_size = BlockSize("Size of blocks in the u, v, and w directions")
+    block_count = BlockCount("Number of blocks in each of the u, v, and w directions.")
+    block_size = BlockSize("Size of blocks in the u, v, and w directions.")
+
+
+class TensorBlockModelDefinition(_BaseBlockModelDefinition):
+    """Defines the block structure of a tensor grid block model."""
+
+    tensor_u = TensorArray("Tensor cell widths, u-direction")
+    tensor_v = TensorArray("Tensor cell widths, v-direction")
+    tensor_w = TensorArray("Tensor cell widths, w-direction")
+
+    def _tensors(self):
+        yield self.tensor_u
+        yield self.tensor_v
+        yield self.tensor_w
 
     @property
-    def num_cells(self):
-        """The number of cells, which in this case are always parent blocks."""
-        return np.prod(self.parent_block_count)
+    def block_count(self):
+        """The block count is derived from the tensors here."""
+        c = tuple(None if t is None else len(t) for t in self._tensors())
+        if None in c:
+            return None
+        return np.array(c, dtype=int)
 
-    @property
-    def parent_block_count(self):
-        """Number of parent blocks equals number of blocks"""
-        return self.block_count
-
-    def location_length(self, location):
-        """Return correct attribute length for 'location'."""
-        match location:
-            case "cells" | "parent_blocks" | "":
-                return self.num_cells
-            case _:
-                raise ValueError(f"unknown location type: {location!r}")
+    @properties.validator("tensor_u")
+    @properties.validator("tensor_v")
+    @properties.validator("tensor_w")
+    def _validate_tensor(self, change):
+        tensor = change["value"]
+        if (tensor <= 0.0).any():
+            raise properties.ValidationError(
+                "Tensor spacings must be greater than zero",
+                prop=change["name"],
+                instance=self,
+                reason="invalid",
+            )

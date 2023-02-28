@@ -51,3 +51,21 @@ class BlockSize(properties.Array):
                     msg = f"{instance.__class__.__name__}.{self.name} elements must be > 0.0"
                 raise properties.ValidationError(msg, prop=self.name, instance=instance)
         return value
+
+
+class TensorArray(properties.Array):
+    def __init__(self, doc, **kw):
+        super().__init__(doc, **kw, dtype=float, shape=("*",))
+
+    def validate(self, instance, value):
+        """Check that tensor spacings are all > 0."""
+        super().validate(instance, value)
+        value = np.asarray(value)
+        if (value <= 0.0).any():
+            raise properties.ValidationError(
+                "Tensor spacings must be greater than zero",
+                prop=self.name,
+                instance=instance,
+                reason="invalid",
+            )
+        return value

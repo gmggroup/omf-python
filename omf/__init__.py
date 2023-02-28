@@ -10,15 +10,12 @@ from .attribute import (
     VectorAttribute,
 )
 from .base import Project
-from .blockmodel.regular import RegularBlockModel
-from .blockmodel.subblocked import SubblockedModel, FreeformSubblockedModel
-from .blockmodel.subblock_definition import (
-    FreeformSubblockDefinition,
-    OctreeSubblockDefinition,
-    RegularSubblockDefinition,
-    VariableZSubblockDefinition,
+from .blockmodel.definition import (
+    RegularBlockModelDefinition,
+    TensorBlockModelDefinition,
 )
-from .blockmodel.tensor import TensorGridBlockModel
+from .blockmodel.models import RegularBlockModel, SubblockedModel, TensorGridBlockModel
+from .blockmodel.subblocks import OctreeSubblockDefinition, RegularSubblockDefinition
 from .composite import Composite
 from .fileio import load, save, __version__
 from .lineset import LineSet

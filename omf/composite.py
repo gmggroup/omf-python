@@ -2,9 +2,7 @@
 import properties
 
 from .base import ProjectElement
-from .blockmodel.regular import RegularBlockModel
-from .blockmodel.subblocked import FreeformSubblockedModel, SubblockedModel
-from .blockmodel.tensor import TensorGridBlockModel
+from .blockmodel.models import RegularBlockModel, SubblockedModel, TensorGridBlockModel
 from .lineset import LineSet
 from .pointset import PointSet
 from .surface import Surface, TensorGridSurface
@@ -29,7 +27,6 @@ class Composite(ProjectElement):
         prop=properties.Union(
             "",
             (
-                FreeformSubblockedModel,
                 LineSet,
                 PointSet,
                 RegularBlockModel,

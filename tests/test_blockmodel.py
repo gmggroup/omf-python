@@ -7,7 +7,10 @@ import omf
 
 
 def _make_regular(count):
-    return omf.RegularBlockModel(block_count=count, block_size=[1.0, 1.0, 1.0])
+    bm = omf.RegularBlockModel()
+    bm.definition.block_count = count
+    bm.definition.block_size = [1.0, 1.0, 1.0]
+    return bm
 
 
 class MockArray(omf.base.BaseModel):
@@ -21,23 +24,23 @@ def test_ijk_index_errors():
 
     block_model = _make_regular([3, 4, 5])
     with pytest.raises(TypeError):
-        block_model.ijk_to_index("a")
+        block_model.definition.ijk_to_index("a")
     with pytest.raises(TypeError):
-        block_model.index_to_ijk("a")
+        block_model.definition.index_to_ijk("a")
     with pytest.raises(ValueError):
-        block_model.ijk_to_index([0, 0])
+        block_model.definition.ijk_to_index([0, 0])
     with pytest.raises(TypeError):
-        block_model.ijk_to_index([0, 0, 0.5])
+        block_model.definition.ijk_to_index([0, 0, 0.5])
     with pytest.raises(TypeError):
-        block_model.index_to_ijk(0.5)
+        block_model.definition.index_to_ijk(0.5)
     with pytest.raises(IndexError):
-        block_model.ijk_to_index([0, 0, 5])
+        block_model.definition.ijk_to_index([0, 0, 5])
     with pytest.raises(IndexError):
-        block_model.index_to_ijk(60)
+        block_model.definition.index_to_ijk(60)
     with pytest.raises(IndexError):
-        block_model.ijk_to_index([[0, 0, 5], [0, 0, 3]])
+        block_model.definition.ijk_to_index([[0, 0, 5], [0, 0, 3]])
     with pytest.raises(IndexError):
-        block_model.index_to_ijk([0, 1, 60])
+        block_model.definition.index_to_ijk([0, 1, 60])
 
 
 def test_ijk_index_arrays():
@@ -45,12 +48,12 @@ def test_ijk_index_arrays():
     block_model = _make_regular([3, 4, 5])
     ijk = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (2, 3, 4)]
     index = [0, 1, 3, 12, 59]
-    assert np.array_equal(block_model.ijk_to_index(ijk), index)
-    assert np.array_equal(block_model.index_to_ijk(index), ijk)
+    assert np.array_equal(block_model.definition.ijk_to_index(ijk), index)
+    assert np.array_equal(block_model.definition.index_to_ijk(index), ijk)
     ijk = [[(0, 0, 0), (1, 0, 0)], [(0, 1, 0), (0, 0, 1)]]
     index = [(0, 1), (3, 12)]
-    assert np.array_equal(block_model.ijk_to_index(ijk), index)
-    assert np.array_equal(block_model.index_to_ijk(index), ijk)
+    assert np.array_equal(block_model.definition.ijk_to_index(ijk), index)
+    assert np.array_equal(block_model.definition.index_to_ijk(index), ijk)
 
 
 @pytest.mark.parametrize(
@@ -60,27 +63,27 @@ def test_ijk_index_arrays():
 def test_ijk_index(ijk, index):
     """Test ijk indexing into parent blocks works as expected"""
     block_model = _make_regular([3, 4, 5])
-    assert block_model.ijk_to_index(ijk) == index
-    assert np.array_equal(block_model.index_to_ijk(index), ijk)
+    assert block_model.definition.ijk_to_index(ijk) == index
+    assert np.array_equal(block_model.definition.index_to_ijk(index), ijk)
 
 
-# def test_tensorblockmodel():
-#     """Test volume grid geometry validation"""
-#     elem = omf.TensorGridBlockModel()
-#     assert elem.num_nodes is None
-#     assert elem.num_cells is None
-#     assert elem.parent_block_count is None
-#     elem.tensor_u = [1.0, 1.0]
-#     elem.tensor_v = [2.0, 2.0, 2.0]
-#     elem.tensor_w = [3.0]
-#     assert elem.parent_block_count == [2, 3, 1]
-#     assert elem.validate()
-#     assert elem.location_length("vertices") == 24
-#     assert elem.location_length("cells") == 6
-#     elem.axis_v = [1.0, 1.0, 0]
-#     with pytest.raises(ValueError):
-#         elem.validate()
-#     elem.axis_v = "Y"
+def test_tensorblockmodel():
+    """Test volume grid geometry validation"""
+    elem = omf.TensorGridBlockModel()
+    assert elem.num_nodes is None
+    assert elem.num_cells is None
+    assert elem.definition.block_count is None
+    elem.definition.tensor_u = [1.0, 1.0]
+    elem.definition.tensor_v = [2.0, 2.0, 2.0]
+    elem.definition.tensor_w = [3.0]
+    np.testing.assert_array_equal(elem.definition.block_count, [2, 3, 1])
+    assert elem.validate()
+    assert elem.location_length("vertices") == 24
+    assert elem.location_length("cells") == 6
+    elem.definition.axis_v = [1.0, 1.0, 0]
+    with pytest.raises(ValueError):
+        elem.validate()
+    elem.axis_v = "Y"
 
 
 # pylint: disable=W0143
@@ -92,9 +95,10 @@ class TestRegularBlockModel:
     )
     def test_bad_block_count(self, block_count):
         """Test mismatched block_count"""
-        block_model = omf.RegularBlockModel(block_size=[1.0, 2.0, 3.0])
+        block_model = omf.RegularBlockModel()
+        block_model.definition.block_size = [1.0, 2.0, 3.0]
         with pytest.raises(properties.ValidationError):
-            block_model.block_count = block_count
+            block_model.definition.block_count = block_count
             block_model.validate()
 
     @pytest.mark.parametrize(
@@ -102,25 +106,25 @@ class TestRegularBlockModel:
     )
     def test_bad_block_size(self, block_size):
         """Test mismatched block_size"""
-        block_model = omf.RegularBlockModel(block_count=[2, 2, 2])
+        block_model = omf.RegularBlockModel()
+        block_model.definition.block_count = [2, 2, 2]
         with pytest.raises(properties.ValidationError):
-            block_model.block_size = block_size
+            block_model.definition.block_size = block_size
             block_model.validate()
 
     def test_uninstantiated(self):
         """Test all attributes are None on instantiation"""
         block_model = omf.RegularBlockModel()
-        assert block_model.block_count is None
-        assert block_model.block_size is None
+        assert block_model.definition.block_count is None
+        assert block_model.definition.block_size is None
         assert block_model.num_cells is None
 
     def test_num_cells(self):
         """Test num_cells calculation is correct"""
-        block_model = omf.RegularBlockModel(
-            block_count=[2, 2, 2],
-            block_size=[1.0, 2.0, 3.0],
-        )
-        np.testing.assert_array_equal(block_model.parent_block_count, [2, 2, 2])
+        block_model = omf.RegularBlockModel()
+        block_model.definition.block_count = [2, 2, 2]
+        block_model.definition.block_size = [1.0, 2.0, 3.0]
+        np.testing.assert_array_equal(block_model.definition.block_count, [2, 2, 2])
         assert block_model.num_cells == 8
         assert block_model.location_length("cells") == 8
         assert block_model.location_length("parent_blocks") == 8
