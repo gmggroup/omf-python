@@ -129,40 +129,20 @@ class TestRegularBlockModel:
         assert block_model.location_length("cells") == 8
         assert block_model.location_length("parent_blocks") == 8
 
-    # def test_cbc(self):
-    #     """Test cbc access and validation is correct"""
-    #     block_model = omf.RegularBlockModel(
-    #         block_count=[2, 2, 2],
-    #         block_size=[1.0, 2.0, 3.0],
-    #     )
-    #     block_model.reset_cbc()
-    #     assert block_model.validate()
-    #     assert np.all(block_model.cbc == np.ones(8))
-    #     block_model.cbc.array[0] = 0
-    #     assert block_model.validate()
-    #     with pytest.raises(properties.ValidationError):
-    #         block_model.cbc = np.ones(7, dtype="int8")
-    #     block_model.cbc = np.ones(8, dtype="uint8")
-    #     with pytest.raises(properties.ValidationError):
-    #         block_model.cbc.array[0] = 2
-    #         block_model.validate()
-    #     with pytest.raises(properties.ValidationError):
-    #         block_model.cbc.array[0] = -1
-    #         block_model.validate()
 
-    # def test_cbi(self):
-    #     """Test cbi access and validation is correct"""
-    #     block_model = omf.RegularBlockModel()
-    #     assert block_model.cbi is None
-    #     block_model.block_count = [2, 2, 2]
-    #     block_model.block_size = [1.0, 2.0, 3.0]
-    #     block_model.reset_cbc()
-    #     assert np.all(block_model.cbi == np.array(range(9), dtype="int8"))
-    #     block_model.cbc.array[0] = 0
-    #     assert np.all(
-    #         block_model.cbi
-    #         == np.r_[np.array([0], dtype="int8"), np.array(range(8), dtype="int8")]
-    #     )
+class TestSubblockedModel:
+    def test_pack_uints(self):
+        block_model = omf.SubblockedModel()
+        block_model.subblock_definition.count = [2, 2, 2]
+        block_model.definition.block_size = [1.0, 1.0, 1.0]
+        block_model.definition.block_count = [10, 10, 10]
+        block_model.subblock_parent_indices = np.array([(0, 0, 0)])
+        block_model.subblock_corners = np.array([(0, 0, 0, 2, 2, 2)])
+        # We set this as uint32
+        assert block_model.subblock_corners.dtype == np.int32
+        block_model.validate()
+        # Validate should have packed it down to uint8
+        assert block_model.subblock_corners.dtype == np.uint8
 
 
 # class TestRegularSubBlockModel:
