@@ -3,7 +3,7 @@ import properties
 
 from ..base import ProjectElement
 from .definition import RegularBlockModelDefinition, TensorBlockModelDefinition
-from .subblocks import RegularSubblockDefinition
+from .subblocks import FreeformSubblockDefinition, RegularSubblockDefinition
 from ._subblock_check import check_subblocks
 
 
@@ -98,7 +98,7 @@ class SubblockedModel(ProjectElement):
         dtype=int,
     )
     subblock_definition = properties.Instance(
-        "Defines the structure of sub-blocks within each parent block for this model.",
+        "Defines the structure of sub-blocks within each parent block.",
         RegularSubblockDefinition,
         default=RegularSubblockDefinition,
     )
@@ -129,3 +129,63 @@ class SubblockedModel(ProjectElement):
         )
         self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
         self.subblock_corners = _shrink_uint(self.subblock_corners)
+
+
+class FreeformSubblockedModel(ProjectElement):
+    schema = "org.omf.v2.elements.blockmodel.freeform_subblocked"
+    _valid_locations = ("cells", "parent_blocks")
+
+    definition = properties.Instance(
+        "Block model definition, for the parent blocks",
+        RegularBlockModelDefinition,
+        default=RegularBlockModelDefinition,
+    )
+    subblock_parent_indices = properties.Array(
+        "The parent block IJK index of each sub-block",
+        shape=("*", 3),
+        dtype=int,
+    )
+    subblock_corners = properties.Array(
+        """The positions of the sub-block corners on the grid within their parent block.
+
+        The columns are (min_i, min_j, min_k, max_i, max_j, max_k). Values must be
+        between 0.0 and 1.0 inclusive.
+
+        Sub-blocks must stay within the parent block and should not overlap. Gaps are
+        allowed but it will be impossible for 'cell' attributes to assign values to
+        those areas.
+        """,
+        shape=("*", 6),
+        dtype=float,
+    )
+    subblock_definition = properties.Instance(
+        "Defines the structure of sub-blocks within each parent block.",
+        FreeformSubblockDefinition,
+        default=FreeformSubblockDefinition,
+    )
+
+    @property
+    def num_cells(self):
+        """The number of cells, which in this case are always parent blocks."""
+        return None if self.subblock_corners is None else len(self.subblock_corners)
+
+    def location_length(self, location):
+        """Return correct attribute length for 'location'."""
+        match location:
+            case "cells" | "":
+                return self.num_cells
+            case "parent_blocks":
+                return np.prod(self.definition.block_count)
+            case _:
+                raise ValueError(f"unknown location type: {location!r}")
+
+    @properties.validator
+    def _validate_subblocks(self):
+        check_subblocks(
+            self.definition,
+            self.subblock_definition,
+            self.subblock_parent_indices,
+            self.subblock_corners,
+            instance=self,
+        )
+        self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)

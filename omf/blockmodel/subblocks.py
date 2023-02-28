@@ -37,19 +37,19 @@ class OctreeSubblockDefinition(RegularSubblockDefinition):
         # TODO check that blocks lie on the octree
 
 
-# class FreeformSubblockDefinition:
-#     """Unconstrained free-form sub-block definition.
+class FreeformSubblockDefinition:
+    """Unconstrained free-form sub-block definition.
 
-#     Doesn't provide any limitations on or explanation of sub-block positions.
-#     """
+    Provide np limitations on, or explanation of, sub-block positions.
+    """
 
-#     def validate_subblocks(self, _corners):
-#         """Checks the sub-blocks within one parent block."""
-#         # XXX can we check for overlaps efficiently?
+    def validate_subblocks(self, _corners):
+        """Checks the sub-blocks within one parent block."""
+        # XXX can we check for overlaps efficiently?
 
 
-# class VariableZSubblockDefinition(FreeformSubblockDefinition):
-#     def validate_subblocks(self, corners):
-#         """Checks the sub-blocks within one parent block."""
-#         super().validate_subblocks(corners)
-#         # TODO check that blocks lie on the octree
+class VariableZSubblockDefinition(FreeformSubblockDefinition):
+    def validate_subblocks(self, corners):
+        """Checks the sub-blocks within one parent block."""
+        super().validate_subblocks(corners)
+        # TODO check that blocks lie on the octree
