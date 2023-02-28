@@ -125,6 +125,7 @@ class SubblockedModel(ProjectElement):
             self.subblock_definition,
             self.subblock_parent_indices,
             self.subblock_corners,
+            instance=self,
         )
         self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
         self.subblock_corners = _shrink_uint(self.subblock_corners)
