@@ -1,7 +1,9 @@
+import properties
+
 from ._properties import BlockCount, OctreeSubblockCount
 
 
-class RegularSubblockDefinition:
+class RegularSubblockDefinition(properties.HasProperties):
     """The simplest gridded sub-block definition."""
 
     count = BlockCount(

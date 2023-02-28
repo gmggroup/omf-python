@@ -1,4 +1,6 @@
 """blockmodel2.py: New Block Model element definitions"""
+import itertools
+
 import numpy as np
 import properties
 
@@ -8,6 +10,7 @@ from .subblock_definition import FreeformSubblockDefinition, RegularSubblockDefi
 
 
 def _shrink_uint(obj, attr):
+    """Cast an attribute to the smallest unsigned integer type it will fit in."""
     arr = getattr(obj, attr)
     assert arr.min() >= 0
     t = np.min_scalar_type(arr.max())
@@ -55,20 +58,6 @@ class SubblockedModel(BaseBlockModel):
 
     # XXX add num_cells property and implement location_length
 
-    def _check_lengths(self):
-        if len(self.subblock_parent_indices) != len(self.subblock_corners):
-            raise ValueError(
-                "'subblock_parent_indices' and 'subblock_corners' arrays must be the same length"
-            )
-
-    def _check_parent_indices(self):
-        indices = self.subblock_parent_indices
-        count = self.parent_block_count
-        if (indices < 0).any() or (indices >= count).any():
-            raise IndexError(
-                f"0 <= subblock_parent_indices < ({count[0]}, {count[1]}, {count[2]}) failed"
-            )
-
     def _check_inside_parent(self):
         min_corner = self.subblock_corners[:, :3]
         max_corner = self.subblock_corners[:, 3:]
@@ -84,16 +73,8 @@ class SubblockedModel(BaseBlockModel):
 
     @properties.validator
     def _validate_subblocks(self):
-        self._check_lengths()
-        self._check_parent_indices()
         self._check_inside_parent()
-        # Check corners against the definition.
-        # TODO check that sub-blocks in each parent are adjacent or remove that requirement
-        indices = self.ijk_to_index(self.subblock_parent_indices)
-        for index in np.unique(indices):
-            corners = self.subblock_corners[indices == index, :]  # XXX slow
-            self.subblock_definition.validate_subblocks(corners)
-        # Cast to the smallest unsigned integer type.
+        _check_subblocks(self)
         _shrink_uint(self, "subblock_parent_indices")
         _shrink_uint(self, "subblock_corners")
 
@@ -126,3 +107,38 @@ class FreeformSubblockedModel(BaseBlockModel):
         "Defines the structure of sub-blocks within each parent block for this model.",
         FreeformSubblockDefinition,
     )
+
+    @properties.validator
+    def _validate_subblocks(self):
+        self._check_inside_parent()
+        _check_subblocks(self)
+        _shrink_uint(self, "subblock_parent_indices")
+
+
+def _check_subblocks(model):
+    indices = model.subblock_parent_indices
+    corners = model.subblock_corners
+    # Check arrays are the same length.
+    if len(indices) != len(corners):
+        raise ValueError(
+            "'subblock_parent_indices' and 'subblock_corners' arrays must be the same length"
+        )
+    # Check parent indices are valid.
+    count = model.parent_block_count
+    if (indices < 0).any() or (indices >= count).any():
+        raise IndexError(
+            f"0 <= subblock_parent_indices < ({count[0]}, {count[1]}, {count[2]}) failed"
+        )
+    # Check corners.
+    seen = np.zeros(np.prod(count), dtype=bool)
+    validate = model.subblock_definition.validate_subblocks
+    flat = model.ijk_to_index(indices)
+    diff = np.flatnonzero(flat[1:] != flat[:-1]) + 1
+    for start, end in itertools.pairwise(itertools.chain([0], diff, [len(corners)])):
+        parent = flat[start]
+        if seen[parent]:
+            raise ValueError(
+                "all sub-blocks inside one parent block must be adjacent in the arrays"
+            )
+        seen[parent] = True
+        validate(corners[start:end])
