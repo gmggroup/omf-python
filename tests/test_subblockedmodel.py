@@ -105,3 +105,48 @@ def test_bad_position():
         properties.ValidationError, match="non-octree sub-block positions"
     ):
         _test_octree((0, 1, 0, 2, 3, 1))
+
+
+def test_pack_subblock_arrays():
+    block_model = omf.SubblockedModel()
+    block_model.subblock_definition.subblock_count = [2, 2, 2]
+    block_model.definition.block_size = [1.0, 1.0, 1.0]
+    block_model.definition.block_count = [10, 10, 10]
+    block_model.subblock_parent_indices = np.array([(0, 0, 0)])
+    block_model.subblock_corners = np.array([(0, 0, 0, 2, 2, 2)])
+    # We set this as default ints.
+    assert block_model.subblock_corners.dtype == np.int32
+    block_model.validate()
+    # Validate should have packed it down to uint8.
+    assert block_model.subblock_corners.dtype == np.uint8
+
+
+def test_uninstantiated():
+    """Test definitions are default and attributes are None on instantiation"""
+    block_model = omf.SubblockedModel()
+    assert isinstance(block_model.definition, omf.RegularBlockModelDefinition)
+    assert isinstance(block_model.subblock_definition, omf.RegularSubblockDefinition)
+    assert block_model.definition.block_count is None
+    assert block_model.definition.block_size is None
+    assert block_model.subblock_definition.subblock_count is None
+    assert block_model.num_cells is None
+    assert block_model.subblock_parent_indices is None
+    assert block_model.subblock_corners is None
+
+
+def test_num_cells():
+    """Test num_cells calculation is correct"""
+    block_model = omf.SubblockedModel()
+    block_model.definition.block_count = [2, 2, 2]
+    block_model.definition.block_size = [1.0, 2.0, 3.0]
+    block_model.subblock_definition.subblock_count = [5, 5, 5]
+    np.testing.assert_array_equal(block_model.definition.block_count, [2, 2, 2])
+    np.testing.assert_array_equal(
+        block_model.subblock_definition.subblock_count, [5, 5, 5]
+    )
+    block_model.subblock_parent_indices = np.array([(0, 0, 0), (1, 0, 0)])
+    block_model.subblock_corners = np.array([(0, 0, 0, 5, 5, 5), (1, 1, 1, 4, 4, 4)])
+    assert block_model.num_cells == 2
+    assert block_model.num_parent_blocks == 8
+    assert block_model.location_length("cells") == 2
+    assert block_model.location_length("parent_blocks") == 8

@@ -106,8 +106,13 @@ class SubblockedModel(ProjectElement):
 
     @property
     def num_cells(self):
-        """The number of cells, which in this case are always parent blocks."""
+        """The number of cells, which in this case are sub-blocks."""
         return None if self.subblock_corners is None else len(self.subblock_corners)
+
+    @property
+    def num_parent_blocks(self):
+        """The number of parent blocks."""
+        return np.prod(self.definition.block_count)
 
     def location_length(self, location):
         """Return correct attribute length for 'location'."""
@@ -115,7 +120,7 @@ class SubblockedModel(ProjectElement):
             case "cells" | "":
                 return self.num_cells
             case "parent_blocks":
-                return np.prod(self.definition.block_count)
+                return self.num_parent_blocks
             case _:
                 raise ValueError(f"unknown location type: {location!r}")
 
