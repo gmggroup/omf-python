@@ -133,7 +133,7 @@ class TestRegularBlockModel:
 class TestSubblockedModel:
     def test_pack_uints(self):
         block_model = omf.SubblockedModel()
-        block_model.subblock_definition.count = [2, 2, 2]
+        block_model.subblock_definition.subblock_count = [2, 2, 2]
         block_model.definition.block_size = [1.0, 1.0, 1.0]
         block_model.definition.block_count = [10, 10, 10]
         block_model.subblock_parent_indices = np.array([(0, 0, 0)])

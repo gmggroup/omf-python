@@ -1,3 +1,4 @@
+import numpy as np
 import properties
 
 from ._properties import BlockCount, OctreeSubblockCount
@@ -6,13 +7,16 @@ from ._properties import BlockCount, OctreeSubblockCount
 class RegularSubblockDefinition(properties.HasProperties):
     """The simplest gridded sub-block definition."""
 
-    count = BlockCount(
+    subblock_count = BlockCount(
         "The maximum number of sub-blocks inside a parent in each direction."
     )
 
-    def validate_subblocks(self, _corners):
-        """Checks the sub-blocks within one parent block."""
-        # TODO check for overlaps
+    @properties.validator("subblock_count")
+    def _validate_subblock_count(self, change):
+        if (change["value"] > 65535).any():
+            raise properties.ValidationError(
+                "sub-block count is limited to 65535 in each direction"
+            )
 
 
 class OctreeSubblockDefinition(RegularSubblockDefinition):
@@ -27,14 +31,9 @@ class OctreeSubblockDefinition(RegularSubblockDefinition):
     all axes to be equal.
     """
 
-    count = OctreeSubblockCount(
+    subblock_count = OctreeSubblockCount(
         "The maximum number of sub-blocks inside a parent in each direction."
     )
-
-    def validate_subblocks(self, corners):
-        """Checks the sub-blocks within one parent block."""
-        super().validate_subblocks(corners)
-        # TODO check that blocks lie on the octree
 
 
 class FreeformSubblockDefinition:
@@ -43,13 +42,8 @@ class FreeformSubblockDefinition:
     Provide np limitations on, or explanation of, sub-block positions.
     """
 
-    def validate_subblocks(self, _corners):
-        """Checks the sub-blocks within one parent block."""
-        # XXX can we check for overlaps efficiently?
-
 
 class VariableZSubblockDefinition(FreeformSubblockDefinition):
-    def validate_subblocks(self, corners):
-        """Checks the sub-blocks within one parent block."""
-        super().validate_subblocks(corners)
-        # TODO check that blocks lie on the octree
+    """Sub-blocks will be contrained to be on an XY grid with variable Z."""
+
+    # FIXME add var-z properties

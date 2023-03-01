@@ -1,13 +1,15 @@
 import itertools
+import sys
 
 import numpy as np
 import properties
 
-from .subblocks import RegularSubblockDefinition
+from .subblocks import RegularSubblockDefinition, OctreeSubblockDefinition
 
 
 def _group_by(arr):
-    assert len(arr) > 0
+    if len(arr) == 0:
+        return
     diff = np.flatnonzero(arr[1:] != arr[:-1])
     diff += 1
     if len(diff) == 0:
@@ -31,7 +33,7 @@ def _check_parent_indices(definition, parent_indices, instance):
 
 def _check_inside_parent(subblock_definition, corners, instance):
     if isinstance(subblock_definition, RegularSubblockDefinition):
-        upper = subblock_definition.count
+        upper = subblock_definition.subblock_count
         upper_str = f"({upper[0]}, {upper[1]}, {upper[2]})"
     else:
         upper = 1.0
@@ -48,13 +50,61 @@ def _check_inside_parent(subblock_definition, corners, instance):
         )
     if not (mx <= upper).all():
         raise properties.ValidationError(
-            f"max_corner <= ({upper_str}) failed",
+            f"max_corner <= {upper_str} failed",
             prop="subblock_corners",
             instance=instance,
         )
 
 
-def check_subblocks(definition, subblock_definition, parent_indices, corners, instance):
+def _check_for_overlaps(subblock_definition, one_parent_corners, instance):
+    # This won't be very fast but there doesn't seem to be a better option.
+    tracker = np.zeros(subblock_definition.subblock_count[::-1], dtype=int)
+    for min_i, min_j, min_k, max_i, max_j, max_k in one_parent_corners:
+        tracker[min_k:max_k, min_j:max_j, min_i:max_i] += 1
+    if (tracker > 1).any():
+        raise properties.ValidationError(
+            "found overlapping sub-blocks", prop="subblock_corners", instance=instance
+        )
+
+
+def _sizes_to_ints(sizes):
+    sizes = np.array(sizes, dtype=np.uint64)
+    assert len(sizes.shape) == 2 and sizes.shape[1] == 3
+    sizes[:, 0] *= 2**32
+    sizes[:, 1] *= 2**16
+    return sizes.sum(axis=1)
+
+
+def _check_octree(subblock_definition, corners, instance):
+    mn = corners[:, :3]
+    mx = corners[:, 3:]
+    # Sizes.
+    count = subblock_definition.subblock_count
+    valid_sizes = [count.copy()]
+    while (count > 1).any():
+        count[count > 1] //= 2
+        valid_sizes.append(count.copy())
+    valid_sizes = _sizes_to_ints(valid_sizes)
+    sizes = _sizes_to_ints(mx - mn)
+    if not np.isin(sizes, valid_sizes, kind="table").all():
+        raise properties.ValidationError(
+            "found non-octree sub-block sizes",
+            prop="subblock_corners",
+            instance=instance,
+        )
+    # Positions. Octree blocks always start at a multiple of their size.
+    r = np.remainder(mn, mx - mn)
+    if (r != 0).any():
+        raise properties.ValidationError(
+            "found non-octree sub-block positions",
+            prop="subblock_corners",
+            instance=instance,
+        )
+
+
+def check_subblocks(
+    definition, subblock_definition, parent_indices, corners, instance=None
+):
     if len(parent_indices) != len(corners):
         raise properties.ValidationError(
             "'subblock_parent_indices' and 'subblock_corners' arrays must be the same length",
@@ -63,15 +113,16 @@ def check_subblocks(definition, subblock_definition, parent_indices, corners, in
         )
     _check_inside_parent(subblock_definition, corners, instance)
     _check_parent_indices(definition, parent_indices, instance)
-    # Check order and pass groups to the sub-block definition to check further.
+    if isinstance(subblock_definition, OctreeSubblockDefinition):
+        _check_octree(subblock_definition, corners, instance)
     seen = np.zeros(np.prod(definition.block_count), dtype=bool)
-    validate = subblock_definition.validate_subblocks
-    for start, end, parent in _group_by(definition.ijk_to_index(parent_indices)):
-        if seen[parent]:
+    for start, end, value in _group_by(definition.ijk_to_index(parent_indices)):
+        if seen[value]:
             raise properties.ValidationError(
                 "all sub-blocks inside one parent block must be adjacent in the arrays",
                 prop="subblock_parent_indices",
                 instance=instance,
             )
-        seen[parent] = True
-        validate(corners[start:end])
+        seen[value] = True
+        if end - start > 1:
+            _check_for_overlaps(subblock_definition, corners[start:end], instance)

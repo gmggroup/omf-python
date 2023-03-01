@@ -8,7 +8,8 @@ from ._subblock_check import check_subblocks
 
 
 def _shrink_uint(arr):
-    assert arr.min() >= 0
+    if arr.min() < 0:
+        return arr
     t = np.min_scalar_type(arr.max())
     return arr.astype(t)
 
@@ -120,6 +121,8 @@ class SubblockedModel(ProjectElement):
 
     @properties.validator
     def _validate_subblocks(self):
+        self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
+        self.subblock_corners = _shrink_uint(self.subblock_corners)
         check_subblocks(
             self.definition,
             self.subblock_definition,
@@ -127,8 +130,6 @@ class SubblockedModel(ProjectElement):
             self.subblock_corners,
             instance=self,
         )
-        self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
-        self.subblock_corners = _shrink_uint(self.subblock_corners)
 
 
 class FreeformSubblockedModel(ProjectElement):
@@ -181,6 +182,7 @@ class FreeformSubblockedModel(ProjectElement):
 
     @properties.validator
     def _validate_subblocks(self):
+        self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
         check_subblocks(
             self.definition,
             self.subblock_definition,
@@ -188,4 +190,3 @@ class FreeformSubblockedModel(ProjectElement):
             self.subblock_corners,
             instance=self,
         )
-        self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
