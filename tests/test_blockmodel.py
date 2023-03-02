@@ -82,7 +82,7 @@ def test_bad_block_count(block_count):
     """Test mismatched block_count"""
     block_model = omf.RegularBlockModel()
     block_model.definition.block_size = [1.0, 2.0, 3.0]
-    with pytest.raises(properties.ValidationError):
+    with pytest.raises((ValueError, properties.ValidationError)):
         block_model.definition.block_count = block_count
         block_model.validate()
 
@@ -92,7 +92,7 @@ def test_bad_block_size(block_size):
     """Test mismatched block_size"""
     block_model = omf.RegularBlockModel()
     block_model.definition.block_count = [2, 2, 2]
-    with pytest.raises(properties.ValidationError):
+    with pytest.raises((ValueError, properties.ValidationError)):
         block_model.definition.block_size = block_size
         block_model.validate()
 

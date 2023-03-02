@@ -2,14 +2,6 @@
 import numpy as np
 import properties
 
-from ._properties import (
-    BlockCount,
-    BlockSize,
-    OctreeSubblockCount,
-    SubBlockCount,
-    TensorArray,
-)
-
 
 class _BaseBlockModelDefinition(properties.HasProperties):
     axis_u = properties.Vector3("Vector orientation of u-direction", default="X", length=1)
@@ -72,8 +64,21 @@ class RegularBlockModelDefinition(_BaseBlockModelDefinition):
 
     schema = "org.omf.v2.blockmodeldefinition.regular"
 
-    block_count = BlockCount("Number of blocks in each of the u, v, and w directions.")
-    block_size = BlockSize("Size of blocks in the u, v, and w directions.")
+    block_count = properties.Array("Number of blocks in each of the u, v, and w directions.", dtype=int, shape=(3,))
+    block_size = properties.Vector3("Size of blocks in the u, v, and w directions.")
+
+    @properties.validator("block_count")
+    def _validate_block_count(self, change):
+        print(">>>", change)
+        for item in change["value"]:
+            if item < 1:
+                raise properties.ValidationError("block counts must be >= 1", prop=change["name"], instance=self)
+
+    @properties.validator("block_size")
+    def _validate_block_size(self, change):
+        for item in change["value"]:
+            if item <= 0.0:
+                raise properties.ValidationError("block sizes must be > 0.0", prop=change["name"], instance=self)
 
 
 class TensorBlockModelDefinition(_BaseBlockModelDefinition):
@@ -81,14 +86,20 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
 
     schema = "org.omf.v2.blockmodeldefinition.tensor"
 
-    tensor_u = TensorArray("Tensor cell widths, u-direction")
-    tensor_v = TensorArray("Tensor cell widths, v-direction")
-    tensor_w = TensorArray("Tensor cell widths, w-direction")
+    tensor_u = properties.Array("Tensor cell widths, u-direction", dtype=float, shape=("*",))
+    tensor_v = properties.Array("Tensor cell widths, v-direction", dtype=float, shape=("*",))
+    tensor_w = properties.Array("Tensor cell widths, w-direction", dtype=float, shape=("*",))
+
+    @properties.validator("tensor_u")
+    @properties.validator("tensor_v")
+    @properties.validator("tensor_w")
+    def _validate_tensor(self, change):
+        for item in change["value"]:
+            if item <= 0.0:
+                raise properties.ValidationError("tensor sizes must be > 0.0", prop=change["name"], instance=self)
 
     def _tensors(self):
-        yield self.tensor_u
-        yield self.tensor_v
-        yield self.tensor_w
+        return (self.tensor_u, self.tensor_v, self.tensor_w)
 
     @property
     def block_count(self):
@@ -104,7 +115,15 @@ class RegularSubblockDefinition(properties.HasProperties):
 
     schema = "org.omf.v2.subblockdefinition.regular"
 
-    subblock_count = SubBlockCount("The maximum number of sub-blocks inside a parent in each direction.")
+    subblock_count = properties.Array(
+        "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
+    )
+
+    @properties.validator("subblock_count")
+    def _validate_subblock_count(self, change):
+        for item in change["value"]:
+            if item < 1:
+                raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
 
 
 class OctreeSubblockDefinition(RegularSubblockDefinition):
@@ -121,7 +140,20 @@ class OctreeSubblockDefinition(RegularSubblockDefinition):
 
     schema = "org.omf.v2.subblockdefinition.octree"
 
-    subblock_count = OctreeSubblockCount("The maximum number of sub-blocks inside a parent in each direction.")
+    subblock_count = properties.Array(
+        "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
+    )
+
+    @properties.validator("subblock_count")
+    def _validate_subblock_count(self, change):
+        for item in change["value"]:
+            if item < 1:
+                raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
+            log = np.log2(item)
+            if np.trunc(log) != log:
+                raise properties.ValidationError(
+                    "octree sub-block counts must be powers of two", prop=change["name"], instance=self
+                )
 
 
 class FreeformSubblockDefinition(properties.HasProperties):
