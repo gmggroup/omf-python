@@ -6,22 +6,42 @@ Block Models
 .. image:: /images/VolumeGrid.png
     :scale: 80%
 
-Element
--------
+Elements
+--------
 
 .. image:: /images/VolumeGridGeometry.png
     :width: 80%
     :align: center
 
-.. autoclass:: omf.blockmodel.TensorGridBlockModel
-
 .. autoclass:: omf.blockmodel.RegularBlockModel
 
-.. autoclass:: omf.blockmodel.RegularSubBlockModel
+.. autoclass:: omf.blockmodel.TensorGridBlockModel
 
-.. autoclass:: omf.blockmodel.OctreeSubBlockModel
+.. autoclass:: omf.blockmodel.SubblockedModel
 
-.. autoclass:: omf.blockmodel.ArbitrarySubBlockModel
+.. autoclass:: omf.blockmodel.FreeformSubblockedModel
+
+
+Block Model Definitions
+-----------------------
+
+These classes are used as part of the block model elements to define the position
+and size of the model.
+
+.. autoclass:: omf.blockmodel.RegularBlockModelDefinition
+
+.. autoclass:: omf.blockmodel.TensorBlockModelDefinition
+
+Sub-block Definitions
+---------------------
+
+These classes are used to define the structure of sub-blocks within a parent block.
+
+.. autoclass:: omf.blockmodel.RegularSubblockDefinition
+
+.. autoclass:: omf.blockmodel.FreeformSubblockDefinition
+
+.. autoclass:: omf.blockmodel.VariableHeightSubblockDefinition
 
 Attributes
 ----------

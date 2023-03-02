@@ -16,7 +16,7 @@ def _group_by(arr):
         yield 0, len(arr), arr[0]
     else:
         yield 0, diff[0], arr[0]
-        for start, end in itertools.pairwise(diff):
+        for start, end in zip(diff[:-1], diff[1:]):
             yield start, end, arr[start]
         yield diff[-1], len(arr), arr[-1]
 
@@ -80,7 +80,7 @@ def _check_octree(subblock_definition, corners, instance):
         count[count > 1] //= 2
         valid_sizes.append(count.copy())
     valid_sizes = _sizes_to_ints(valid_sizes)
-    if not np.isin(_sizes_to_ints(sizes), valid_sizes, kind="sort").all():
+    if not np.isin(_sizes_to_ints(sizes), valid_sizes).all():
         raise properties.ValidationError(
             "found non-octree sub-block sizes",
             prop="subblock_corners",
