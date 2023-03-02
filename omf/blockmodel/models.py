@@ -38,9 +38,7 @@ class RegularBlockModel(ProjectElement):
 
     def location_length(self, location):
         """Return correct attribute length for 'location'."""
-        if location in ("cells", "parent_blocks", ""):
-            return self.num_cells
-        raise ValueError(f"unknown location type: {location!r}")
+        return self.num_cells
 
 
 class TensorGridBlockModel(ProjectElement):
@@ -68,11 +66,7 @@ class TensorGridBlockModel(ProjectElement):
 
     def location_length(self, location):
         """Return correct attribute length for 'location'."""
-        if location in ("cells", "parent_blocks", ""):
-            return self.num_cells
-        if location == "vertices":
-            return self.num_nodes
-        raise ValueError(f"unknown location type: {location!r}")
+        return self.num_nodes if location == "vertices" else self.num_cells
 
 
 class SubblockedModel(ProjectElement):
@@ -123,11 +117,7 @@ class SubblockedModel(ProjectElement):
 
     def location_length(self, location):
         """Return correct attribute length for 'location'."""
-        if location in ("cells", ""):
-            return self.num_cells
-        if location == "parent_blocks":
-            return self.num_parent_blocks
-        raise ValueError(f"unknown location type: {location!r}")
+        return self.num_parent_blocks if location == "parent_blocks" else self.num_cells
 
     @properties.validator
     def _validate_subblocks(self):
@@ -189,11 +179,7 @@ class FreeformSubblockedModel(ProjectElement):
 
     def location_length(self, location):
         """Return correct attribute length for 'location'."""
-        if location in ("cells", ""):
-            return self.num_cells
-        if location == "parent_blocks":
-            return self.num_parent_blocks
-        raise ValueError(f"unknown location type: {location!r}")
+        return self.num_parent_blocks if location == "parent_blocks" else self.num_cells
 
     @properties.validator
     def _validate_subblocks(self):

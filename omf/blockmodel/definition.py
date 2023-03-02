@@ -73,12 +73,16 @@ class RegularBlockModelDefinition(_BaseBlockModelDefinition):
     If used on a sub-blocked model then everything here applies to the parent blocks only.
     """
 
+    schema = "org.omf.v2.blockmodeldefinition.regular"
+
     block_count = BlockCount("Number of blocks in each of the u, v, and w directions.")
     block_size = BlockSize("Size of blocks in the u, v, and w directions.")
 
 
 class TensorBlockModelDefinition(_BaseBlockModelDefinition):
     """Defines the block structure of a tensor grid block model."""
+
+    schema = "org.omf.v2.blockmodeldefinition.tensor"
 
     tensor_u = TensorArray("Tensor cell widths, u-direction")
     tensor_v = TensorArray("Tensor cell widths, v-direction")
@@ -101,6 +105,8 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
 class RegularSubblockDefinition(properties.HasProperties):
     """The simplest gridded sub-block definition."""
 
+    schema = "org.omf.v2.subblockdefinition.regular"
+
     subblock_count = SubBlockCount("The maximum number of sub-blocks inside a parent in each direction.")
 
 
@@ -116,6 +122,8 @@ class OctreeSubblockDefinition(RegularSubblockDefinition):
     all axes to be equal.
     """
 
+    schema = "org.omf.v2.subblockdefinition.octree"
+
     subblock_count = OctreeSubblockCount("The maximum number of sub-blocks inside a parent in each direction.")
 
 
@@ -124,6 +132,8 @@ class FreeformSubblockDefinition(properties.HasProperties):
 
     Provides no limitations on or explanation of sub-block positions.
     """
+
+    schema = "org.omf.v2.subblockdefinition.freeform"
 
 
 class VariableHeightSubblockDefinition(FreeformSubblockDefinition):
@@ -134,6 +144,8 @@ class VariableHeightSubblockDefinition(FreeformSubblockDefinition):
 
     Note: these constraints on sub-blocks are not checked during validation.
     """
+
+    schema = "org.omf.v2.subblockdefinition.variableheight"
 
     subblock_count_u = properties.Integer("Number of sub-blocks in the u-direction", min=1, max=65535)
     subblock_count_v = properties.Integer("Number of sub-blocks in the v-direction", min=1, max=65535)
