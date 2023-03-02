@@ -2,7 +2,7 @@
 import properties
 
 from .base import ProjectElement
-from .blockmodel.models import RegularBlockModel, SubblockedModel, TensorGridBlockModel
+from .blockmodel import RegularBlockModel, SubblockedModel, TensorGridBlockModel
 from .lineset import LineSet
 from .pointset import PointSet
 from .surface import Surface, TensorGridSurface

@@ -18,7 +18,7 @@ from ..attribute import (
     VectorAttribute,
 )
 from ..base import Project
-from ..blockmodel.models import TensorGridBlockModel
+from ..blockmodel import TensorGridBlockModel
 from ..lineset import LineSet
 from ..pointset import PointSet
 from ..surface import Surface, TensorGridSurface

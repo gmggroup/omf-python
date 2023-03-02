@@ -1,3 +1,4 @@
+"""blockmodel/_subblock_check.py: functions for checking sub-block constraints."""
 import itertools
 
 import numpy as np
@@ -37,17 +38,13 @@ def _check_inside_parent(subblock_definition, corners, instance):
     else:
         upper = 1.0
         upper_str = "1"
-    mn = corners[:, :3]
-    mx = corners[:, 3:]
-    if mn.dtype.kind != "u" and not (0 <= mn).all():
-        raise properties.ValidationError(
-            "0 <= min_corner failed", prop="subblock_corners", instance=instance
-        )
-    if not (mn < mx).all():
-        raise properties.ValidationError(
-            "min_corner < max_corner failed", prop="subblock_corners", instance=instance
-        )
-    if not (mx <= upper).all():
+    min_corners = corners[:, :3]
+    max_corners = corners[:, 3:]
+    if min_corners.dtype.kind != "u" and not (0 <= min_corners).all():
+        raise properties.ValidationError("0 <= min_corner failed", prop="subblock_corners", instance=instance)
+    if not (min_corners < max_corners).all():
+        raise properties.ValidationError("min_corner < max_corner failed", prop="subblock_corners", instance=instance)
+    if not (max_corners <= upper).all():
         raise properties.ValidationError(
             f"max_corner <= {upper_str} failed",
             prop="subblock_corners",
@@ -61,9 +58,7 @@ def _check_for_overlaps(subblock_definition, one_parent_corners, instance):
     for min_i, min_j, min_k, max_i, max_j, max_k in one_parent_corners:
         tracker[min_k:max_k, min_j:max_j, min_i:max_i] += 1
     if (tracker > 1).any():
-        raise properties.ValidationError(
-            "found overlapping sub-blocks", prop="subblock_corners", instance=instance
-        )
+        raise properties.ValidationError("found overlapping sub-blocks", prop="subblock_corners", instance=instance)
 
 
 def _sizes_to_ints(sizes):
@@ -75,8 +70,9 @@ def _sizes_to_ints(sizes):
 
 
 def _check_octree(subblock_definition, corners, instance):
-    mn = corners[:, :3]
-    mx = corners[:, 3:]
+    min_corners = corners[:, :3]
+    max_corners = corners[:, 3:]
+    sizes = max_corners - min_corners
     # Sizes.
     count = subblock_definition.subblock_count
     valid_sizes = [count.copy()]
@@ -84,16 +80,14 @@ def _check_octree(subblock_definition, corners, instance):
         count[count > 1] //= 2
         valid_sizes.append(count.copy())
     valid_sizes = _sizes_to_ints(valid_sizes)
-    sizes = _sizes_to_ints(mx - mn)
-    if not np.isin(sizes, valid_sizes, kind="table").all():
+    if not np.isin(_sizes_to_ints(sizes), valid_sizes, kind="table").all():
         raise properties.ValidationError(
             "found non-octree sub-block sizes",
             prop="subblock_corners",
             instance=instance,
         )
     # Positions. Octree blocks always start at a multiple of their size.
-    r = np.remainder(mn, mx - mn)
-    if (r != 0).any():
+    if (np.remainder(min_corners, sizes) != 0).any():
         raise properties.ValidationError(
             "found non-octree sub-block positions",
             prop="subblock_corners",
@@ -101,9 +95,8 @@ def _check_octree(subblock_definition, corners, instance):
         )
 
 
-def check_subblocks(
-    definition, subblock_definition, parent_indices, corners, instance=None
-):
+def check_subblocks(definition, subblock_definition, parent_indices, corners, instance=None):
+    """Run all checks on the given defintions and sub-blocks."""
     if len(parent_indices) != len(corners):
         raise properties.ValidationError(
             "'subblock_parent_indices' and 'subblock_corners' arrays must be the same length",

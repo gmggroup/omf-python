@@ -8,12 +8,14 @@ from omf.blockmodel import _subblock_check
 
 
 def test_group_by():
-    a = np.array([0, 0, 1, 1, 1, 2])
-    assert list(_subblock_check._group_by(a)) == [(0, 2, 0), (2, 5, 1), (5, 6, 2)]
-    a = np.ones(1, dtype=int)
-    assert list(_subblock_check._group_by(a)) == [(0, 1, 1)]
-    a = np.zeros(0, dtype=int)
-    assert list(_subblock_check._group_by(a)) == []
+    """Test the array grouping function used by sub-block checks."""
+    group_by = _subblock_check._group_by  # pylint: disable=W0212
+    arr = np.array([0, 0, 1, 1, 1, 2])
+    assert list(group_by(arr)) == [(0, 2, 0), (2, 5, 1), (5, 6, 2)]
+    arr = np.ones(1, dtype=int)
+    assert list(group_by(arr)) == [(0, 1, 1)]
+    arr = np.zeros(0, dtype=int)
+    assert not list(group_by(arr))
 
 
 def _bm_def():
@@ -26,20 +28,20 @@ def _bm_def():
 def _test_regular(*corners):
     block_model = omf.SubblockedModel()
     block_model.definition = _bm_def()
-    block_model.subblock_definition = omf.RegularSubblockDefinition(
-        subblock_count=(5, 4, 3)
-    )
+    block_model.subblock_definition = omf.RegularSubblockDefinition(subblock_count=(5, 4, 3))
     block_model.subblock_corners = np.array(corners)
     block_model.subblock_parent_indices = np.zeros((len(corners), 3), dtype=int)
     block_model.validate()
 
 
 def test_overlap():
+    """Test that overlapping sub-blocks are rejected."""
     with pytest.raises(properties.ValidationError, match="overlapping sub-blocks"):
         _test_regular((0, 0, 0, 2, 2, 1), (0, 0, 0, 4, 4, 2))
 
 
 def test_outside_parent():
+    """Test that sub-blocks outside the parent block are rejected."""
     with pytest.raises(properties.ValidationError, match="0 <= min_corner"):
         _test_regular((0, 0, -1, 4, 4, 1))
     with pytest.raises(properties.ValidationError, match="min_corner < max_corner"):
@@ -49,40 +51,35 @@ def test_outside_parent():
 
 
 def test_invalid_parent_indices():
+    """Test invalid parent block indices are rejected."""
     block_model = omf.SubblockedModel()
     block_model.definition = _bm_def()
-    block_model.subblock_definition = omf.RegularSubblockDefinition(
-        subblock_count=(5, 4, 3)
-    )
+    block_model.subblock_definition = omf.RegularSubblockDefinition(subblock_count=(5, 4, 3))
     block_model.subblock_corners = np.array([(0, 0, 0, 5, 4, 3), (0, 0, 0, 5, 4, 3)])
     block_model.subblock_parent_indices = np.array([(0, 0, 0), (1, 0, 0)])
-    with pytest.raises(
-        properties.ValidationError, match=r"subblock_parent_indices < \(1, 1, 1\)"
-    ):
+    with pytest.raises(properties.ValidationError, match=r"subblock_parent_indices < \(1, 1, 1\)"):
         block_model.validate()
     block_model.subblock_parent_indices = np.array([(0, 0, -1), (0, 0, 0)])
-    with pytest.raises(
-        properties.ValidationError, match="0 <= subblock_parent_indices"
-    ):
+    with pytest.raises(properties.ValidationError, match="0 <= subblock_parent_indices"):
         block_model.validate()
 
 
 def _test_octree(*corners):
     block_model = omf.SubblockedModel()
     block_model.definition = _bm_def()
-    block_model.subblock_definition = omf.OctreeSubblockDefinition(
-        subblock_count=(4, 4, 2)
-    )
+    block_model.subblock_definition = omf.OctreeSubblockDefinition(subblock_count=(4, 4, 2))
     block_model.subblock_corners = np.array(corners)
     block_model.subblock_parent_indices = np.zeros((len(corners), 3), dtype=int)
     block_model.validate()
 
 
 def test_one_full_block():
+    """Test a single sub-block covering the parent."""
     _test_octree((0, 0, 0, 4, 4, 2))
 
 
 def test_eight_blocks():
+    """Test eight sub-blocks covering the parent."""
     _test_octree(
         (0, 0, 0, 2, 2, 1),
         (2, 0, 0, 4, 2, 1),
@@ -96,18 +93,19 @@ def test_eight_blocks():
 
 
 def test_bad_size():
+    """Test that non-octree sub-blocks sizes are rejected."""
     with pytest.raises(properties.ValidationError, match="non-octree sub-block sizes"):
         _test_octree((0, 0, 0, 3, 4, 2))
 
 
 def test_bad_position():
-    with pytest.raises(
-        properties.ValidationError, match="non-octree sub-block positions"
-    ):
+    """Test that non-octree sub-blocks positions are rejected."""
+    with pytest.raises(properties.ValidationError, match="non-octree sub-block positions"):
         _test_octree((0, 1, 0, 2, 3, 1))
 
 
 def test_pack_subblock_arrays():
+    """Test that packing of uint arrays during validation works."""
     block_model = omf.SubblockedModel()
     block_model.subblock_definition.subblock_count = [2, 2, 2]
     block_model.definition.block_size = [1.0, 1.0, 1.0]
@@ -122,7 +120,7 @@ def test_pack_subblock_arrays():
 
 
 def test_uninstantiated():
-    """Test definitions are default and attributes are None on instantiation"""
+    """Test that definitions are default and attributes are None on instantiation"""
     block_model = omf.SubblockedModel()
     assert isinstance(block_model.definition, omf.RegularBlockModelDefinition)
     assert isinstance(block_model.subblock_definition, omf.RegularSubblockDefinition)
@@ -141,9 +139,7 @@ def test_num_cells():
     block_model.definition.block_size = [1.0, 2.0, 3.0]
     block_model.subblock_definition.subblock_count = [5, 5, 5]
     np.testing.assert_array_equal(block_model.definition.block_count, [2, 2, 2])
-    np.testing.assert_array_equal(
-        block_model.subblock_definition.subblock_count, [5, 5, 5]
-    )
+    np.testing.assert_array_equal(block_model.subblock_definition.subblock_count, [5, 5, 5])
     block_model.subblock_parent_indices = np.array([(0, 0, 0), (1, 0, 0)])
     block_model.subblock_corners = np.array([(0, 0, 0, 5, 5, 5), (1, 1, 1, 4, 4, 4)])
     assert block_model.num_cells == 2

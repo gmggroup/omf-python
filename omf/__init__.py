@@ -10,15 +10,18 @@ from .attribute import (
     VectorAttribute,
 )
 from .base import Project
-from .blockmodel.definition import (
+from .blockmodel import (
+    FreeformSubblockedModel,
     OctreeSubblockDefinition,
+    RegularBlockModel,
     RegularBlockModelDefinition,
     RegularSubblockDefinition,
+    SubblockedModel,
     TensorBlockModelDefinition,
+    TensorGridBlockModel,
 )
-from .blockmodel.models import RegularBlockModel, SubblockedModel, TensorGridBlockModel
 from .composite import Composite
-from .fileio import load, save, __version__
+from .fileio import __version__, load, save
 from .lineset import LineSet
 from .pointset import PointSet
 from .surface import Surface, TensorGridSurface

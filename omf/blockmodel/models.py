@@ -1,3 +1,4 @@
+"""blockmodel/models.py: block model elements."""
 import numpy as np
 import properties
 
@@ -15,8 +16,7 @@ def _shrink_uint(arr):
     assert arr.dtype.kind in "ui"
     if arr.min() < 0:
         return arr
-    t = np.min_scalar_type(arr.max())
-    return arr.astype(t)
+    return arr.astype(np.min_scalar_type(arr.max()))
 
 
 class RegularBlockModel(ProjectElement):
@@ -61,8 +61,8 @@ class TensorGridBlockModel(ProjectElement):
     @property
     def num_nodes(self):
         """Number of nodes or vertices."""
-        bc = self.definition.block_count
-        return None if bc is None else np.prod(bc + 1)
+        count = self.definition.block_count
+        return None if count is None else np.prod(count + 1)
 
     def location_length(self, location):
         """Return correct attribute length for 'location'."""

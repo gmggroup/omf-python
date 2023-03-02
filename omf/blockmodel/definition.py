@@ -1,3 +1,4 @@
+"""blockmodel/definition.py: various block model and sub-block definition structures."""
 import numpy as np
 import properties
 
@@ -18,7 +19,7 @@ class _BaseBlockModelDefinition(properties.HasProperties):
         "Minimum corner of the block model relative to Project coordinate reference system",
         default="zero",
     )
-    block_count = None
+    block_count = ()
 
     @properties.validator
     def _validate_axes(self):
@@ -46,10 +47,7 @@ class _BaseBlockModelDefinition(properties.HasProperties):
         if (shaped < 0).any() or (shaped >= count).any():
             raise IndexError(f"0 <= ijk < ({count[0]}, {count[1]}, {count[2]}) failed")
         indices = np.ravel_multi_index(multi_index=shaped.T, dims=count, order="F")
-        if output_shape == ():
-            return indices[0]
-        else:
-            return indices.reshape(output_shape)
+        return indices[0] if output_shape == () else indices.reshape(output_shape)
 
     def index_to_ijk(self, index):
         """Map flat indices to IJK triples for a singoe index or an array, preserving shape."""
@@ -96,10 +94,10 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
     @property
     def block_count(self):
         """The block count is derived from the tensors here."""
-        c = tuple(None if t is None else len(t) for t in self._tensors())
-        if None in c:
+        count = tuple(None if t is None else len(t) for t in self._tensors())
+        if None in count:
             return None
-        return np.array(c, dtype=int)
+        return np.array(count, dtype=int)
 
 
 class RegularSubblockDefinition(properties.HasProperties):
