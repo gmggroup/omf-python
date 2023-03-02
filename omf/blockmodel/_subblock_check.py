@@ -80,7 +80,7 @@ def _check_octree(subblock_definition, corners, instance):
         count[count > 1] //= 2
         valid_sizes.append(count.copy())
     valid_sizes = _sizes_to_ints(valid_sizes)
-    if not np.isin(_sizes_to_ints(sizes), valid_sizes, kind="table").all():
+    if not np.isin(_sizes_to_ints(sizes), valid_sizes, kind="sort").all():
         raise properties.ValidationError(
             "found non-octree sub-block sizes",
             prop="subblock_corners",
