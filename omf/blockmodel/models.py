@@ -2,12 +2,17 @@ import numpy as np
 import properties
 
 from ..base import ProjectElement
-from .definition import RegularBlockModelDefinition, TensorBlockModelDefinition
-from .subblocks import FreeformSubblockDefinition, RegularSubblockDefinition
+from .definition import (
+    FreeformSubblockDefinition,
+    RegularBlockModelDefinition,
+    RegularSubblockDefinition,
+    TensorBlockModelDefinition,
+)
 from ._subblock_check import check_subblocks
 
 
 def _shrink_uint(arr):
+    assert arr.dtype.kind in "ui"
     if arr.min() < 0:
         return arr
     t = np.min_scalar_type(arr.max())
@@ -15,6 +20,8 @@ def _shrink_uint(arr):
 
 
 class RegularBlockModel(ProjectElement):
+    """A block model with fixed size blocks on a regular grid and no sub-blocks."""
+
     schema = "org.omf.v2.elements.blockmodel.regular"
     _valid_locations = ("cells", "parent_blocks")
 
@@ -39,6 +46,8 @@ class RegularBlockModel(ProjectElement):
 
 
 class TensorGridBlockModel(ProjectElement):
+    """A block model with variable spacing in all directions and no sub-blocks."""
+
     schema = "org.omf.v2.elements.blockmodel.tensor"
     _valid_locations = ("vertices", "cells", "parent_blocks")
 
@@ -71,6 +80,8 @@ class TensorGridBlockModel(ProjectElement):
 
 
 class SubblockedModel(ProjectElement):
+    """A regular block model with sub-blocks that align with a lower-level grid."""
+
     schema = "org.omf.v2.elements.blockmodel.subblocked"
     _valid_locations = ("cells", "parent_blocks")
 
@@ -138,6 +149,8 @@ class SubblockedModel(ProjectElement):
 
 
 class FreeformSubblockedModel(ProjectElement):
+    """A regular block model with sub-blocks can be anywhere within the parent."""
+
     schema = "org.omf.v2.elements.blockmodel.freeform_subblocked"
     _valid_locations = ("cells", "parent_blocks")
 

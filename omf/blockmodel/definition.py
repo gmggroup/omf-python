@@ -1,7 +1,13 @@
 import numpy as np
 import properties
 
-from ._properties import BlockCount, BlockSize, TensorArray
+from ._properties import (
+    BlockCount,
+    BlockSize,
+    OctreeSubblockCount,
+    SubBlockCount,
+    TensorArray,
+)
 
 
 class _BaseBlockModelDefinition(properties.HasProperties):
@@ -99,15 +105,54 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
             return None
         return np.array(c, dtype=int)
 
-    @properties.validator("tensor_u")
-    @properties.validator("tensor_v")
-    @properties.validator("tensor_w")
-    def _validate_tensor(self, change):
-        tensor = change["value"]
-        if (tensor <= 0.0).any():
-            raise properties.ValidationError(
-                "Tensor spacings must be greater than zero",
-                prop=change["name"],
-                instance=self,
-                reason="invalid",
-            )
+
+class RegularSubblockDefinition(properties.HasProperties):
+    """The simplest gridded sub-block definition."""
+
+    subblock_count = SubBlockCount(
+        "The maximum number of sub-blocks inside a parent in each direction."
+    )
+
+
+class OctreeSubblockDefinition(RegularSubblockDefinition):
+    """Sub-blocks form an octree inside the parent block.
+
+    Cut the parent block in half in all directions to create eight sub-blocks. Repeat that
+    division for some or all of those new sub-blocks. Continue doing that until the limit
+    on sub-block count is reached or until the sub-blocks accurately model the inputs.
+
+    This definition also allows the lower level cuts to be omitted in one or two axes,
+    giving a maximum sub-block count of (16, 16, 4) for example rather than requiring
+    all axes to be equal.
+    """
+
+    subblock_count = OctreeSubblockCount(
+        "The maximum number of sub-blocks inside a parent in each direction."
+    )
+
+
+class FreeformSubblockDefinition:
+    """Unconstrained free-form sub-block definition.
+
+    Provides no limitations on or explanation of sub-block positions.
+    """
+
+
+class VariableHeightSubblockDefinition(FreeformSubblockDefinition):
+    """Defines sub-blocks on a grid in the U and V directions but variable in the W direction.
+
+    A single sub-block covering the whole parent block is also valid. Sub-blocks should not
+    overlap.
+
+    Note: these constraints on sub-blocks are not checked during validation.
+    """
+
+    subblock_count_u = properties.Integer(
+        "Number of sub-blocks in the u-direction", min=1, max=65535
+    )
+    subblock_count_v = properties.Integer(
+        "Number of sub-blocks in the v-direction", min=1, max=65535
+    )
+    minimum_size_w = properties.Float(
+        "Minimum size of sub-blocks in the z-direction", min=0.0
+    )

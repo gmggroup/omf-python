@@ -15,12 +15,24 @@ class BlockCount(properties.Array):
                     msg = f"block counts must be >= 1"
                 else:
                     cls = instance.__class__.__name__
-                    msg = f"{cls}.{self.name} counts must be >= 1"
+                    msg = f"{cls}.{self.name} must be >= 1"
                 raise properties.ValidationError(msg, prop=self.name, instance=instance)
         return value
 
 
-class OctreeSubblockCount(BlockCount):
+class SubBlockCount(BlockCount):
+    def validate(self, instance, value):
+        value = super().validate(instance, value)
+        if (value > 65535).any():
+            raise properties.ValidationError(
+                "sub-block counts are limited to 65535 in each direction",
+                prop=self.name,
+                instance=instance,
+            )
+        return value
+
+
+class OctreeSubblockCount(SubBlockCount):
     def validate(self, instance, value):
         """Check shape and dtype of the count and that items are >= min."""
         value = super().validate(instance, value)
@@ -28,7 +40,7 @@ class OctreeSubblockCount(BlockCount):
             l = np.log2(item)
             if np.trunc(l) != l:
                 if instance is None:
-                    msg = f"octree block counts must be powers of two"
+                    msg = f"octree sub-block counts must be powers of two"
                 else:
                     cls = instance.__class__.__name__
                     msg = f"{cls}.{self.name} octree counts must be powers of two"

@@ -1,10 +1,9 @@
 import itertools
-import sys
 
 import numpy as np
 import properties
 
-from .subblocks import RegularSubblockDefinition, OctreeSubblockDefinition
+from .definition import RegularSubblockDefinition, OctreeSubblockDefinition
 
 
 def _group_by(arr):

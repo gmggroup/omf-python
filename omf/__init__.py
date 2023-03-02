@@ -11,11 +11,12 @@ from .attribute import (
 )
 from .base import Project
 from .blockmodel.definition import (
+    OctreeSubblockDefinition,
     RegularBlockModelDefinition,
+    RegularSubblockDefinition,
     TensorBlockModelDefinition,
 )
 from .blockmodel.models import RegularBlockModel, SubblockedModel, TensorGridBlockModel
-from .blockmodel.subblocks import OctreeSubblockDefinition, RegularSubblockDefinition
 from .composite import Composite
 from .fileio import load, save, __version__
 from .lineset import LineSet
