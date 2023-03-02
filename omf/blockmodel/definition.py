@@ -119,7 +119,7 @@ class OctreeSubblockDefinition(RegularSubblockDefinition):
     subblock_count = OctreeSubblockCount("The maximum number of sub-blocks inside a parent in each direction.")
 
 
-class FreeformSubblockDefinition:
+class FreeformSubblockDefinition(properties.HasProperties):
     """Unconstrained free-form sub-block definition.
 
     Provides no limitations on or explanation of sub-block positions.
