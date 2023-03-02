@@ -439,7 +439,7 @@ class Reader(IOMFReader):
         self.__require_attr(geometry_v1, "__class__", "VolumeGridGeometry")
         volume = TensorGridBlockModel()
         self.__copy_attr(volume_v1, "subtype", volume.metadata)
-        self._copy_project_element_geometry(geometry_v1, volume.definition)
+        self.__copy_attr(geometry_v1, "origin", volume.definition)
         self.__copy_attr(geometry_v1, "tensor_u", volume.definition)
         self.__copy_attr(geometry_v1, "tensor_v", volume.definition)
         self.__copy_attr(geometry_v1, "tensor_w", volume.definition)
