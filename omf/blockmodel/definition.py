@@ -38,11 +38,10 @@ class _BaseBlockModelDefinition(properties.HasProperties):
         arr = np.asarray(ijk)
         if arr.dtype.kind not in "ui":
             raise TypeError(f"'ijk' must be integer typed, found {arr.dtype}")
-        match arr.shape:
-            case (*output_shape, 3):
-                shaped = arr.reshape(-1, 3)
-            case _:
-                raise ValueError("'ijk' must have 3 elements or be an array with shape (*_, 3)")
+        if not arr.shape or arr.shape[-1] != 3:
+            raise ValueError("'ijk' must have 3 elements or be an array with shape (*_, 3)")
+        output_shape = arr.shape[:-1]
+        shaped = arr.reshape(-1, 3)
         count = self.block_count
         if (shaped < 0).any() or (shaped >= count).any():
             raise IndexError(f"0 <= ijk < ({count[0]}, {count[1]}, {count[2]}) failed")
