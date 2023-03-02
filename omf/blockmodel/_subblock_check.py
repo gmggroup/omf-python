@@ -1,6 +1,4 @@
 """blockmodel/_subblock_check.py: functions for checking sub-block constraints."""
-import itertools
-
 import numpy as np
 import properties
 
