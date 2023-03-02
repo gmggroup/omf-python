@@ -44,7 +44,7 @@ class RegularBlockModel(ProjectElement):
 class TensorGridBlockModel(ProjectElement):
     """A block model with variable spacing in all directions and no sub-blocks."""
 
-    schema = "org.omf.v2.elements.blockmodel.tensor"
+    schema = "org.omf.v2.element.blockmodel.tensorgrid"
     _valid_locations = ("vertices", "cells", "parent_blocks")
 
     definition = properties.Instance(
