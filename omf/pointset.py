@@ -1,4 +1,5 @@
 """pointset.py: PointSet element definition"""
+import properties
 from .base import ProjectElement
 from .attribute import ArrayInstanceProperty
 from .texture import HasTexturesMixin
@@ -8,6 +9,11 @@ class PointSet(ProjectElement, HasTexturesMixin):
     """Point set element defined by vertices"""
 
     schema = "org.omf.v2.element.pointset"
+
+    origin = properties.Vector3(
+        "Origin of the PointSet relative to Project coordinate reference system",
+        default=[0.0, 0.0, 0.0],
+    )
 
     vertices = ArrayInstanceProperty(
         "Spatial coordinates of points relative to project origin",

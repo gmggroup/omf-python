@@ -20,8 +20,6 @@ class Composite(ProjectElement):
     updating forward refs...
     """
 
-    schema = "org.omf.v2.composite"
-
     elements = properties.List(
         "Elements grouped into one composite element",
         prop=properties.Union(
@@ -51,10 +49,10 @@ class Composite(ProjectElement):
 
 
 composite_props = Composite._props["elements"].prop.props  # pylint: disable=E1101
-Composite._props["elements"].prop.props = composite_props + (  # pylint: disable=E1101
-    Composite,
-)
+Composite._props["elements"].prop.props = composite_props + (Composite,)  # pylint: disable=E1101
 
 
 class Composite(Composite):  # pylint: disable=E0102
     """Object constructed from other primitive elements and composites"""
+
+    schema = "org.omf.v2.composite"

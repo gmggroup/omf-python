@@ -32,9 +32,7 @@ class Image(BaseModel):
         if image is not None:
             self.image = image
 
-    @properties.StringChoice(
-        "Image data type string", choices=["png"]
-    )  # pylint: disable=R0201
+    @properties.StringChoice("Image data type string", choices=["png"])
     def data_type(self):
         """Image type descriptor, currently only PNGs are supported"""
         return "png"
@@ -49,9 +47,7 @@ class Image(BaseModel):
         return size
 
     def serialize(self, include_class=True, save_dynamic=False, **kwargs):
-        output = super().serialize(
-            include_class=include_class, save_dynamic=True, **kwargs
-        )
+        output = super().serialize(include_class=include_class, save_dynamic=True, **kwargs)
         image_uid = str(uuid.uuid4())
         binary_dict = kwargs.get("binary_dict", None)
         if binary_dict is not None:
@@ -61,9 +57,7 @@ class Image(BaseModel):
         return output
 
     @classmethod
-    def deserialize(
-        cls, value, trusted=False, strict=False, assert_valid=False, **kwargs
-    ):
+    def deserialize(cls, value, trusted=False, strict=False, assert_valid=False, **kwargs):
         binary_dict = kwargs.get("binary_dict", {})
         if not isinstance(value, dict):
             pass
@@ -79,8 +73,8 @@ class ProjectedTexture(ContentModel):
 
     schema = "org.omf.v2.texture.projected"
 
-    corner = properties.Vector3(
-        "Corner (origin) point of the texture",
+    origin = properties.Vector3(
+        "Origin point of the texture",
         default=[0.0, 0.0, 0.0],
     )
     axis_u = properties.Vector3(
@@ -99,6 +93,8 @@ class ProjectedTexture(ContentModel):
 
 class UVMappedTexture(ContentModel):
     """Image mapped to surface where uv coordinates correspond to vertices"""
+
+    schema = "org.omf.v2.texture.uv_mapped"
 
     image = properties.Instance(
         "PNG image file",

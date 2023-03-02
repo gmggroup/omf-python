@@ -11,17 +11,11 @@ from ._properties import (
 
 
 class _BaseBlockModelDefinition(properties.HasProperties):
-    axis_u = properties.Vector3(
-        "Vector orientation of u-direction", default="X", length=1
-    )
-    axis_v = properties.Vector3(
-        "Vector orientation of v-direction", default="Y", length=1
-    )
-    axis_w = properties.Vector3(
-        "Vector orientation of w-direction", default="Z", length=1
-    )
-    corner = properties.Vector3(
-        "Corner of the block model relative to Project coordinate reference system",
+    axis_u = properties.Vector3("Vector orientation of u-direction", default="X", length=1)
+    axis_v = properties.Vector3("Vector orientation of v-direction", default="Y", length=1)
+    axis_w = properties.Vector3("Vector orientation of w-direction", default="Z", length=1)
+    origin = properties.Vector3(
+        "Minimum corner of the block model relative to Project coordinate reference system",
         default="zero",
     )
     block_count = None
@@ -47,9 +41,7 @@ class _BaseBlockModelDefinition(properties.HasProperties):
             case (*output_shape, 3):
                 shaped = arr.reshape(-1, 3)
             case _:
-                raise ValueError(
-                    "'ijk' must have 3 elements or be an array with shape (*_, 3)"
-                )
+                raise ValueError("'ijk' must have 3 elements or be an array with shape (*_, 3)")
         count = self.block_count
         if (shaped < 0).any() or (shaped >= count).any():
             raise IndexError(f"0 <= ijk < ({count[0]}, {count[1]}, {count[2]}) failed")
@@ -109,9 +101,7 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
 class RegularSubblockDefinition(properties.HasProperties):
     """The simplest gridded sub-block definition."""
 
-    subblock_count = SubBlockCount(
-        "The maximum number of sub-blocks inside a parent in each direction."
-    )
+    subblock_count = SubBlockCount("The maximum number of sub-blocks inside a parent in each direction.")
 
 
 class OctreeSubblockDefinition(RegularSubblockDefinition):
@@ -126,9 +116,7 @@ class OctreeSubblockDefinition(RegularSubblockDefinition):
     all axes to be equal.
     """
 
-    subblock_count = OctreeSubblockCount(
-        "The maximum number of sub-blocks inside a parent in each direction."
-    )
+    subblock_count = OctreeSubblockCount("The maximum number of sub-blocks inside a parent in each direction.")
 
 
 class FreeformSubblockDefinition:
@@ -147,12 +135,6 @@ class VariableHeightSubblockDefinition(FreeformSubblockDefinition):
     Note: these constraints on sub-blocks are not checked during validation.
     """
 
-    subblock_count_u = properties.Integer(
-        "Number of sub-blocks in the u-direction", min=1, max=65535
-    )
-    subblock_count_v = properties.Integer(
-        "Number of sub-blocks in the v-direction", min=1, max=65535
-    )
-    minimum_size_w = properties.Float(
-        "Minimum size of sub-blocks in the z-direction", min=0.0
-    )
+    subblock_count_u = properties.Integer("Number of sub-blocks in the u-direction", min=1, max=65535)
+    subblock_count_v = properties.Integer("Number of sub-blocks in the v-direction", min=1, max=65535)
+    minimum_size_w = properties.Float("Minimum size of sub-blocks in the z-direction", min=0.0)

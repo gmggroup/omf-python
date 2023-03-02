@@ -1,0 +1,90 @@
+[project]
+name = "omf"
+authors = [{ name = "Global Mining Guidelines Group", email = "info@gmggroup.org" }]
+description = "API Library for Open Mining Format"
+keywords = ["mining", "data", "interchange"]
+readme = "README.rst"
+requires-python = ">=3.7"
+license = { file = "LICENSE" }
+dynamic = ["version"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Natural Language :: English",
+]
+
+dependencies = [
+    "numpy>=1.20",
+    "properties==0.6.1",
+    "pypng",
+    "vectormath>=0.2.0",
+]
+
+[project.urls]
+homepage = "https://gmggroup.org"
+repository = "https://github.com/gmggroup/omf"
+documentation = "https://readthedocs.org/projects/omf"
+
+[project.optional-dependencies]
+dev = [
+    "jupyter",
+    "matplotlib",
+]
+
+docs = [
+    "sphinx",
+    "sphinx_rtd_theme",
+]
+
+lint = [
+    "black",
+    "pylint",
+]
+
+test = [
+    "mock",
+    "nose-py3",
+    "pytest==7.2.1",
+    "pytest-cov==4.0.0",
+    "pytest-rst==0.1.5",
+]
+
+[build-system]
+requires = ["flit_core>=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.black]
+line-length = 120
+target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
+
+[tool.pylint.'CLASSES']
+exclude-protected = "_asdict,_fields,_replace,_source,_make,_props,_backend"
+
+[tool.pylint.'FORMAT']
+max-line-length = 120
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "consider-using-f-string"
+
+[tool.pylint.'SIMILARITIES']
+min-similarity-lines = 20
+ignore-comments = "yes"
+ignore-docstrings = "yes"
+ignore-imports = "yes"
+
+[tool.pylint.'TYPECHECK']
+generated-members = "_backend,array"
+
+[tool.pytest.ini_options]
+minversion = "7.2"
+required_plugins = "pytest-rst"
+testpaths = ["docs", "tests"]
+

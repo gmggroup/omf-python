@@ -7,9 +7,7 @@ import omf
 
 
 def _make_regular_definition(count):
-    return omf.RegularBlockModelDefinition(
-        block_count=count, block_size=(1.0, 1.0, 1.0)
-    )
+    return omf.RegularBlockModelDefinition(block_count=count, block_size=(1.0, 1.0, 1.0))
 
 
 def test_ijk_index_errors():
@@ -89,9 +87,7 @@ def test_bad_block_count(block_count):
         block_model.validate()
 
 
-@pytest.mark.parametrize(
-    "block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2])
-)
+@pytest.mark.parametrize("block_size", ([2.0, 2.0], [2.0, 2.0, 2.0, 2.0], [-1.0, 2, 2], [0.0, 2, 2]))
 def test_bad_block_size(block_size):
     """Test mismatched block_size"""
     block_model = omf.RegularBlockModel()

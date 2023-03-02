@@ -47,7 +47,7 @@ def get_index(pointer, level):
 
 
 def get_pointer(index):
-    level = index & (2 ** level_bits - 1)
+    level = index & (2**level_bits - 1)
     index = index >> level_bits
 
     pointer = [0] * dimension
@@ -76,11 +76,7 @@ def _print_example(pointer, level):
         bstr = "{0:b}".format(num).rjust(max_bits, "0")
         print("".join([frm(b) for b in bstr]) + "    = " + str(num))
 
-    print(
-        "{0:b}".format(level).rjust(level_bits, "0").rjust(total_bits, " ")
-        + " = "
-        + str(level)
-    )
+    print("{0:b}".format(level).rjust(level_bits, "0").rjust(total_bits, " ") + " = " + str(level))
     print_binary(pointer[0], lambda b: "  " + b + "")
     print_binary(pointer[1], lambda b: " " + b + " ")
     print_binary(pointer[2], lambda b: "" + b + "  ")

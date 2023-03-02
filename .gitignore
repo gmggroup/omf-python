@@ -94,6 +94,10 @@ ENV/
 deps/
 
 cover/
+.idea/
+example.omf
+example.png
+testdata/
 
 # VSCode project settings
 .vscode/
