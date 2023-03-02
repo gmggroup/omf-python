@@ -110,12 +110,10 @@ def test_pack_subblock_arrays():
     block_model.subblock_definition.subblock_count = [2, 2, 2]
     block_model.definition.block_size = [1.0, 1.0, 1.0]
     block_model.definition.block_count = [10, 10, 10]
-    block_model.subblock_parent_indices = np.array([(0, 0, 0)])
-    block_model.subblock_corners = np.array([(0, 0, 0, 2, 2, 2)])
-    # We set this as default ints.
-    assert block_model.subblock_corners.dtype == np.int32
+    block_model.subblock_parent_indices = np.array([(0, 0, 0)], dtype=int)
+    block_model.subblock_corners = np.array([(0, 0, 0, 2, 2, 2)], dtype=int)
     block_model.validate()
-    # Validate should have packed it down to uint8.
+    # Arrays were set as int, validate should have packed it down to uint8.
     assert block_model.subblock_corners.dtype == np.uint8
 
 
