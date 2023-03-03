@@ -133,7 +133,7 @@ class SubblockedModel(ProjectElement):
 
 
 class FreeformSubblockedModel(ProjectElement):
-    """A regular block model with sub-blocks can be anywhere within the parent."""
+    """A regular block model where sub-blocks can be anywhere within the parent."""
 
     schema = "org.omf.v2.elements.blockmodel.freeform_subblocked"
     _valid_locations = ("cells", "parent_blocks")

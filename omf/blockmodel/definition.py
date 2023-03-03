@@ -24,7 +24,7 @@ class _BaseBlockModelDefinition(properties.HasProperties):
             raise ValueError("axis_u, axis_v, and axis_w must be orthogonal")
 
     def ijk_to_index(self, ijk):
-        """Map IJK triples to flat indices for a singoe triple or an array, preseving shape."""
+        """Map IJK triples to flat indices for a single triple or an array, preserving shape."""
         if self.block_count is None:
             raise ValueError("block_count is not set")
         arr = np.asarray(ijk)
@@ -41,7 +41,7 @@ class _BaseBlockModelDefinition(properties.HasProperties):
         return indices[0] if output_shape == () else indices.reshape(output_shape)
 
     def index_to_ijk(self, index):
-        """Map flat indices to IJK triples for a singoe index or an array, preserving shape."""
+        """Map flat indices to IJK triples for a single index or an array, preserving shape."""
         if self.block_count is None:
             raise ValueError("block_count is not set")
         arr = np.asarray(index)
@@ -69,7 +69,6 @@ class RegularBlockModelDefinition(_BaseBlockModelDefinition):
 
     @properties.validator("block_count")
     def _validate_block_count(self, change):
-        print(">>>", change)
         for item in change["value"]:
             if item < 1:
                 raise properties.ValidationError("block counts must be >= 1", prop=change["name"], instance=self)
