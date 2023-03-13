@@ -2,21 +2,23 @@
 import numpy as np
 import properties
 
+from ..attribute import Array, ArrayInstanceProperty
 from ..base import ProjectElement
 from .definition import (
     FreeformSubblockDefinition,
+    OctreeSubblockDefinition,
     RegularBlockModelDefinition,
     RegularSubblockDefinition,
     TensorBlockModelDefinition,
+    VariableHeightSubblockDefinition,
 )
 from ._subblock_check import check_subblocks
 
 
 def _shrink_uint(arr):
-    assert arr.dtype.kind in "ui"
-    if arr.min() < 0:
-        return arr
-    return arr.astype(np.min_scalar_type(arr.max()))
+    assert arr.array.dtype.kind in "ui"
+    if arr.array.min() >= 0:
+        arr.array = arr.array.astype(np.min_scalar_type(arr.array.max()))
 
 
 class RegularBlockModel(ProjectElement):
@@ -80,12 +82,20 @@ class SubblockedModel(ProjectElement):
         RegularBlockModelDefinition,
         default=RegularBlockModelDefinition,
     )
-    subblock_parent_indices = properties.Array(
+    subblock_definition = properties.Union(
+        "Defines the structure of sub-blocks within each parent block.",
+        props=[
+            properties.Instance("", RegularSubblockDefinition),
+            properties.Instance("", OctreeSubblockDefinition),
+        ],
+        default=RegularSubblockDefinition,
+    )
+    subblock_parent_indices = ArrayInstanceProperty(
         "The parent block IJK index of each sub-block",
         shape=("*", 3),
         dtype=int,
     )
-    subblock_corners = properties.Array(
+    subblock_corners = ArrayInstanceProperty(
         """The positions of the sub-block corners on the grid within their parent block.
 
         The columns are (min_i, min_j, min_k, max_i, max_j, max_k). Values must be
@@ -98,11 +108,6 @@ class SubblockedModel(ProjectElement):
         """,
         shape=("*", 6),
         dtype=int,
-    )
-    subblock_definition = properties.Instance(
-        "Defines the structure of sub-blocks within each parent block.",
-        RegularSubblockDefinition,
-        default=RegularSubblockDefinition,
     )
 
     @property
@@ -121,13 +126,13 @@ class SubblockedModel(ProjectElement):
 
     @properties.validator
     def _validate_subblocks(self):
-        self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
-        self.subblock_corners = _shrink_uint(self.subblock_corners)
+        _shrink_uint(self.subblock_parent_indices)
+        _shrink_uint(self.subblock_corners)
         check_subblocks(
             self.definition,
             self.subblock_definition,
-            self.subblock_parent_indices,
-            self.subblock_corners,
+            self.subblock_parent_indices.array,
+            self.subblock_corners.array,
             instance=self,
         )
 
@@ -143,12 +148,20 @@ class FreeformSubblockedModel(ProjectElement):
         RegularBlockModelDefinition,
         default=RegularBlockModelDefinition,
     )
-    subblock_parent_indices = properties.Array(
+    subblock_definition = properties.Union(
+        "Defines the structure of sub-blocks within each parent block.",
+        props=[
+            properties.Instance("", FreeformSubblockDefinition),
+            properties.Instance("", VariableHeightSubblockDefinition),
+        ],
+        default=FreeformSubblockDefinition,
+    )
+    subblock_parent_indices = ArrayInstanceProperty(
         "The parent block IJK index of each sub-block",
         shape=("*", 3),
         dtype=int,
     )
-    subblock_corners = properties.Array(
+    subblock_corners = ArrayInstanceProperty(
         """The positions of the sub-block corners on the grid within their parent block.
 
         The columns are (min_i, min_j, min_k, max_i, max_j, max_k). Values must be
@@ -160,11 +173,6 @@ class FreeformSubblockedModel(ProjectElement):
         """,
         shape=("*", 6),
         dtype=float,
-    )
-    subblock_definition = properties.Instance(
-        "Defines the structure of sub-blocks within each parent block.",
-        FreeformSubblockDefinition,
-        default=FreeformSubblockDefinition,
     )
 
     @property
@@ -183,11 +191,11 @@ class FreeformSubblockedModel(ProjectElement):
 
     @properties.validator
     def _validate_subblocks(self):
-        self.subblock_parent_indices = _shrink_uint(self.subblock_parent_indices)
+        _shrink_uint(self.subblock_parent_indices)
         check_subblocks(
             self.definition,
             self.subblock_definition,
-            self.subblock_parent_indices,
-            self.subblock_corners,
+            self.subblock_parent_indices.array,
+            self.subblock_corners.array,
             instance=self,
         )

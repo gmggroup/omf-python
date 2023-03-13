@@ -114,7 +114,7 @@ def test_pack_subblock_arrays():
     block_model.subblock_corners = np.array([(0, 0, 0, 2, 2, 2)], dtype=int)
     block_model.validate()
     # Arrays were set as int, validate should have packed it down to uint8.
-    assert block_model.subblock_corners.dtype == np.uint8
+    assert block_model.subblock_corners.array.dtype == np.uint8
 
 
 def test_uninstantiated():

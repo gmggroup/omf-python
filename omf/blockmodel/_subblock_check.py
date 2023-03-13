@@ -30,7 +30,7 @@ def _check_parent_indices(definition, parent_indices, instance):
 
 
 def _check_inside_parent(subblock_definition, corners, instance):
-    if isinstance(subblock_definition, RegularSubblockDefinition):
+    if subblock_definition.regular:
         upper = subblock_definition.subblock_count
         upper_str = f"({upper[0]}, {upper[1]}, {upper[2]})"
     else:

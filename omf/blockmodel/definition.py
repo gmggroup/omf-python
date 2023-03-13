@@ -103,10 +103,10 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
     @property
     def block_count(self):
         """The block count is derived from the tensors here."""
-        count = tuple(None if t is None else len(t) for t in self._tensors())
-        if None in count:
+        counts = tuple(None if t is None else len(t) for t in self._tensors())
+        if None in counts:
             return None
-        return np.array(count, dtype=int)
+        return np.array(counts, dtype=int)
 
 
 class RegularSubblockDefinition(properties.HasProperties):
@@ -118,6 +118,10 @@ class RegularSubblockDefinition(properties.HasProperties):
         "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
     )
 
+    @property
+    def regular(self):
+        return True
+
     @properties.validator("subblock_count")
     def _validate_subblock_count(self, change):
         for item in change["value"]:
@@ -125,7 +129,7 @@ class RegularSubblockDefinition(properties.HasProperties):
                 raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
 
 
-class OctreeSubblockDefinition(RegularSubblockDefinition):
+class OctreeSubblockDefinition(properties.HasProperties):
     """Sub-blocks form an octree inside the parent block.
 
     Cut the parent block in half in all directions to create eight sub-blocks. Repeat that
@@ -142,6 +146,10 @@ class OctreeSubblockDefinition(RegularSubblockDefinition):
     subblock_count = properties.Array(
         "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
     )
+
+    @property
+    def regular(self):
+        return True
 
     @properties.validator("subblock_count")
     def _validate_subblock_count(self, change):
@@ -163,8 +171,12 @@ class FreeformSubblockDefinition(properties.HasProperties):
 
     schema = "org.omf.v2.subblockdefinition.freeform"
 
+    @property
+    def regular(self):
+        return False
 
-class VariableHeightSubblockDefinition(FreeformSubblockDefinition):
+
+class VariableHeightSubblockDefinition(properties.HasProperties):
     """Defines sub-blocks on a grid in the U and V directions but variable in the W direction.
 
     A single sub-block covering the whole parent block is also valid. Sub-blocks should not
@@ -178,3 +190,7 @@ class VariableHeightSubblockDefinition(FreeformSubblockDefinition):
     subblock_count_u = properties.Integer("Number of sub-blocks in the u-direction", min=1, max=65535)
     subblock_count_v = properties.Integer("Number of sub-blocks in the v-direction", min=1, max=65535)
     minimum_size_w = properties.Float("Minimum size of sub-blocks in the z-direction", min=0.0)
+
+    @property
+    def regular(self):
+        return False
