@@ -66,11 +66,11 @@ class FreeformSubblocks(BaseModel):
         dtype=float,
     )
 
-    def validate_subblocks(self, definition):
+    def validate_subblocks(self, model):
         """Checks the sub-block data against the given block model definition."""
         shrink_uint(self.parent_indices)
         shrink_uint(self.corners)
-        check_subblocks(definition, self, instance=self)
+        check_subblocks(model, self, instance=self)
 
     @property
     def num_subblocks(self):

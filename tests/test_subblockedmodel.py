@@ -26,8 +26,7 @@ def _bm_def():
 
 
 def _test_regular(*corners):
-    block_model = omf.BlockModel(subblocks=omf.RegularSubblocks())
-    block_model.definition = _bm_def()
+    block_model = omf.BlockModel(subblocks=omf.RegularSubblocks(), definition=_bm_def())
     block_model.subblocks.definition = omf.RegularSubblockDefinition(subblock_count=(5, 4, 3))
     block_model.subblocks.corners = np.array(corners)
     block_model.subblocks.parent_indices = np.zeros((len(corners), 3), dtype=int)
@@ -125,11 +124,11 @@ def test_uninstantiated():
     assert isinstance(block_model.definition, omf.RegularBlockModelDefinition)
     assert isinstance(block_model.subblocks.definition, omf.RegularSubblockDefinition)
     assert block_model.definition.block_count is None
-    assert block_model.definition.block_size is None
     assert block_model.subblocks.definition.subblock_count is None
     assert block_model.num_cells is None
     assert block_model.subblocks.parent_indices is None
     assert block_model.subblocks.corners is None
+    np.testing.assert_array_equal(block_model.definition.block_size, (1.0, 1.0, 1.0))
 
 
 def test_num_cells():

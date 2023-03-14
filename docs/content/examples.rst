@@ -143,11 +143,11 @@ bottom of page).
     )
     vol = omf.BlockModel(
         name="vol",
+        origin=[10.0, 10.0, -10],
         definition=omf.TensorBlockModelDefinition(
             tensor_u=np.ones(10, dtype=float),
             tensor_v=np.ones(15, dtype=float),
             tensor_w=np.ones(20, dtype=float),
-            origin=[10.0, 10.0, -10],
         ),
         attributes=[
             omf.NumericAttribute(

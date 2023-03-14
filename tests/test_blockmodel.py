@@ -4,6 +4,7 @@ import properties
 import pytest
 
 import omf
+from omf.blockmodel.model import _ijk_to_index, _index_to_ijk
 
 
 def _make_regular_definition(count):
@@ -13,38 +14,36 @@ def _make_regular_definition(count):
 def test_ijk_index_errors():
     """Test ijk indexing into parent blocks errors as expected"""
 
-    defn = _make_regular_definition([3, 4, 5])
     with pytest.raises(TypeError):
-        defn.ijk_to_index("a")
+        _ijk_to_index([3, 4, 5], "a")
     with pytest.raises(TypeError):
-        defn.index_to_ijk("a")
+        _index_to_ijk([3, 4, 5], "a")
     with pytest.raises(ValueError):
-        defn.ijk_to_index([0, 0])
+        _ijk_to_index([3, 4, 5], [0, 0])
     with pytest.raises(TypeError):
-        defn.ijk_to_index([0, 0, 0.5])
+        _ijk_to_index([3, 4, 5], [0, 0, 0.5])
     with pytest.raises(TypeError):
-        defn.index_to_ijk(0.5)
+        _index_to_ijk([3, 4, 5], 0.5)
     with pytest.raises(IndexError):
-        defn.ijk_to_index([0, 0, 5])
+        _ijk_to_index([3, 4, 5], [0, 0, 5])
     with pytest.raises(IndexError):
-        defn.index_to_ijk(60)
+        _index_to_ijk([3, 4, 5], 60)
     with pytest.raises(IndexError):
-        defn.ijk_to_index([[0, 0, 5], [0, 0, 3]])
+        _ijk_to_index([3, 4, 5], [[0, 0, 5], [0, 0, 3]])
     with pytest.raises(IndexError):
-        defn.index_to_ijk([0, 1, 60])
+        _index_to_ijk([3, 4, 5], [0, 1, 60])
 
 
 def test_ijk_index_arrays():
     """Test ijk array indexing into parent blocks works as expected"""
-    defn = _make_regular_definition([3, 4, 5])
     ijk = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (2, 3, 4)]
     index = [0, 1, 3, 12, 59]
-    assert np.array_equal(defn.ijk_to_index(ijk), index)
-    assert np.array_equal(defn.index_to_ijk(index), ijk)
+    assert np.array_equal(_ijk_to_index([3, 4, 5], ijk), index)
+    assert np.array_equal(_index_to_ijk([3, 4, 5], index), ijk)
     ijk = [[(0, 0, 0), (1, 0, 0)], [(0, 1, 0), (0, 0, 1)]]
     index = [(0, 1), (3, 12)]
-    assert np.array_equal(defn.ijk_to_index(ijk), index)
-    assert np.array_equal(defn.index_to_ijk(index), ijk)
+    assert np.array_equal(_ijk_to_index([3, 4, 5], ijk), index)
+    assert np.array_equal(_index_to_ijk([3, 4, 5], index), ijk)
 
 
 @pytest.mark.parametrize(
@@ -53,9 +52,8 @@ def test_ijk_index_arrays():
 )
 def test_ijk_index(ijk, index):
     """Test ijk indexing into parent blocks works as expected"""
-    defn = _make_regular_definition([3, 4, 5])
-    assert defn.ijk_to_index(ijk) == index
-    assert np.array_equal(defn.index_to_ijk(index), ijk)
+    assert _ijk_to_index([3, 4, 5], ijk) == index
+    assert np.array_equal(_index_to_ijk([3, 4, 5], index), ijk)
 
 
 def test_tensorblockmodel():
@@ -71,7 +69,7 @@ def test_tensorblockmodel():
     assert elem.validate()
     assert elem.location_length("vertices") == 24
     assert elem.location_length("cells") == 6
-    elem.definition.axis_v = [1.0, 1.0, 0]
+    elem.axis_v = [1.0, 1.0, 0]
     with pytest.raises(ValueError):
         elem.validate()
     elem.axis_v = "Y"
@@ -101,8 +99,8 @@ def test_uninstantiated():
     """Test all attributes are None on instantiation"""
     block_model = omf.BlockModel()
     assert block_model.definition.block_count is None
-    assert block_model.definition.block_size is None
     assert block_model.num_cells is None
+    np.testing.assert_array_equal(block_model.definition.block_size, (1.0, 1.0, 1.0))
 
 
 def test_num_cells():

@@ -93,12 +93,12 @@ class RegularSubblocks(BaseModel):
         dtype=int,
     )
 
-    def validate_subblocks(self, definition):
+    def validate_subblocks(self, model):
         """Checks the sub-block data against the given block model definition."""
         shrink_uint(self.parent_indices)
         shrink_uint(self.corners)
         check_subblocks(
-            definition, self, instance=self, regular=True, octree=isinstance(self.definition, OctreeSubblockDefinition)
+            model, self, instance=self, regular=True, octree=isinstance(self.definition, OctreeSubblockDefinition)
         )
 
     @property

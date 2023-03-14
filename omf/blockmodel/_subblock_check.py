@@ -17,11 +17,10 @@ def _group_by(arr):
         yield diff[-1], len(arr), arr[-1]
 
 
-def _check_parent_indices(definition, parent_indices, instance):
-    count = definition.block_count
-    if (parent_indices < 0).any() or (parent_indices >= count).any():
+def _check_parent_indices(block_count, parent_indices, instance):
+    if (parent_indices < 0).any() or (parent_indices >= block_count).any():
         raise properties.ValidationError(
-            f"0 <= subblock_parent_indices < ({count[0]}, {count[1]}, {count[2]}) failed",
+            f"0 <= subblock_parent_indices < ({block_count[0]}, {block_count[1]}, {block_count[2]}) failed",
             prop="subblock_parent_indices",
             instance=instance,
         )
@@ -91,7 +90,7 @@ def _check_octree(subblock_definition, corners, instance):
         )
 
 
-def check_subblocks(definition, subblocks, instance=None, regular=False, octree=False):
+def check_subblocks(model, subblocks, instance=None, regular=False, octree=False):
     """Run all checks on the given defintions and sub-blocks."""
     parent_indices = subblocks.parent_indices.array
     corners = subblocks.corners.array
@@ -102,11 +101,11 @@ def check_subblocks(definition, subblocks, instance=None, regular=False, octree=
             instance=instance,
         )
     _check_inside_parent(subblocks.definition, corners, instance, regular)
-    _check_parent_indices(definition, parent_indices, instance)
+    _check_parent_indices(model.definition.block_count, parent_indices, instance)
     if octree:
         _check_octree(subblocks.definition, corners, instance)
-    seen = np.zeros(np.prod(definition.block_count), dtype=bool)
-    for start, end, value in _group_by(definition.ijk_to_index(parent_indices)):
+    seen = np.zeros(np.prod(model.definition.block_count), dtype=bool)
+    for start, end, value in _group_by(model.ijk_to_index(parent_indices)):
         if seen[value]:
             raise properties.ValidationError(
                 "all sub-blocks inside one parent block must be adjacent in the arrays",
