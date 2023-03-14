@@ -123,10 +123,6 @@ class RegularSubblockDefinition(properties.HasProperties):
         "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
     )
 
-    @property
-    def regular(self):
-        return True
-
     @properties.validator("subblock_count")
     def _validate_subblock_count(self, change):
         for item in change["value"]:
@@ -152,10 +148,6 @@ class OctreeSubblockDefinition(properties.HasProperties):
         "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
     )
 
-    @property
-    def regular(self):
-        return True
-
     @properties.validator("subblock_count")
     def _validate_subblock_count(self, change):
         for item in change["value"]:
@@ -176,10 +168,6 @@ class FreeformSubblockDefinition(properties.HasProperties):
 
     schema = "org.omf.v2.subblockdefinition.freeform"
 
-    @property
-    def regular(self):
-        return False
-
 
 class VariableHeightSubblockDefinition(properties.HasProperties):
     """Defines sub-blocks on a grid in the U and V directions but variable in the W direction.
@@ -195,7 +183,3 @@ class VariableHeightSubblockDefinition(properties.HasProperties):
     subblock_count_u = properties.Integer("Number of sub-blocks in the u-direction", min=1, max=65535)
     subblock_count_v = properties.Integer("Number of sub-blocks in the v-direction", min=1, max=65535)
     minimum_size_w = properties.Float("Minimum size of sub-blocks in the z-direction", min=0.0)
-
-    @property
-    def regular(self):
-        return False

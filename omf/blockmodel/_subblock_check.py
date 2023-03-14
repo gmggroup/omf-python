@@ -2,7 +2,15 @@
 import numpy as np
 import properties
 
-from .definition import RegularSubblockDefinition, OctreeSubblockDefinition
+from .definition import OctreeSubblockDefinition, RegularSubblockDefinition
+
+
+def _is_regular(defn):
+    return isinstance(defn, (OctreeSubblockDefinition, RegularSubblockDefinition))
+
+
+def _is_octree(defn):
+    return isinstance(defn, OctreeSubblockDefinition)
 
 
 def _group_by(arr):
@@ -30,7 +38,7 @@ def _check_parent_indices(definition, parent_indices, instance):
 
 
 def _check_inside_parent(subblock_definition, corners, instance):
-    if subblock_definition.regular:
+    if _is_regular(subblock_definition):
         upper = subblock_definition.subblock_count
         upper_str = f"({upper[0]}, {upper[1]}, {upper[2]})"
     else:
@@ -103,7 +111,7 @@ def check_subblocks(definition, subblock_definition, parent_indices, corners, in
         )
     _check_inside_parent(subblock_definition, corners, instance)
     _check_parent_indices(definition, parent_indices, instance)
-    if isinstance(subblock_definition, OctreeSubblockDefinition):
+    if _is_octree(subblock_definition):
         _check_octree(subblock_definition, corners, instance)
     seen = np.zeros(np.prod(definition.block_count), dtype=bool)
     for start, end, value in _group_by(definition.ijk_to_index(parent_indices)):

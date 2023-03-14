@@ -2,7 +2,7 @@
 import numpy as np
 import properties
 
-from ..attribute import Array, ArrayInstanceProperty
+from ..attribute import ArrayInstanceProperty
 from ..base import ProjectElement
 from .definition import (
     FreeformSubblockDefinition,
