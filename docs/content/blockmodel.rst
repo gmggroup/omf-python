@@ -39,6 +39,8 @@ These classes are used to define the structure of sub-blocks within a parent blo
 
 .. autoclass:: omf.blockmodel.RegularSubblockDefinition
 
+.. autoclass:: omf.blockmodel.OctreeSubblockDefinition
+
 .. autoclass:: omf.blockmodel.FreeformSubblockDefinition
 
 .. autoclass:: omf.blockmodel.VariableHeightSubblockDefinition
