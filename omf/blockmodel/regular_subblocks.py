@@ -4,33 +4,21 @@ import properties
 
 from ..attribute import ArrayInstanceProperty
 from ..base import BaseModel
-from ._subblock_check import check_subblocks, shrink_uint
+from ._utils import shrink_uint, SubblockChecker
 
-__all__ = ["OctreeSubblockDefinition", "RegularSubblockDefinition", "RegularSubblocks"]
+__all__ = ["RegularSubblocks", "SubblockModeOctree", "SubblockModeFull"]
 
 
-class RegularSubblockDefinition(BaseModel):
-    """The simplest gridded sub-block definition.
+class SubblockModeFull(BaseModel):
+    """The parent is fully sub-blocked, with each sub-block having size (1, 1, 1).
 
-    Divide the parent block into a regular grid of `subblock_count` cells. Each block covers
-    a cuboid region within that grid. If a parent block is not sub-blocked then it will still
-    contain a single block that covers the entire grid.
+    The importing app may want to merge cells to make this more efficient.
     """
 
-    schema = "org.omf.v2.blockmodel.subblocks.definition.regular"
-
-    subblock_count = properties.Array(
-        "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
-    )
-
-    @properties.validator("subblock_count")
-    def _validate_subblock_count(self, change):
-        for item in change["value"]:
-            if item < 1:
-                raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
+    schema = "org.omf.v2.elements.blockmodel.subblocks.mode_full"
 
 
-class OctreeSubblockDefinition(BaseModel):
+class SubblockModeOctree(BaseModel):
     """Sub-blocks form an octree inside the parent block.
 
     Cut the parent block in half in all directions to create eight sub-blocks. Repeat that
@@ -42,36 +30,25 @@ class OctreeSubblockDefinition(BaseModel):
     all axes to be equal.
     """
 
-    schema = "org.omf.v2.blockmodel.subblocks.definition.octree"
-
-    subblock_count = properties.Array(
-        "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
-    )
-
-    @properties.validator("subblock_count")
-    def _validate_subblock_count(self, change):
-        for item in change["value"]:
-            if item < 1:
-                raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
-            log = np.log2(item)
-            if np.trunc(log) != log:
-                raise properties.ValidationError(
-                    "octree sub-block counts must be powers of two", prop=change["name"], instance=self
-                )
+    schema = "org.omf.v2.elements.blockmodel.subblocks.mode_octree"
 
 
 class RegularSubblocks(BaseModel):
     """Defines regular or octree sub-blocks for a block model.
 
-    These sub-blocks must align with a lower-level grid inside the parent block.
+    Divide the parent block into a regular grid of `subblock_count` cells. Each block covers
+    a cuboid region within that grid.
     """
 
-    schema = "org.omf.v2.blockmodel.subblocks.regular"
+    schema = "org.omf.v2.elements.blockmodel.subblocks.regular"
 
-    definition = properties.Union(
+    subblock_count = properties.Array(
+        "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
+    )
+    mode = properties.Union(
         "Defines the structure of sub-blocks within each parent block.",
-        props=[RegularSubblockDefinition, OctreeSubblockDefinition],
-        default=RegularSubblockDefinition,
+        props=[SubblockModeFull, SubblockModeOctree],
+        required=False,
     )
     parent_indices = ArrayInstanceProperty(
         "The parent block IJK index of each sub-block",
@@ -87,19 +64,39 @@ class RegularSubblocks(BaseModel):
 
         Sub-blocks must stay within the parent block and should not overlap. Gaps are
         allowed but it will be impossible for 'cell' attributes to assign values to
-        those areas.
+        those areas. A paret that is not sub-blocked but does have attributes should
+        be represented as a sub-block that covers the entire parent block.
         """,
         shape=("*", 6),
         dtype=int,
     )
 
+    @properties.validator("subblock_count")
+    def _validate_subblock_count(self, change):
+        for item in change["value"]:
+            if item < 1:
+                raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
+
+    @properties.validator
+    def _validate(self):
+        if isinstance(self.mode, SubblockModeOctree):
+            for item in self.subblock_count:
+                log = np.log2(item)
+                if np.trunc(log) != log:
+                    raise properties.ValidationError(
+                        "in octree mode sub-block counts must be powers of two", prop="subblock_count", instance=self
+                    )
+
     def validate_subblocks(self, model):
         """Checks the sub-block data against the given block model definition."""
         shrink_uint(self.parent_indices)
         shrink_uint(self.corners)
-        check_subblocks(
-            model, self, instance=self, regular=True, octree=isinstance(self.definition, OctreeSubblockDefinition)
-        )
+        checker = SubblockChecker.from_regular(model)
+        if isinstance(self.mode, SubblockModeOctree):
+            checker.octree = True
+        if isinstance(self.mode, SubblockModeFull):
+            checker.full = True
+        checker.check()
 
     @property
     def num_subblocks(self):

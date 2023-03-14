@@ -10,16 +10,7 @@ from .attribute import (
     VectorAttribute,
 )
 from .base import Project
-from .blockmodel import (
-    BlockModel,
-    FreeformSubblockDefinition,
-    FreeformSubblocks,
-    OctreeSubblockDefinition,
-    RegularSubblockDefinition,
-    RegularBlockModelDefinition,
-    RegularSubblocks,
-    TensorBlockModelDefinition,
-)
+from .blockmodel import *
 from .composite import Composite
 from .fileio import __version__, load, save
 from .lineset import LineSet

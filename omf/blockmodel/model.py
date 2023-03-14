@@ -3,36 +3,11 @@ import numpy as np
 import properties
 
 from ..base import BaseModel, ProjectElement
+from ._utils import ijk_to_index, index_to_ijk
 from .freeform_subblocks import FreeformSubblocks
 from .regular_subblocks import RegularSubblocks
 
 __all__ = ["BlockModel", "RegularBlockModelDefinition", "TensorBlockModelDefinition"]
-
-
-def _ijk_to_index(block_count, ijk):
-    arr = np.asarray(ijk)
-    if arr.dtype.kind not in "ui":
-        raise TypeError(f"'ijk' must be integer typed, found {arr.dtype}")
-    if not arr.shape or arr.shape[-1] != 3:
-        raise ValueError("'ijk' must have 3 elements or be an array with shape (*_, 3)")
-    output_shape = arr.shape[:-1]
-    shaped = arr.reshape(-1, 3)
-    if (shaped < 0).any() or (shaped >= block_count).any():
-        raise IndexError(f"0 <= ijk < ({block_count[0]}, {block_count[1]}, {block_count[2]}) failed")
-    indices = np.ravel_multi_index(multi_index=shaped.T, dims=block_count, order="F")
-    return indices[0] if output_shape == () else indices.reshape(output_shape)
-
-
-def _index_to_ijk(block_count, index):
-    arr = np.asarray(index)
-    if arr.dtype.kind not in "ui":
-        raise TypeError(f"'index' must be integer typed, found {arr.dtype}")
-    output_shape = arr.shape + (3,)
-    shaped = arr.reshape(-1)
-    if (shaped < 0).any() or (shaped >= np.prod(block_count)).any():
-        raise IndexError(f"0 <= index < {np.prod(block_count)} failed")
-    ijk = np.unravel_index(indices=shaped, shape=block_count, order="F")
-    return np.c_[ijk[0], ijk[1], ijk[2]].reshape(output_shape)
 
 
 class RegularBlockModelDefinition(BaseModel):
@@ -41,7 +16,7 @@ class RegularBlockModelDefinition(BaseModel):
     If used on a sub-blocked model then everything here applies to the parent blocks only.
     """
 
-    schema = "org.omf.v2.blockmodel.definition.regular"
+    schema = "org.omf.v2.elements.blockmodel.regular"
 
     block_count = properties.Array("Number of blocks in each of the u, v, and w directions.", dtype=int, shape=(3,))
     block_size = properties.Vector3("Size of blocks in the u, v, and w directions.", default=lambda: (1.0, 1.0, 1.0))
@@ -62,7 +37,7 @@ class RegularBlockModelDefinition(BaseModel):
 class TensorBlockModelDefinition(BaseModel):
     """Defines the block structure of a tensor grid block model."""
 
-    schema = "org.omf.v2.blockmodel.definition.tensor"
+    schema = "org.omf.v2.elements.blockmodel.tensor"
 
     tensor_u = properties.Array("Tensor cell widths, u-direction", dtype=float, shape=("*",))
     tensor_v = properties.Array("Tensor cell widths, v-direction", dtype=float, shape=("*",))
@@ -162,10 +137,10 @@ class BlockModel(ProjectElement):
         """Map IJK triples to flat indices for a single triple or an array, preserving shape."""
         if self.definition.block_count is None:
             raise ValueError("block count is not yet known")
-        return _ijk_to_index(self.definition.block_count, ijk)
+        return ijk_to_index(self.definition.block_count, ijk)
 
     def index_to_ijk(self, index):
         """Map flat indices to IJK triples for a single index or an array, preserving shape."""
         if self.definition.block_count is None:
             raise ValueError("block count is not yet known")
-        return _index_to_ijk(self.definition.block_count, index)
+        return index_to_ijk(self.definition.block_count, index)

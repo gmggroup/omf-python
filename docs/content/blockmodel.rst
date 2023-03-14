@@ -11,7 +11,7 @@ Element
 
 The `BlockModel` element is used to store all types of block model. Sub-types are
 described by the block model definition, the presence or absense of sub-blocks, the
-type of those sub-blocks, and finally by the inner sub-block definition.
+type of those sub-blocks, and finally by the sub-block mode.
 
 .. autoclass:: omf.blockmodel.BlockModel
 
@@ -48,25 +48,19 @@ and for the sub-blocks to conform to an octree structure within each parent.
 
 .. autoclass:: omf.blockmodel.RegularSubblocks
 
-.. autoclass:: omf.blockmodel.RegularSubblockDefinition
+.. autoclass:: omf.blockmodel.SubblockModeOctree
 
-.. autoclass:: omf.blockmodel.OctreeSubblockDefinition
+.. autoclass:: omf.blockmodel.SubblockModeFull
 
 Free-form Sub-blocks
 --------------------
 
 Free-form sub-blocks are similar to regular but don't follow any structure or grid
 within their parent blocks. Sub-blocks must stay within the parent and must have size
-greater than zero in all directions. They shouldn't overlap but that is not checked.
-
-With the `VariableHeightSubblockDefinition` sub-blocks should be on a regular grid
-in the X and Y directions but the Z positions are unconstrained.
+greater than zero in all directions. They probably shouldn't overlap but that isn't
+checked.
 
 .. autoclass:: omf.blockmodel.FreeformSubblocks
-
-.. autoclass:: omf.blockmodel.FreeformSubblockDefinition
-
-.. autoclass:: omf.blockmodel.VariableHeightSubblockDefinition
 
 Attributes
 ----------
