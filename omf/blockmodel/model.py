@@ -1,9 +1,15 @@
-"""blockmodel/definition.py: various block model and sub-block definition structures."""
+"""blockmodel/models.py: block model elements."""
 import numpy as np
 import properties
 
+from ..base import BaseModel, ProjectElement
+from .freeform_subblocks import FreeformSubblocks
+from .regular_subblocks import RegularSubblocks
 
-class _BaseBlockModelDefinition(properties.HasProperties):
+__all__ = ["BlockModel", "RegularBlockModelDefinition", "TensorBlockModelDefinition"]
+
+
+class _BaseBlockModelDefinition(BaseModel):
     axis_u = properties.Vector3("Vector orientation of u-direction", default="X", length=1)
     axis_v = properties.Vector3("Vector orientation of v-direction", default="Y", length=1)
     axis_w = properties.Vector3("Vector orientation of w-direction", default="Z", length=1)
@@ -62,7 +68,7 @@ class RegularBlockModelDefinition(_BaseBlockModelDefinition):
     If used on a sub-blocked model then everything here applies to the parent blocks only.
     """
 
-    schema = "org.omf.v2.blockmodeldefinition.regular"
+    schema = "org.omf.v2.blockmodel.definition.regular"
 
     block_count = properties.Array("Number of blocks in each of the u, v, and w directions.", dtype=int, shape=(3,))
     block_size = properties.Vector3("Size of blocks in the u, v, and w directions.")
@@ -83,7 +89,7 @@ class RegularBlockModelDefinition(_BaseBlockModelDefinition):
 class TensorBlockModelDefinition(_BaseBlockModelDefinition):
     """Defines the block structure of a tensor grid block model."""
 
-    schema = "org.omf.v2.blockmodeldefinition.tensor"
+    schema = "org.omf.v2.blockmodel.definition.tensor"
 
     tensor_u = properties.Array("Tensor cell widths, u-direction", dtype=float, shape=("*",))
     tensor_v = properties.Array("Tensor cell widths, v-direction", dtype=float, shape=("*",))
@@ -109,77 +115,52 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
         return np.array(counts, dtype=int)
 
 
-class RegularSubblockDefinition(properties.HasProperties):
-    """The simplest gridded sub-block definition.
+class BlockModel(ProjectElement):
+    """A block model, details are in the definition and sub-blocks attributes."""
 
-    Divide the parent block into a regular grid of `subblock_count` cells. Each block covers
-    a cuboid region within that grid. If a parent block is not sub-blocked then it will still
-    contain a single block that covers the entire grid.
-    """
+    schema = "org.omf.v2.elements.blockmodel"
+    _valid_locations = ("parent_blocks", "vertices", "cells")
 
-    schema = "org.omf.v2.subblockdefinition.regular"
+    definition = properties.Union(
+        """Block model definition, describing either a regular or tensor-based block layout.""",
+        props=[RegularBlockModelDefinition, TensorBlockModelDefinition],
+        default=RegularBlockModelDefinition,
+    )
+    subblocks = properties.Union(
+        """Optional sub-block details.
 
-    subblock_count = properties.Array(
-        "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
+        If this is `None` then there are no sub-blocks. Otherwise it can be a `FreeformSubblocks`
+        or `RegularSubblocks` object to define different types of sub-blocks.
+        """,
+        props=[FreeformSubblocks, RegularSubblocks],
+        required=False,
     )
 
-    @properties.validator("subblock_count")
-    def _validate_subblock_count(self, change):
-        for item in change["value"]:
-            if item < 1:
-                raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
+    @properties.validator
+    def _validate(self):
+        if self.subblocks is not None:
+            self.subblocks.validate_subblocks(self.definition)
 
+    @property
+    def num_parent_blocks(self):
+        """The number of cells."""
+        return np.prod(self.definition.block_count)
 
-class OctreeSubblockDefinition(properties.HasProperties):
-    """Sub-blocks form an octree inside the parent block.
+    @property
+    def num_parent_vertices(self):
+        """Number of nodes or vertices."""
+        count = self.definition.block_count
+        return None if count is None else np.prod(count + 1)
 
-    Cut the parent block in half in all directions to create eight sub-blocks. Repeat that
-    division for some or all of those new sub-blocks. Continue doing that until the limit
-    on sub-block count is reached or until the sub-blocks accurately model the inputs.
+    @property
+    def num_cells(self):
+        """The number of cells."""
+        return self.num_parent_blocks if self.subblocks is None else self.subblocks.num_subblocks
 
-    This definition also allows the lower level cuts to be omitted in one or two axes,
-    giving a maximum sub-block count of (16, 16, 4) for example rather than requiring
-    all axes to be equal.
-    """
-
-    schema = "org.omf.v2.subblockdefinition.octree"
-
-    subblock_count = properties.Array(
-        "The maximum number of sub-blocks inside a parent in each direction.", dtype=int, shape=(3,)
-    )
-
-    @properties.validator("subblock_count")
-    def _validate_subblock_count(self, change):
-        for item in change["value"]:
-            if item < 1:
-                raise properties.ValidationError("sub-block counts must be >= 1", prop=change["name"], instance=self)
-            log = np.log2(item)
-            if np.trunc(log) != log:
-                raise properties.ValidationError(
-                    "octree sub-block counts must be powers of two", prop=change["name"], instance=self
-                )
-
-
-class FreeformSubblockDefinition(properties.HasProperties):
-    """Unconstrained free-form sub-block definition.
-
-    Provides no limitations on or explanation of sub-block positions.
-    """
-
-    schema = "org.omf.v2.subblockdefinition.freeform"
-
-
-class VariableHeightSubblockDefinition(properties.HasProperties):
-    """Defines sub-blocks on a grid in the U and V directions but variable in the W direction.
-
-    A single sub-block covering the whole parent block is also valid. Sub-blocks should not
-    overlap.
-
-    Note: these constraints on sub-blocks are not checked during validation.
-    """
-
-    schema = "org.omf.v2.subblockdefinition.variableheight"
-
-    subblock_count_u = properties.Integer("Number of sub-blocks in the u-direction", min=1, max=65535)
-    subblock_count_v = properties.Integer("Number of sub-blocks in the v-direction", min=1, max=65535)
-    minimum_size_w = properties.Float("Minimum size of sub-blocks in the z-direction", min=0.0)
+    def location_length(self, location):
+        """Return correct attribute length for 'location'."""
+        if location == "vertices":
+            return self.num_parent_vertices
+        if location == "cells" and self.subblocks is not None:
+            return self.subblocks.num_subblocks
+        return self.num_parent_blocks

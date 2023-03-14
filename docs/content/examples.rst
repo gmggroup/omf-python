@@ -141,7 +141,7 @@ bottom of page).
             ),
         ],
     )
-    vol = omf.TensorGridBlockModel(
+    vol = omf.BlockModel(
         name="vol",
         definition=omf.TensorBlockModelDefinition(
             tensor_u=np.ones(10, dtype=float),

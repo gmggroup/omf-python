@@ -2,16 +2,6 @@
 import numpy as np
 import properties
 
-from .definition import OctreeSubblockDefinition, RegularSubblockDefinition
-
-
-def _is_regular(defn):
-    return isinstance(defn, (OctreeSubblockDefinition, RegularSubblockDefinition))
-
-
-def _is_octree(defn):
-    return isinstance(defn, OctreeSubblockDefinition)
-
 
 def _group_by(arr):
     if len(arr) == 0:
@@ -37,8 +27,8 @@ def _check_parent_indices(definition, parent_indices, instance):
         )
 
 
-def _check_inside_parent(subblock_definition, corners, instance):
-    if _is_regular(subblock_definition):
+def _check_inside_parent(subblock_definition, corners, instance, regular):
+    if regular:
         upper = subblock_definition.subblock_count
         upper_str = f"({upper[0]}, {upper[1]}, {upper[2]})"
     else:
@@ -101,18 +91,20 @@ def _check_octree(subblock_definition, corners, instance):
         )
 
 
-def check_subblocks(definition, subblock_definition, parent_indices, corners, instance=None):
+def check_subblocks(definition, subblocks, instance=None, regular=False, octree=False):
     """Run all checks on the given defintions and sub-blocks."""
+    parent_indices = subblocks.parent_indices.array
+    corners = subblocks.corners.array
     if len(parent_indices) != len(corners):
         raise properties.ValidationError(
             "'subblock_parent_indices' and 'subblock_corners' arrays must be the same length",
             prop="subblock_corners",
             instance=instance,
         )
-    _check_inside_parent(subblock_definition, corners, instance)
+    _check_inside_parent(subblocks.definition, corners, instance, regular)
     _check_parent_indices(definition, parent_indices, instance)
-    if _is_octree(subblock_definition):
-        _check_octree(subblock_definition, corners, instance)
+    if octree:
+        _check_octree(subblocks.definition, corners, instance)
     seen = np.zeros(np.prod(definition.block_count), dtype=bool)
     for start, end, value in _group_by(definition.ijk_to_index(parent_indices)):
         if seen[value]:
@@ -123,4 +115,14 @@ def check_subblocks(definition, subblock_definition, parent_indices, corners, in
             )
         seen[value] = True
         if end - start > 1:
-            _check_for_overlaps(subblock_definition, corners[start:end], instance)
+            _check_for_overlaps(subblocks.definition, corners[start:end], instance)
+
+
+def shrink_uint(arr):
+    """Takes an ArrayInstanceProperty containing unsigned integers and shrinks it.
+
+    The type after this call will be the smallest uint type that can represent the data.
+    """
+    kind = arr.array.dtype.kind
+    if kind == "u" or (kind == "i" and arr.array.min() >= 0):
+        arr.array = arr.array.astype(np.min_scalar_type(arr.array.max()))

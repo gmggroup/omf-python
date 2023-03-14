@@ -11,14 +11,14 @@ from .attribute import (
 )
 from .base import Project
 from .blockmodel import (
-    FreeformSubblockedModel,
+    BlockModel,
+    FreeformSubblockDefinition,
+    FreeformSubblocks,
     OctreeSubblockDefinition,
-    RegularBlockModel,
-    RegularBlockModelDefinition,
     RegularSubblockDefinition,
-    SubblockedModel,
+    RegularBlockModelDefinition,
+    RegularSubblocks,
     TensorBlockModelDefinition,
-    TensorGridBlockModel,
 )
 from .composite import Composite
 from .fileio import __version__, load, save

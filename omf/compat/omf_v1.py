@@ -18,14 +18,12 @@ from ..attribute import (
     VectorAttribute,
 )
 from ..base import Project
-from ..blockmodel import TensorGridBlockModel
+from ..blockmodel import BlockModel, TensorBlockModelDefinition
 from ..lineset import LineSet
 from ..pointset import PointSet
 from ..surface import Surface, TensorGridSurface
 from ..texture import Image, ProjectedTexture
 from .interface import IOMFReader, InvalidOMFFile, WrongVersionError
-
-# from .. import attribute, base, blockmodel, lineset, pointset, surface, texture
 
 COMPATIBILITY_VERSION = b"OMF-v0.9.0"
 _default = object()
@@ -437,18 +435,18 @@ class Reader(IOMFReader):
         geometry_uuid = self.__get_attr(volume_v1, "geometry")
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, "__class__", "VolumeGridGeometry")
-        volume = TensorGridBlockModel()
-        self.__copy_attr(volume_v1, "subtype", volume.metadata)
-        self.__copy_attr(geometry_v1, "origin", volume.definition)
-        self.__copy_attr(geometry_v1, "tensor_u", volume.definition)
-        self.__copy_attr(geometry_v1, "tensor_v", volume.definition)
-        self.__copy_attr(geometry_v1, "tensor_w", volume.definition)
-        self.__copy_attr(geometry_v1, "axis_u", volume.definition)
-        self.__copy_attr(geometry_v1, "axis_v", volume.definition)
-        self.__copy_attr(geometry_v1, "axis_w", volume.definition)
+        block_model = BlockModel(definition=TensorBlockModelDefinition())
+        self.__copy_attr(volume_v1, "subtype", block_model.metadata)
+        self.__copy_attr(geometry_v1, "origin", block_model.definition)
+        self.__copy_attr(geometry_v1, "tensor_u", block_model.definition)
+        self.__copy_attr(geometry_v1, "tensor_v", block_model.definition)
+        self.__copy_attr(geometry_v1, "tensor_w", block_model.definition)
+        self.__copy_attr(geometry_v1, "axis_u", block_model.definition)
+        self.__copy_attr(geometry_v1, "axis_v", block_model.definition)
+        self.__copy_attr(geometry_v1, "axis_w", block_model.definition)
 
         valid_locations = ("vertices", "cells")
-        return volume, valid_locations
+        return block_model, valid_locations
 
     # element list
     def _convert_project_element(self, element_uuid):
