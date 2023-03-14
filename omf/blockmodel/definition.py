@@ -110,7 +110,12 @@ class TensorBlockModelDefinition(_BaseBlockModelDefinition):
 
 
 class RegularSubblockDefinition(properties.HasProperties):
-    """The simplest gridded sub-block definition."""
+    """The simplest gridded sub-block definition.
+
+    Divide the parent block into a regular grid of `subblock_count` cells. Each block covers
+    a cuboid region within that grid. If a parent block is not sub-blocked then it will still
+    contain a single block that covers the entire grid.
+    """
 
     schema = "org.omf.v2.subblockdefinition.regular"
 

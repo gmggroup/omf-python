@@ -84,10 +84,7 @@ class SubblockedModel(ProjectElement):
     )
     subblock_definition = properties.Union(
         "Defines the structure of sub-blocks within each parent block.",
-        props=[
-            properties.Instance("", RegularSubblockDefinition),
-            properties.Instance("", OctreeSubblockDefinition),
-        ],
+        props=[RegularSubblockDefinition, OctreeSubblockDefinition],
         default=RegularSubblockDefinition,
     )
     subblock_parent_indices = ArrayInstanceProperty(
@@ -150,10 +147,7 @@ class FreeformSubblockedModel(ProjectElement):
     )
     subblock_definition = properties.Union(
         "Defines the structure of sub-blocks within each parent block.",
-        props=[
-            properties.Instance("", FreeformSubblockDefinition),
-            properties.Instance("", VariableHeightSubblockDefinition),
-        ],
+        props=[FreeformSubblockDefinition, VariableHeightSubblockDefinition],
         default=FreeformSubblockDefinition,
     )
     subblock_parent_indices = ArrayInstanceProperty(
