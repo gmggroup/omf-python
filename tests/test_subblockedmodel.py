@@ -54,7 +54,7 @@ def test_invalid_parent_indices():
     block_model.subblocks.subblock_count = (5, 4, 3)
     block_model.subblocks.corners = np.array([(0, 0, 0, 5, 4, 3), (0, 0, 0, 5, 4, 3)])
     block_model.subblocks.parent_indices = np.array([(0, 0, 0), (1, 0, 0)])
-    with pytest.raises(properties.ValidationError, match=r"subblock_parent_indices < \(1, 1, 1\)"):
+    with pytest.raises(properties.ValidationError, match=r"subblock_parent_indices < \[1 1 1\]"):
         block_model.validate()
     block_model.subblocks.parent_indices = np.array([(0, 0, -1), (0, 0, 0)])
     with pytest.raises(properties.ValidationError, match="0 <= subblock_parent_indices"):

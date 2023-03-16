@@ -34,6 +34,7 @@ def _sizes_to_ints(sizes):
 
 @dataclass
 class _Checker:
+    # pylint: disable=too-many-instance-attributes
     parent_indices: np.ndarray
     corners: np.ndarray
     block_count: object = None
@@ -64,8 +65,10 @@ class _Checker:
 
     def _check_parent_indices(self):
         if (self.parent_indices < 0).any() or (self.parent_indices >= self.block_count).any():
-            nx, ny, nz = self.block_count
-            self._error(f"0 <= subblock_parent_indices < ({nx}, {ny}, {nz}) failed", prop="subblock_parent_indices")
+            self._error(
+                f"0 <= subblock_parent_indices < {self.block_count} failed",
+                prop="subblock_parent_indices",
+            )
 
     def _check_inside_parent(self):
         min_corners = self.corners[:, :3]
@@ -123,6 +126,10 @@ class _Checker:
 
 
 def subblock_check(model):
+    """Checks the sub-blocks in the given block model, if any.
+
+    Raises properties.ValidationError if there is a problem.
+    """
     if isinstance(model.subblocks, RegularSubblocks):
         checker = _Checker(
             parent_indices=model.subblocks.parent_indices.array,

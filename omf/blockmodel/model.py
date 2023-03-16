@@ -1,4 +1,4 @@
-"""blockmodel/models.py: block model elements."""
+"""blockmodel/models.py: block model element and grids."""
 import numpy as np
 import properties
 

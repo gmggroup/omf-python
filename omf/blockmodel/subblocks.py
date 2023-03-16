@@ -1,6 +1,4 @@
-"""blockmodel/subblocks.py: sub-block definitions and containers."""
-from enum import Enum
-
+"""blockmodel/subblocks.py: sub-block containers."""
 import numpy as np
 import properties
 
