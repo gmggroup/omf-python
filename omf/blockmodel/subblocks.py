@@ -21,7 +21,8 @@ class RegularSubblocks(BaseModel):
 
     Divide the parent block into a regular grid of `subblock_count` cells. Each sub-block
     covers a cuboid region within that grid and they must not overlap. Sub-blocks are
-    described by the `parent_indices` and `corners` arrays.
+    described by the `parent_indices` and `corners` arrays. They must be the same length
+    and matching rows in each describe the same sub-block.
 
     Each row in `parent_indices` is an IJK index on the block model grid. Each row of
     `corners` is (i_min, j_min, k_min, i_max, j_max, k_max) all integers that refer to
@@ -32,7 +33,8 @@ class RegularSubblocks(BaseModel):
       be (0, 0, 0, 5, 5, 3).
 
     Sub-blocks must stay within their parent, must have a non-zero size in all directions, and
-    must not overlap. Further contraints can be added by setting `mode`:
+    must not overlap. All sub-blocks with the same parent block must be contiguous in the arrays.
+    Further contraints can be added by setting `mode`:
 
     "octree" mode
         Sub-blocks form a modified octree inside the parent block. To form this structure,
@@ -109,7 +111,8 @@ class FreeformSubblocks(BaseModel):
     * A sub-block covering the whole parent would be (0.0, 0.0, 0.0, 1.0, 1.0, 1.0).
 
     Sub-blocks must stay within their parent and must have a non-zero size in all directions.
-    They shouldn't overlap but that isn't checked as it would take too long.
+    They shouldn't overlap but that isn't checked as it would take too long. All sub-blocks
+    with the same parent block must be contiguous in the arrays.
     """
 
     schema = "org.omf.v2.elements.blockmodel.subblocks.freeform"
