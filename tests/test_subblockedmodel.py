@@ -3,30 +3,29 @@ import numpy as np
 import properties
 import pytest
 
-import omf
-from omf.blockmodel import _utils
+from omf.blockmodel import BlockModel, RegularGrid, RegularSubblocks
+from omf.blockmodel.subblock_check import _group_by  # pylint: disable=W0212
 
 
 def test_group_by():
     """Test the array grouping function used by sub-block checks."""
-    group_by = _utils._group_by  # pylint: disable=W0212
     arr = np.array([0, 0, 1, 1, 1, 2])
-    assert list(group_by(arr)) == [(0, 2, 0), (2, 5, 1), (5, 6, 2)]
+    assert list(_group_by(arr)) == [(0, 2, 0), (2, 5, 1), (5, 6, 2)]
     arr = np.ones(1, dtype=int)
-    assert list(group_by(arr)) == [(0, 1, 1)]
+    assert list(_group_by(arr)) == [(0, 1, 1)]
     arr = np.zeros(0, dtype=int)
-    assert not list(group_by(arr))
+    assert not list(_group_by(arr))
 
 
-def _bm_def():
-    return omf.RegularBlockModelDefinition(
+def _bm_grid():
+    return RegularGrid(
         block_size=(1.0, 1.0, 1.0),
         block_count=(1, 1, 1),
     )
 
 
 def _test_regular(*corners):
-    block_model = omf.BlockModel(definition=_bm_def(), subblocks=omf.RegularSubblocks(subblock_count=(5, 4, 3)))
+    block_model = BlockModel(grid=_bm_grid(), subblocks=RegularSubblocks(subblock_count=(5, 4, 3)))
     block_model.subblocks.corners = np.array(corners)
     block_model.subblocks.parent_indices = np.zeros((len(corners), 3), dtype=int)
     block_model.validate()
@@ -50,8 +49,8 @@ def test_outside_parent():
 
 def test_invalid_parent_indices():
     """Test invalid parent block indices are rejected."""
-    block_model = omf.BlockModel(subblocks=omf.RegularSubblocks())
-    block_model.definition = _bm_def()
+    block_model = BlockModel(subblocks=RegularSubblocks())
+    block_model.grid = _bm_grid()
     block_model.subblocks.subblock_count = (5, 4, 3)
     block_model.subblocks.corners = np.array([(0, 0, 0, 5, 4, 3), (0, 0, 0, 5, 4, 3)])
     block_model.subblocks.parent_indices = np.array([(0, 0, 0), (1, 0, 0)])
@@ -63,9 +62,9 @@ def test_invalid_parent_indices():
 
 
 def _test_octree(*corners):
-    block_model = omf.BlockModel(
-        definition=_bm_def(),
-        subblocks=omf.RegularSubblocks(subblock_count=(4, 4, 2), mode=omf.SubblockModeOctree()),
+    block_model = BlockModel(
+        grid=_bm_grid(),
+        subblocks=RegularSubblocks(subblock_count=(4, 4, 2), mode="octree"),
     )
     block_model.subblocks.corners = np.array(corners)
     block_model.subblocks.parent_indices = np.zeros((len(corners), 3), dtype=int)
@@ -105,10 +104,10 @@ def test_bad_position():
 
 def test_pack_subblock_arrays():
     """Test that packing of uint arrays during validation works."""
-    block_model = omf.BlockModel()
-    block_model.definition.block_size = [1.0, 1.0, 1.0]
-    block_model.definition.block_count = [10, 10, 10]
-    block_model.subblocks = omf.RegularSubblocks()
+    block_model = BlockModel()
+    block_model.grid.block_size = [1.0, 1.0, 1.0]
+    block_model.grid.block_count = [10, 10, 10]
+    block_model.subblocks = RegularSubblocks()
     block_model.subblocks.subblock_count = [2, 2, 2]
     block_model.subblocks.parent_indices = np.array([(0, 0, 0)], dtype=int)
     block_model.subblocks.corners = np.array([(0, 0, 0, 2, 2, 2)], dtype=int)
@@ -118,30 +117,33 @@ def test_pack_subblock_arrays():
 
 
 def test_uninstantiated():
-    """Test that definitions are default and attributes are None on instantiation"""
-    block_model = omf.BlockModel(subblocks=omf.RegularSubblocks())
-    assert isinstance(block_model.definition, omf.RegularBlockModelDefinition)
-    assert block_model.definition.block_count is None
-    assert block_model.num_cells is None
-    assert isinstance(block_model.subblocks, omf.RegularSubblocks)
+    """Test that grid is default and attributes are None on instantiation"""
+    block_model = BlockModel(subblocks=RegularSubblocks())
+    assert isinstance(block_model.grid, RegularGrid)
+    assert block_model.grid.block_count is None
+    assert block_model.num_parent_blocks is None
+    assert block_model.num_parent_vertices is None
+    assert isinstance(block_model.subblocks, RegularSubblocks)
     assert block_model.subblocks.subblock_count is None
+    assert block_model.subblocks.num_subblocks is None
     assert block_model.subblocks.parent_indices is None
     assert block_model.subblocks.corners is None
     assert block_model.subblocks.mode is None
-    np.testing.assert_array_equal(block_model.definition.block_size, (1.0, 1.0, 1.0))
+    np.testing.assert_array_equal(block_model.grid.block_size, (1.0, 1.0, 1.0))
 
 
 def test_num_cells():
     """Test num_cells calculation is correct"""
-    block_model = omf.BlockModel(subblocks=omf.RegularSubblocks())
-    block_model.definition.block_count = [2, 2, 2]
-    block_model.definition.block_size = [1.0, 2.0, 3.0]
+    block_model = BlockModel(subblocks=RegularSubblocks())
+    block_model.grid.block_count = [2, 2, 2]
+    block_model.grid.block_size = [1.0, 2.0, 3.0]
     block_model.subblocks.subblock_count = [5, 5, 5]
-    np.testing.assert_array_equal(block_model.definition.block_count, [2, 2, 2])
+    np.testing.assert_array_equal(block_model.grid.block_count, [2, 2, 2])
     np.testing.assert_array_equal(block_model.subblocks.subblock_count, [5, 5, 5])
     block_model.subblocks.parent_indices = np.array([(0, 0, 0), (1, 0, 0)])
     block_model.subblocks.corners = np.array([(0, 0, 0, 5, 5, 5), (1, 1, 1, 4, 4, 4)])
-    assert block_model.num_cells == 2
     assert block_model.num_parent_blocks == 8
-    assert block_model.location_length("cells") == 2
+    assert block_model.subblocks.num_subblocks == 2
+    assert block_model.location_length("subblocks") == 2
+    assert block_model.location_length("cells") == 8
     assert block_model.location_length("parent_blocks") == 8

@@ -9,62 +9,45 @@ Block Models
 Element
 -------
 
-The `BlockModel` element is used to store all types of block model. Sub-types are
-described by the block model definition, the presence or absense of sub-blocks, the
-type of those sub-blocks, and finally by the sub-block mode.
+The `BlockModel` element is used to store all types of block model. Different types
+of block model can be described using the `grid` and `subblocks` properties.
 
 .. autoclass:: omf.blockmodel.BlockModel
 
-Block Model Definitions
------------------------
+Block Model Grid
+----------------
 
-These are two choices for the block model definition: regular and tensor. In a regular
-model parent blocks are all the same size and shape.
+The blocks of a block model can lie on either a regular or tensor grid. For sub-blocked
+models this only applies to the parent blocks.
 
-.. autoclass:: omf.blockmodel.RegularBlockModelDefinition
+.. autoclass:: omf.blockmodel.RegularGrid
 
-A tensor model has varying spacings along each axis, allowing for more detail in some
-areas without the added complexity of sub-blocking. This is more common in some types
-of geo-physical grids. These models don't normally have sub-blocks.
+.. autoclass:: omf.blockmodel.TensorGrid
 
 .. image:: /images/VolumeGridGeometry.png
     :width: 80%
     :align: center
 
-.. autoclass:: omf.blockmodel.TensorBlockModelDefinition
-
-Regular Sub-blocks
-------------------
-
-Regular sub-blocks must be aligned to some lower-level regular grid within the parent
-block. Sub-blocks must stay within the parent, must not overlap, and must have size
-greater than zero in all directions. Gaps are allowed but it will be impossible to
-place any attribute values in those gaps. If a parent is not sub-blocked that should
-be represented as a sub-block thats cover the entire parent block.
-
-Sub-blocks can be further restrictied using the `OctreeSubblockDefinition`. This
-requires the numbers of sub-blocks grid size in each direction to be a power of two
-and for the sub-blocks to conform to an octree structure within each parent.
+Sub-blocks
+----------
 
 .. autoclass:: omf.blockmodel.RegularSubblocks
-
-.. autoclass:: omf.blockmodel.SubblockModeOctree
-
-.. autoclass:: omf.blockmodel.SubblockModeFull
-
-Free-form Sub-blocks
---------------------
-
-Free-form sub-blocks are similar to regular but don't follow any structure or grid
-within their parent blocks. Sub-blocks must stay within the parent and must have size
-greater than zero in all directions. They probably shouldn't overlap but that isn't
-checked.
 
 .. autoclass:: omf.blockmodel.FreeformSubblocks
 
 Attributes
 ----------
 
-Attributes is a list of :ref:`attributes <attributes>`. For block models,
-:code:`location='parent_blocks'`, :code:`location='vertices'`, and :code:`location='cells'`
-are valid.
+Attributes is a list of :ref:`attributes <attributes>`.
+
+For block models :code:`location='parent_blocks'`, or the backward compatible
+:code:`location='cells'`, places attribute values on the parent blocks. There must be a
+value for each parent block and ordering is such that as you move down the attribute
+array the U index increases fastest, then V, and finally W.
+
+Using :code:`location='vertices'` instead puts the attribute values on the parent block
+corners. The ordering is the same.
+
+Sub-blocked models can still have attributes on their parent blocks using the above modes,
+or on the sub-blocks using :code:`location='subblocks'`. For sub-blocks the ordering
+matches the `corners` array.

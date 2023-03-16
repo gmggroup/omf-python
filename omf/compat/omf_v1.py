@@ -18,12 +18,12 @@ from ..attribute import (
     VectorAttribute,
 )
 from ..base import Project
-from ..blockmodel import BlockModel, TensorBlockModelDefinition
 from ..lineset import LineSet
 from ..pointset import PointSet
 from ..surface import Surface, TensorGridSurface
 from ..texture import Image, ProjectedTexture
-from .interface import IOMFReader, InvalidOMFFile, WrongVersionError
+from ..blockmodel import BlockModel, TensorGrid
+from .interface import InvalidOMFFile, IOMFReader, WrongVersionError
 
 COMPATIBILITY_VERSION = b"OMF-v0.9.0"
 _default = object()
@@ -435,16 +435,15 @@ class Reader(IOMFReader):
         geometry_uuid = self.__get_attr(volume_v1, "geometry")
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, "__class__", "VolumeGridGeometry")
-        block_model = BlockModel()
+        block_model = BlockModel(grid=TensorGrid())
         self.__copy_attr(volume_v1, "subtype", block_model.metadata)
         self.__copy_attr(geometry_v1, "origin", block_model)
         self.__copy_attr(geometry_v1, "axis_u", block_model)
         self.__copy_attr(geometry_v1, "axis_v", block_model)
         self.__copy_attr(geometry_v1, "axis_w", block_model)
-        block_model.definition = TensorBlockModelDefinition()
-        self.__copy_attr(geometry_v1, "tensor_u", block_model.definition)
-        self.__copy_attr(geometry_v1, "tensor_v", block_model.definition)
-        self.__copy_attr(geometry_v1, "tensor_w", block_model.definition)
+        self.__copy_attr(geometry_v1, "tensor_u", block_model.grid)
+        self.__copy_attr(geometry_v1, "tensor_v", block_model.grid)
+        self.__copy_attr(geometry_v1, "tensor_w", block_model.grid)
 
         valid_locations = ("vertices", "cells")
         return block_model, valid_locations

@@ -204,7 +204,7 @@ class ProjectElementAttribute(ContentModel):
             "faces",
             "cells",
             "parent_blocks",
-            "sub_blocks",
+            "subblocks",
             "elements",
         ),
     )

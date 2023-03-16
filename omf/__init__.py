@@ -1,4 +1,5 @@
 """omf: API library for Open Mining Format file interchange format"""
+from . import blockmodel
 from .attribute import (
     Array,
     CategoryAttribute,
@@ -10,7 +11,6 @@ from .attribute import (
     VectorAttribute,
 )
 from .base import Project
-from .blockmodel import *
 from .composite import Composite
 from .fileio import __version__, load, save
 from .lineset import LineSet

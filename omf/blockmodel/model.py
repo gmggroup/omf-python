@@ -3,20 +3,17 @@ import numpy as np
 import properties
 
 from ..base import BaseModel, ProjectElement
-from ._utils import ijk_to_index, index_to_ijk
-from .freeform_subblocks import FreeformSubblocks
-from .regular_subblocks import RegularSubblocks
+from .index import ijk_to_index, index_to_ijk
+from .subblock_check import subblock_check
+from .subblocks import FreeformSubblocks, RegularSubblocks
 
-__all__ = ["BlockModel", "RegularBlockModelDefinition", "TensorBlockModelDefinition"]
+__all__ = ["BlockModel", "RegularGrid", "TensorGrid"]
 
 
-class RegularBlockModelDefinition(BaseModel):
-    """Defines the block structure of a regular block model.
+class RegularGrid(BaseModel):
+    """Describes a regular grid of blocks with equal sizes."""
 
-    If used on a sub-blocked model then everything here applies to the parent blocks only.
-    """
-
-    schema = "org.omf.v2.elements.blockmodel.regular"
+    schema = "org.omf.v2.elements.blockmodel.grid.regular"
 
     block_count = properties.Array("Number of blocks in each of the u, v, and w directions.", dtype=int, shape=(3,))
     block_size = properties.Vector3("Size of blocks in the u, v, and w directions.", default=lambda: (1.0, 1.0, 1.0))
@@ -34,10 +31,10 @@ class RegularBlockModelDefinition(BaseModel):
                 raise properties.ValidationError("block sizes must be > 0.0", prop=change["name"], instance=self)
 
 
-class TensorBlockModelDefinition(BaseModel):
-    """Defines the block structure of a tensor grid block model."""
+class TensorGrid(BaseModel):
+    """Describes a grid with varied spacing in each direction."""
 
-    schema = "org.omf.v2.elements.blockmodel.tensor"
+    schema = "org.omf.v2.elements.blockmodel.grid.tensor"
 
     tensor_u = properties.Array("Tensor cell widths, u-direction", dtype=float, shape=("*",))
     tensor_v = properties.Array("Tensor cell widths, v-direction", dtype=float, shape=("*",))
@@ -63,10 +60,16 @@ class TensorBlockModelDefinition(BaseModel):
 
 
 class BlockModel(ProjectElement):
-    """A block model, details are in the definition and sub-blocks attributes."""
+    """A block model, details are in the definition and sub-blocks attributes.
+
+    Sub-blocking is stored in the `subblocks` attribute. Use :code:`None` if there are no
+    sub-blocks, :class:`omf.blockmodel.RegularSubblocks` if the sub-blocks lie on a regular
+    grid within each parent block, or :class:`omf.blockmodel.FreeformSubblocks` if the
+    sub-blocks are not constrained.
+    """
 
     schema = "org.omf.v2.elements.blockmodel"
-    _valid_locations = ("parent_blocks", "vertices", "cells")
+    _valid_locations = ("parent_blocks", "subblocks", "vertices", "cells")
 
     origin = properties.Vector3(
         "Minimum corner of the block model relative to Project coordinate reference system",
@@ -75,16 +78,18 @@ class BlockModel(ProjectElement):
     axis_u = properties.Vector3("Vector orientation of u-direction", default="X", length=1)
     axis_v = properties.Vector3("Vector orientation of v-direction", default="Y", length=1)
     axis_w = properties.Vector3("Vector orientation of w-direction", default="Z", length=1)
-    definition = properties.Union(
-        """Block model definition, describing either a regular or tensor-based block layout.""",
-        props=[RegularBlockModelDefinition, TensorBlockModelDefinition],
-        default=RegularBlockModelDefinition,
+    grid = properties.Union(
+        """Describes the grid that the blocks occupy, either regular or tensor.""",
+        props=[RegularGrid, TensorGrid],
+        default=RegularGrid,
     )
     subblocks = properties.Union(
-        """Optional sub-block details.
+        """Optional sub-blocks.
 
-        If this is `None` then there are no sub-blocks. Otherwise it can be a `FreeformSubblocks`
-        or `RegularSubblocks` object to define different types of sub-blocks.
+        Use :code:`None` if there are no sub-blocks, :class:`omf.blockmodel.RegularSubblocks`
+        if the sub-blocks lie on a regular grid within each parent block, or
+        :class:`omf.blockmodel.FreeformSubblocks` if the sub-blocks can be placed anywhere
+        within the parent block.
         """,
         props=[FreeformSubblocks, RegularSubblocks],
         required=False,
@@ -98,8 +103,7 @@ class BlockModel(ProjectElement):
             and np.abs(self.axis_w.dot(self.axis_u) < 1e-6)
         ):
             raise properties.ValidationError("axis_u, axis_v, and axis_w must be orthogonal", instance=self)
-        if self.subblocks is not None:
-            self.subblocks.validate_subblocks(self)
+        subblock_check(self)
 
     @property
     def block_count(self):
@@ -107,40 +111,35 @@ class BlockModel(ProjectElement):
 
         Equivalent to `block_model.definition.block_count`.
         """
-        return self.definition.block_count
+        return self.grid.block_count
 
     @property
     def num_parent_blocks(self):
         """The number of cells."""
-        return np.prod(self.definition.block_count)
+        return np.prod(self.grid.block_count)
 
     @property
     def num_parent_vertices(self):
         """Number of nodes or vertices."""
-        count = self.definition.block_count
+        count = self.grid.block_count
         return None if count is None else np.prod(count + 1)
-
-    @property
-    def num_cells(self):
-        """The number of cells."""
-        return self.num_parent_blocks if self.subblocks is None else self.subblocks.num_subblocks
 
     def location_length(self, location):
         """Return correct attribute length for 'location'."""
         if location == "vertices":
             return self.num_parent_vertices
-        if location == "cells" and self.subblocks is not None:
-            return self.subblocks.num_subblocks
+        if location == "subblocks":
+            return None if self.subblocks is None else self.subblocks.num_subblocks
         return self.num_parent_blocks
 
     def ijk_to_index(self, ijk):
         """Map IJK triples to flat indices for a single triple or an array, preserving shape."""
-        if self.definition.block_count is None:
+        if self.grid.block_count is None:
             raise ValueError("block count is not yet known")
-        return ijk_to_index(self.definition.block_count, ijk)
+        return ijk_to_index(self.block_count, ijk)
 
     def index_to_ijk(self, index):
         """Map flat indices to IJK triples for a single index or an array, preserving shape."""
-        if self.definition.block_count is None:
+        if self.block_count is None:
             raise ValueError("block count is not yet known")
-        return index_to_ijk(self.definition.block_count, index)
+        return index_to_ijk(self.block_count, index)

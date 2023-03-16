@@ -141,10 +141,10 @@ bottom of page).
             ),
         ],
     )
-    vol = omf.BlockModel(
+    vol = omf.blockmodel.BlockModel(
         name="vol",
         origin=[10.0, 10.0, -10],
-        definition=omf.TensorBlockModelDefinition(
+        grid=omf.blockmodel.TensorGrid(
             tensor_u=np.ones(10, dtype=float),
             tensor_v=np.ones(15, dtype=float),
             tensor_w=np.ones(20, dtype=float),
