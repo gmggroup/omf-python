@@ -37,8 +37,8 @@ class _Checker:
     # pylint: disable=too-many-instance-attributes
     parent_indices: np.ndarray
     corners: np.ndarray
-    block_count: object = None
-    subblock_count: np.ndarray = np.ones(3, dtype=float)
+    block_count: np.ndarray
+    subblock_count: np.ndarray
     regular: bool = False
     octree: bool = False
     full: bool = False
@@ -146,6 +146,7 @@ def subblock_check(model):
             parent_indices=model.subblocks.parent_indices.array,
             corners=model.subblocks.corners.array,
             block_count=model.block_count,
+            subblock_count=np.array((1.0, 1.0, 1.0)),
             instance=model.subblocks,
         )
     else:
