@@ -60,9 +60,12 @@ class TensorGrid(BaseModel):
 
 
 class BlockModel(ProjectElement):
-    """A block model, details are in the definition and sub-blocks attributes.
+    """A block model with optional sub-blocks.
 
-    Sub-blocking is stored in the `subblocks` attribute. Use :code:`None` if there are no
+    The position and orientation are defined by the `origin`, `axis_u`, `axis_v`, `axis_w`
+    attributes, while the block layout and size are defined by the `grid` attribute.
+
+    Sub-blocks are stored in the `subblocks` attribute. Use :code:`None` if there are no
     sub-blocks, :class:`omf.blockmodel.RegularSubblocks` if the sub-blocks lie on a regular
     grid within each parent block, or :class:`omf.blockmodel.FreeformSubblocks` if the
     sub-blocks are not constrained.
@@ -79,18 +82,12 @@ class BlockModel(ProjectElement):
     axis_v = properties.Vector3("Vector orientation of v-direction", default="Y", length=1)
     axis_w = properties.Vector3("Vector orientation of w-direction", default="Z", length=1)
     grid = properties.Union(
-        """Describes the grid that the blocks occupy, either regular or tensor.""",
+        """Describes the grid that the blocks occupy, either regular or tensor""",
         props=[RegularGrid, TensorGrid],
         default=RegularGrid,
     )
     subblocks = properties.Union(
-        """Optional sub-blocks.
-
-        Use :code:`None` if there are no sub-blocks, :class:`omf.blockmodel.RegularSubblocks`
-        if the sub-blocks lie on a regular grid within each parent block, or
-        :class:`omf.blockmodel.FreeformSubblocks` if the sub-blocks can be placed anywhere
-        within the parent block.
-        """,
+        """Optional sub-blocks""",
         props=[FreeformSubblocks, RegularSubblocks],
         required=False,
     )
