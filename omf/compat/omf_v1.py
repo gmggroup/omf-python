@@ -9,9 +9,21 @@ import zlib
 import numpy as np
 import properties
 
-from .interface import IOMFReader, InvalidOMFFile, WrongVersionError
-
-from .. import attribute, base, blockmodel, lineset, pointset, surface, texture
+from ..attribute import (
+    CategoryAttribute,
+    CategoryColormap,
+    ContinuousColormap,
+    NumericAttribute,
+    StringAttribute,
+    VectorAttribute,
+)
+from ..base import Project
+from ..lineset import LineSet
+from ..pointset import PointSet
+from ..surface import Surface, TensorGridSurface
+from ..texture import Image, ProjectedTexture
+from ..blockmodel import BlockModel, TensorGrid
+from .interface import InvalidOMFFile, IOMFReader, WrongVersionError
 
 COMPATIBILITY_VERSION = b"OMF-v0.9.0"
 _default = object()
@@ -184,7 +196,7 @@ class Reader(IOMFReader):
         img = io.BytesIO()
         img.write(zlib.decompress(self._f.read(length)))
         img.seek(0, 0)
-        return texture.Image(img)
+        return Image(img)
 
     def _copy_image_png(self, src, src_attr, dst, dst_attr=None):
         if not self._include_binary:
@@ -211,7 +223,7 @@ class Reader(IOMFReader):
 
     def _convert_texture(self, texture_uuid):
         texture_v1 = self.__get_attr(self._project, texture_uuid)
-        texture_ = texture.ProjectedTexture()
+        texture_ = ProjectedTexture()
 
         self.__require_attr(texture_v1, "__class__", "ImageTexture")
         self.__copy_attr(texture_v1, "origin", texture_)
@@ -232,14 +244,14 @@ class Reader(IOMFReader):
         self.__require_attr(colormap_v1, "__class__", "ScalarColormap")
         gradient_uuid = self.__get_attr(colormap_v1, "gradient")
 
-        colormap = attribute.ContinuousColormap()
+        colormap = ContinuousColormap()
         colormap.gradient = self._load_gradient(gradient_uuid)
         self.__copy_attr(colormap_v1, "limits", colormap)
         self._copy_content_model(colormap_v1, colormap)
         return colormap
 
     def _convert_scalar_data(self, data_v1):
-        data = attribute.NumericAttribute()
+        data = NumericAttribute()
         self._copy_scalar_array(data_v1, "array", data)
         colormap_uuid = self.__get_attr(data_v1, "colormap", optional=True)
         if colormap_uuid is not None:
@@ -247,17 +259,17 @@ class Reader(IOMFReader):
         return [data]
 
     def _convert_vector_data(self, data_v1):
-        data = attribute.VectorAttribute()
+        data = VectorAttribute()
         self._copy_scalar_array(data_v1, "array", data)
         return [data]
 
     def _convert_string_data(self, data_v1):
-        data = attribute.StringAttribute()
+        data = StringAttribute()
         self._copy_scalar_array(data_v1, "array", data)
         return [data]
 
     def _mapped_column_to_category(self, legend_v1, data_v1, data_column, color_column):
-        colormap = attribute.CategoryColormap()
+        colormap = CategoryColormap()
 
         length = len(data_column)
         colormap.indices = list(range(length))
@@ -266,7 +278,7 @@ class Reader(IOMFReader):
             colormap.colors = color_column
         self._copy_content_model(legend_v1, colormap)
 
-        catgory_attribute = attribute.CategoryAttribute()
+        catgory_attribute = CategoryAttribute()
         self._copy_scalar_array(data_v1, "array", catgory_attribute)
         catgory_attribute.categories = colormap
 
@@ -358,7 +370,7 @@ class Reader(IOMFReader):
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, "__class__", "PointSetGeometry")
 
-        points = pointset.PointSet()
+        points = PointSet()
         self._copy_textures(points_v1, points)
         self.__copy_attr(points_v1, "subtype", points.metadata)
         self._copy_project_element_geometry(geometry_v1, points)
@@ -373,7 +385,7 @@ class Reader(IOMFReader):
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, "__class__", "LineSetGeometry")
 
-        lines = lineset.LineSet()
+        lines = LineSet()
         self.__copy_attr(lines_v1, "subtype", lines.metadata)
         self._copy_project_element_geometry(geometry_v1, lines)
         self._copy_scalar_array(geometry_v1, "vertices", lines)
@@ -384,7 +396,7 @@ class Reader(IOMFReader):
 
     # surfaces - triangulated or gridded
     def _convert_surface_geometry(self, geometry_v1):
-        surface_ = surface.Surface()
+        surface_ = Surface()
         self._copy_project_element_geometry(geometry_v1, surface_)
         self._copy_scalar_array(geometry_v1, "vertices", surface_)
         self._copy_scalar_array(geometry_v1, "triangles", surface_)
@@ -393,7 +405,7 @@ class Reader(IOMFReader):
         return surface_, valid_locations
 
     def _convert_surface_grid_geometry(self, geometry_v1):
-        surface_ = surface.TensorGridSurface()
+        surface_ = TensorGridSurface()
         self._copy_project_element_geometry(geometry_v1, surface_)
         self.__copy_attr(geometry_v1, "tensor_u", surface_)
         self.__copy_attr(geometry_v1, "tensor_v", surface_)
@@ -423,18 +435,18 @@ class Reader(IOMFReader):
         geometry_uuid = self.__get_attr(volume_v1, "geometry")
         geometry_v1 = self.__get_attr(self._project, geometry_uuid)
         self.__require_attr(geometry_v1, "__class__", "VolumeGridGeometry")
-        volume = blockmodel.TensorGridBlockModel()
-        self.__copy_attr(volume_v1, "subtype", volume.metadata)
-        self._copy_project_element_geometry(geometry_v1, volume)
-        self.__copy_attr(geometry_v1, "tensor_u", volume)
-        self.__copy_attr(geometry_v1, "tensor_v", volume)
-        self.__copy_attr(geometry_v1, "tensor_w", volume)
-        self.__copy_attr(geometry_v1, "axis_u", volume)
-        self.__copy_attr(geometry_v1, "axis_v", volume)
-        self.__copy_attr(geometry_v1, "axis_w", volume)
+        block_model = BlockModel(grid=TensorGrid())
+        self.__copy_attr(volume_v1, "subtype", block_model.metadata)
+        self.__copy_attr(geometry_v1, "origin", block_model)
+        self.__copy_attr(geometry_v1, "axis_u", block_model)
+        self.__copy_attr(geometry_v1, "axis_v", block_model)
+        self.__copy_attr(geometry_v1, "axis_w", block_model)
+        self.__copy_attr(geometry_v1, "tensor_u", block_model.grid)
+        self.__copy_attr(geometry_v1, "tensor_v", block_model.grid)
+        self.__copy_attr(geometry_v1, "tensor_w", block_model.grid)
 
         valid_locations = ("vertices", "cells")
-        return volume, valid_locations
+        return block_model, valid_locations
 
     # element list
     def _convert_project_element(self, element_uuid):
@@ -458,7 +470,7 @@ class Reader(IOMFReader):
     # main project
     def _convert_project(self, project_uuid):
         project_v1 = self.__get_attr(self._project, project_uuid)
-        project = base.Project()
+        project = Project()
 
         self._copy_content_model(project_v1, project)
         self.__copy_attr(project_v1, "author", project.metadata, optional_dst=True, default="")

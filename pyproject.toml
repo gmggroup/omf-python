@@ -72,7 +72,10 @@ exclude-protected = "_asdict,_fields,_replace,_source,_make,_props,_backend"
 max-line-length = 120
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = "consider-using-f-string"
+disable = [
+    "consider-using-f-string",
+    "no-name-in-module",
+]
 
 [tool.pylint.'SIMILARITIES']
 min-similarity-lines = 20
@@ -87,4 +90,3 @@ generated-members = "_backend,array"
 minversion = "7.2"
 required_plugins = "pytest-rst"
 testpaths = ["docs", "tests"]
-

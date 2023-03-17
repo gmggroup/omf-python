@@ -20,14 +20,17 @@ class BaseModel(properties.HasProperties):
         return output
 
     @classmethod
-    def deserialize(cls, value, trusted=False, strict=False, assert_valid=False, **kwargs):
-        schema = value.pop("schema", "")
+    def __lookup_class(cls, schema):
         for class_name, class_value in cls._REGISTRY.items():
-            if not hasattr(class_value, "schema"):
-                continue
-            if class_value.schema == schema:
-                value.update({"__class__": class_name})
-                break
+            if hasattr(class_value, "schema") and class_value.schema == schema:
+                return class_name
+        raise ValueError(f"schema not found: {schema}")
+
+    @classmethod
+    def deserialize(cls, value, trusted=False, strict=False, assert_valid=False, **kwargs):
+        schema = value.pop("schema", None)
+        if schema is not None:
+            value["__class__"] = cls.__lookup_class(schema)
         return super().deserialize(value, trusted, strict, assert_valid, **kwargs)
 
 
@@ -201,7 +204,7 @@ class ProjectElementAttribute(ContentModel):
             "faces",
             "cells",
             "parent_blocks",
-            "sub_blocks",
+            "subblocks",
             "elements",
         ),
     )

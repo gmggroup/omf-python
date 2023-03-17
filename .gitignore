@@ -98,3 +98,6 @@ cover/
 example.omf
 example.png
 testdata/
+
+# VSCode project settings
+.vscode/
