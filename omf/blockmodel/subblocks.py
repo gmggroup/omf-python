@@ -100,16 +100,18 @@ class FreeformSubblocks(BaseModel):
     Sub-blocks are described by the `parent_indices` and `corners` arrays.
 
     Each row in `parent_indices` is an IJK index on the block model grid. Each row of
-    `corners` is (i_min, j_min, k_min, i_max, j_max, k_max) all floating point, with 0.0
-    referring to the minimum side of the parent block and 1.0 the maximum side.
+    `corners` is (i_min, j_min, k_min, i_max, j_max, k_max) in floating-point and
+    relative to the parent block, running from 0.0 to 1.0 across the parent block.
     For example:
 
-    * A block with size (0.3333, 0.1, 0.5) in the corner of the parent block would be
-      (0.0, 0.0, 0.0, 0.3333, 0.1, 0.5).
-    * A sub-block covering the whole parent would be (0.0, 0.0, 0.0, 1.0, 1.0, 1.0).
+    * A sub-block covering the whole parent will be (0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+      no matter the size of the parent.
+    * A sub-block covering the bottom third of the parent block would be
+      (0.0, 0.0, 0.0, 1.0, 1.0, 0.3333) and one covering the top two-thirds would be
+      (0.0, 0.0, 0.3333, 1.0, 1.0, 1.0), again no matter the size of the parent.
 
     Sub-blocks must stay within their parent and must have a non-zero size in all directions.
-    They shouldn't overlap but that isn't checked as it would take too long. All sub-blocks
+    They shouldn't overlap but that isn't checked because it would take too long. All sub-blocks
     with the same parent block must be contiguous in the arrays.
     """
 
