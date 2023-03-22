@@ -101,3 +101,7 @@ testdata/
 
 # VSCode project settings
 .vscode/
+
+# Example outputs
+examples/*.omf
+examples/*.csv
