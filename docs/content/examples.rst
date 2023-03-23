@@ -9,7 +9,7 @@ Also, this example builds elements all at once. They can also be initialized
 with no arguments, and properties can be set one-by-one (see code snippet at
 bottom of page).
 
-.. code:: python
+.. code-block:: python
     :name: test_doc
 
     import datetime
@@ -141,12 +141,14 @@ bottom of page).
             ),
         ],
     )
-    vol = omf.TensorGridBlockModel(
+    vol = omf.blockmodel.BlockModel(
         name="vol",
-        tensor_u=np.ones(10).astype(float),
-        tensor_v=np.ones(15).astype(float),
-        tensor_w=np.ones(20).astype(float),
         origin=[10.0, 10.0, -10],
+        grid=omf.blockmodel.TensorGrid(
+            tensor_u=np.ones(10, dtype=float),
+            tensor_v=np.ones(15, dtype=float),
+            tensor_w=np.ones(20, dtype=float),
+        ),
         attributes=[
             omf.NumericAttribute(
                 name="random attr", location="cells", array=np.random.rand(10 * 15 * 20)
