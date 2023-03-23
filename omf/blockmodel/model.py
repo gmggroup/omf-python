@@ -41,9 +41,20 @@ class TensorGrid(BaseModel):
     tensor_w = properties.Array("Tensor cell widths, w-direction", dtype=float, shape=("*",))
 
     @properties.validator("tensor_u")
+    def _validate_tensor_u(self, change):
+        self._validate_tensor(change)
+
     @properties.validator("tensor_v")
+    def _validate_tensor_v(self, change):
+        self._validate_tensor(change)
+
     @properties.validator("tensor_w")
+    def _validate_tensor_w(self, change):
+        self._validate_tensor(change)
+
     def _validate_tensor(self, change):
+        if len(change["value"]) == 0:
+            raise properties.ValidationError("tensor array may not be empty", prop=change["name"], instance=self)
         for item in change["value"]:
             if item <= 0.0:
                 raise properties.ValidationError("tensor sizes must be > 0.0", prop=change["name"], instance=self)

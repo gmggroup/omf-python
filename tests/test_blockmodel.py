@@ -53,7 +53,7 @@ def test_ijk_index(ijk, index):
 
 
 def test_tensorblockmodel():
-    """Test volume grid geometry validation"""
+    """Test tensor grid block models."""
     elem = BlockModel(grid=TensorGrid())
     assert elem.num_parent_vertices is None
     assert elem.num_parent_blocks is None
@@ -69,6 +69,17 @@ def test_tensorblockmodel():
     with pytest.raises(ValueError):
         elem.validate()
     elem.axis_v = "Y"
+
+
+def test_invalid_tensors():
+    """Test invalid tensor arrays on tensor grid block models."""
+    elem = BlockModel(grid=TensorGrid())
+    with pytest.raises(properties.ValidationError):
+        elem.grid.tensor_u = []
+    with pytest.raises(properties.ValidationError):
+        elem.grid.tensor_v = [1.0, 0.0, 3.0]
+    with pytest.raises(properties.ValidationError):
+        elem.grid.tensor_w = [-1.0, 2.0]
 
 
 @pytest.mark.parametrize("block_count", ([2, 2], [2, 2, 2, 2], [0, 2, 2], [2, 2, 0.5]))
