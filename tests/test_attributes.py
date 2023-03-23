@@ -47,12 +47,8 @@ def test_invalid_string_list():
     assert arr.data_type is None
     assert arr.shape is None
     assert arr.size is None
-    assert isinstance(
-        omf.attribute.StringList.deserialize(""), omf.attribute.StringList
-    )
-    assert isinstance(
-        omf.attribute.StringList.deserialize({}), omf.attribute.StringList
-    )
+    assert isinstance(omf.attribute.StringList.deserialize(""), omf.attribute.StringList)
+    assert isinstance(omf.attribute.StringList.deserialize({}), omf.attribute.StringList)
 
 
 def test_boolean_array():
@@ -269,3 +265,24 @@ def test_category_data():
             indices=[0, 1, 2],
             values=[0.5, 0.6, 0.7],
         )
+
+
+def test_basemodel_schema():
+    """Checks for a unique schema name"""
+    classes_to_check = {omf.base.BaseModel}
+    classes_with_subclasses = {}
+    while classes_to_check:
+        klass = classes_to_check.pop()
+        subclasses = klass.__subclasses__()
+        is_leaf = len(subclasses) == 0
+        classes_with_subclasses[klass] = is_leaf
+        classes_to_check |= set(subclasses)
+
+    schemas_seen = set()
+    for klass, is_leaf in classes_with_subclasses.items():
+        if is_leaf:
+            assert klass.schema != ""
+            assert klass.schema not in schemas_seen
+            schemas_seen.add(klass.schema)
+        else:
+            assert klass.schema == ""

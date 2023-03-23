@@ -1,5 +1,8 @@
 name: Run OMF tests
 
+env:
+  app: omf
+
 on:
   push:
     branches:
@@ -11,16 +14,38 @@ on:
       - dev
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11"]
+
     steps:
       - name: checkout repo
-        uses: actions/checkout@v2
-      - name: unit tests
-        run: make docker-tests
-      - name: check formatting
-        run: make docker-format
-      - name: pylint tests
-        run: make docker-lint
-      - name: docs tests
-        run: make docker-docs
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip .[docs,lint,test]
+
+      - name: Unit tests
+        run: |
+          pytest
+
+      - name: Docs tests
+        run: |
+          nosetests --logging-level=INFO docs
+
+      - name: Pylint
+        run: |
+          pylint $app tests
+
+      - name: Black
+        run: |
+          black --check $app tests

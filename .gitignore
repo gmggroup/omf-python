@@ -94,3 +94,7 @@ ENV/
 deps/
 
 cover/
+.idea/
+example.omf
+example.png
+testdata/
