@@ -97,7 +97,8 @@ class TensorGridSurface(BaseSurfaceElement):  # pylint: disable=R0901
         length=1,
     )
     offset_w = ArrayInstanceProperty(
-        "Node offset",
+        "Node offset normal to the plane defined by axis_u and axis_v; "
+        "if unset, the surface is flat",
         shape=("*",),
         dtype=float,
         required=False,
