@@ -1,4 +1,5 @@
 """Tests for Surface validation"""
+
 import numpy as np
 import pytest
 
@@ -21,8 +22,8 @@ def test_surface():
         elem.validate()
 
 
-def test_surfacegrid():
-    """Test surface grid geometry validation"""
+def test_tensor_surface():
+    """Test tensor surface grid geometry validation"""
     elem = omf.surface.TensorGridSurface()
     elem.tensor_u = [1.0, 1.0]
     elem.tensor_v = [2.0, 2.0, 2.0]
@@ -36,5 +37,25 @@ def test_surfacegrid():
     elem.offset_w = np.random.rand(12)
     elem.validate()
     elem.offset_w = np.random.rand(6)
+    with pytest.raises(ValueError):
+        elem.validate()
+
+
+def test_regular_surface():
+    """Test regular surface geometry validation"""
+    elem = omf.surface.RegularGridSurface()
+    elem.origin = [0.0, 0.0, 0.0]
+    elem.cell_size = [1.0, 1.0]
+    elem.cell_count = [2, 2]
+    assert elem.validate()
+    assert elem.location_length("vertices") == 9
+    assert elem.location_length("faces") == 4
+    with pytest.raises(ValueError):
+        elem.cell_size = [0.0, 1.0]
+    with pytest.raises(ValueError):
+        elem.origin = [0.0, 0.0]
+    elem.offset_w = np.random.rand(9)
+    elem.validate()
+    elem.offset_w = np.random.rand(4)
     with pytest.raises(ValueError):
         elem.validate()

@@ -1,6 +1,9 @@
 """surface.py: Surface element definitions"""
+
 import numpy as np
 import properties
+
+EPSILON = np.finfo(float).eps
 
 from .base import ProjectElement
 from .attribute import ArrayInstanceProperty
@@ -78,12 +81,12 @@ class TensorGridSurface(BaseSurfaceElement):  # pylint: disable=R0901
 
     tensor_u = properties.List(
         "Grid cell widths, u-direction",
-        properties.Float("", min=0.0),
+        properties.Float("", min=EPSILON),
         coerce=True,
     )
     tensor_v = properties.List(
         "Grid cell widths, v-direction",
-        properties.Float("", min=0.0),
+        properties.Float("", min=EPSILON),
         coerce=True,
     )
     axis_u = properties.Vector3(
@@ -116,11 +119,72 @@ class TensorGridSurface(BaseSurfaceElement):  # pylint: disable=R0901
     @properties.validator
     def _validate_mesh(self):
         """Check if mesh content is built correctly"""
-        if not np.abs(self.axis_u.dot(self.axis_v)) < 1e-6:
+        if not np.abs(self.axis_u.dot(self.axis_v)) < EPSILON:
             raise properties.ValidationError("axis_u and axis_v must be orthogonal")
         if self.offset_w is properties.undefined or self.offset_w is None:
             return True
         if len(self.offset_w.array) != self.num_nodes:
+            raise properties.ValidationError(
+                "Length of offset_w, {zlen}, must equal number of nodes, "
+                "{nnode}".format(zlen=len(self.offset_w.array), nnode=self.num_nodes)
+            )
+        return True
+
+
+class RegularGridSurface(BaseSurfaceElement):  # pylint: disable=R0901
+    """Surface element with regular spacing in each dimension"""
+
+    schema = "org.omf.v2.element.surfaceregulargrid"
+
+    cell_count = properties.List(
+        "Number of cells along u, and v axes",
+        properties.Integer("", min=1),
+        min_length=2,
+        max_length=2,
+    )
+    cell_size = properties.List(
+        "Size of cells in the u and v dimensions",
+        properties.Float("", min=EPSILON),
+        min_length=2,
+        max_length=2,
+    )
+    axis_u = properties.Vector3(
+        "Vector orientation of u-direction",
+        default="X",
+        length=1,
+    )
+    axis_v = properties.Vector3(
+        "Vector orientation of v-direction",
+        default="Y",
+        length=1,
+    )
+    offset_w = ArrayInstanceProperty(
+        "Node offset",
+        shape=("*",),
+        dtype=float,
+        required=False,
+    )
+
+    @property
+    def num_nodes(self):
+        """Number of nodes (vertices)"""
+        cell_count = self.cell_count
+        return (cell_count[0] + 1) * (cell_count[1] + 1)
+
+    @property
+    def num_cells(self):
+        """Number of cells (faces)"""
+        cell_count = self.cell_count
+        return cell_count[0] * cell_count[1]
+
+    @properties.validator
+    def _validate_mesh(self):
+        """Check if mesh content is built correctly"""
+        if not np.abs(self.axis_u.dot(self.axis_v)) < 1e-6:
+            raise properties.ValidationError("axis_u and axis_v must be orthogonal")
+        if self.offset_w is properties.undefined or self.offset_w is None:
+            return True
+        elif len(self.offset_w.array) != self.num_nodes:
             raise properties.ValidationError(
                 "Length of offset_w, {zlen}, must equal number of nodes, "
                 "{nnode}".format(zlen=len(self.offset_w.array), nnode=self.num_nodes)
