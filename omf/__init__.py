@@ -20,7 +20,7 @@ from .attribute import (
 )
 from .lineset import LineSet
 from .pointset import PointSet
-from .surface import Surface, TensorGridSurface
+from .surface import Surface, TensorGridSurface, RegularGridSurface
 from .texture import ProjectedTexture, UVMappedTexture
 
 from .fileio import load, save, __version__

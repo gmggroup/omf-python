@@ -118,7 +118,7 @@ class Array(BaseModel):
             array_dtype = DATA_TYPE_LOOKUP_TO_NUMPY[value["data_type"]]
             if value["data_type"] == "BooleanArray":
                 int_arr = np.frombuffer(array_binary, dtype="uint8")
-                bit_arr = np.unpackbits(int_arr)[: np.product(value["shape"])]
+                bit_arr = np.unpackbits(int_arr)[: np.prod(value["shape"])]
                 arr = bit_arr.astype(array_dtype)
             else:
                 arr = np.frombuffer(array_binary, dtype=array_dtype)
