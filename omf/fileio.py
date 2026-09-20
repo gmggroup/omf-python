@@ -25,7 +25,7 @@ def save(project, filename, mode="x"):
     * **mode** - Valid values are "w" or "x" - if file exists, "w" will
       overwrite and "x" will error. Default is "X"
     """
-    time_tuple = datetime.datetime.utcnow().timetuple()[:6]
+    time_tuple = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).timetuple()[:6]
     if mode not in ("w", "x"):
         raise ValueError("File mode must be 'w' or 'x'")
     if len(filename) < 4 or filename[-4:] != ".omf":
